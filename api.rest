@@ -1,0 +1,34 @@
+@currentUser=yu.shen
+
+### Home
+GET http://localhost:8080/ 
+Authorization: Basic {{currentUser}} 123456
+
+### Create Projects
+POST http://localhost:8080/projects
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "Smart Project Management DEV",
+    "members":["huanhuan.dong","yongjian.sha"]
+}
+
+### Find my Projects
+GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}
+Authorization: Basic {{currentUser}} 123456
+
+### List Projects
+GET http://localhost:8080/projects
+Authorization: Basic {{currentUser}} 123456
+
+
+### Get message 
+http://localhost:8080/messages/search/findByReceiver?upn=huanhuan.dong
+Authorization: Basic {{currentUser}} 123456
+
+### Get Event 
+http://localhost:8080/events
+Authorization: Basic {{currentUser}} 123456
+
+
