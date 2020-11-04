@@ -65,13 +65,11 @@ public class MessageService {
     }
 
     private void sendMessageTo(List<Event> interested, String upn) {
-        for(Event event: interested) {
-            Message message = Message.builder()
-                    .source(event.getId())
-                    .receiver(upn)
-                    .build();
-            messageRepository.save(message);
-        }
+        Message message = Message.builder()
+                .receiver(upn)
+                .events(interested)
+                .build();
+        messageRepository.save(message);
     }
 
     private List<String> getAllCandidate() {
