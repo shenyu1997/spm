@@ -3,12 +3,13 @@ package kuiperbelt.tech.spm.domain.core;
 import kuiperbelt.tech.spm.common.BaseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
-import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Transactional
 @Service
 @RepositoryEventHandler
 public class EntityService {
