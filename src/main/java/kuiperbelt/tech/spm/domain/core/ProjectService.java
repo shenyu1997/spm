@@ -1,5 +1,6 @@
 package kuiperbelt.tech.spm.domain.core;
 
+import com.google.common.collect.Lists;
 import kuiperbelt.tech.spm.common.UserContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
@@ -14,9 +15,9 @@ import java.util.Collections;
 @RepositoryEventHandler
 public class ProjectService {
 
-    public static final String EVENT_PROJECT_CREATED = "PROJECT_CREATED";
-    public static final String EVENT_PROJECT_OWNER_CHANGED = "PROJECT_OWNER_CHANGED";
-    public static final String EVENT_PROJECT_MANAGER_CHANGED = "PROJECT_MANAGER_CHANGED";
+    public static final String EVENT_PROJECT_CREATED = "event.project.created";
+    public static final String EVENT_PROJECT_OWNER_CHANGED = "event.project.owner.changed";
+    public static final String EVENT_PROJECT_MANAGER_CHANGED = "event.project.manager.changed";
     @Autowired
     private UserContextHolder userContextHolder;
 
@@ -46,6 +47,7 @@ public class ProjectService {
                 .type(Event.Type.EXECUTION_STATUS_CHANGED)
                 .subType(EVENT_PROJECT_CREATED)
                 .source(project.getId())
+                .args(Lists.newArrayList(project.getName()))
                 .build());
 
         if(!StringUtils.isEmpty(project.getOwner())) {
@@ -53,7 +55,7 @@ public class ProjectService {
                     .type(Event.Type.PARTICIPANT_CHANGED)
                     .subType(EVENT_PROJECT_OWNER_CHANGED)
                     .source(project.getId())
-                    .args(Collections.singletonList(project.getOwner()))
+                    .args(Lists.newArrayList(project.getName(), project.getOwner()))
                     .build());
         }
 
@@ -63,7 +65,7 @@ public class ProjectService {
                     .type(Event.Type.PARTICIPANT_CHANGED)
                     .subType(EVENT_PROJECT_MANAGER_CHANGED)
                     .source(project.getId())
-                    .args(Collections.singletonList(project.getManager()))
+                    .args(Lists.newArrayList(project.getName(), project.getManager()))
                     .build());
         }
 

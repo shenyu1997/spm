@@ -3,6 +3,7 @@ package kuiperbelt.tech.spm.domain.core;
 import kuiperbelt.tech.spm.common.UserContext;
 import kuiperbelt.tech.spm.common.UserContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,9 @@ public class EventService {
     @Autowired
     private TaskScheduler taskScheduler;
 
+    @Autowired
+    private MessageSource messageSource;
+
     private Map<String, Queue<Event>> eventMap = new ConcurrentHashMap<>();
 
     public void emit(Event event) {
@@ -34,6 +38,10 @@ public class EventService {
         event.setCorrelationId(userContext.getCorrelationId());
         event.setTriggeredMan(userContext.getUpn());
         event.setTimestamp(LocalDateTime.now());
+        String content = messageSource.getMessage(event.getSubType(),
+                event.getArgs().toArray(new String[0]),
+                Locale.CHINA);
+        event.setContent(content);
         eventRepository.save(event);
 
         postProcessEvent(event);

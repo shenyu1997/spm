@@ -29,10 +29,13 @@ public class Event extends BaseEntity {
 
     private Long source;
 
+    private String content;
+
     private LocalDateTime timestamp;
 
     @ElementCollection
     private List<String> args;
+
 
     public enum Type {
         PARTICIPANT_CHANGED, SCHEDULE_CHANGED, EXECUTION_STATUS_CHANGED, OTHER, SYSTEM_BULK_END
