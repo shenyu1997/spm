@@ -35,13 +35,12 @@ public class EventPostProcessService {
 
     @Async
     public void postProcessEvent(Event event) {
-        eventRepository.save(event);
-
         final String correlationId = event.getCorrelationId();
         Queue<Event> events = eventMap.computeIfAbsent(correlationId, this::newEventQueue);
         if(Event.Type.SYSTEM_BULK_END == event.getType()) {
             sendToMessageService(eventMap.remove(correlationId));
         } else {
+            eventRepository.save(event);
             events.add(event);
         }
     }
