@@ -1,9 +1,9 @@
 package tech.kuiperbelt.spm.domain.idmapping;
 
-import tech.kuiperbelt.spm.common.BaseEntity;
 import lombok.*;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Getter
 @Setter
@@ -11,7 +11,8 @@ import javax.persistence.Entity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class IdType extends BaseEntity {
-    private Long target;
+public class IdMapping {
+    @Id
+    private Long id;
     private String type;
 }

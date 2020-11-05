@@ -2,7 +2,7 @@ package tech.kuiperbelt.spm.domain.message;
 
 import tech.kuiperbelt.spm.common.BaseEntity;
 import tech.kuiperbelt.spm.domain.event.Event;
-import tech.kuiperbelt.spm.domain.idmapping.EntityService;
+import tech.kuiperbelt.spm.domain.idmapping.IdMappingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ public class MessageService {
     }
 
     @Autowired
-    private EntityService entityService;
+    private IdMappingService idMappingService;
 
     @Autowired
     private MessageRepository messageRepository;
@@ -56,7 +56,7 @@ public class MessageService {
 
     private boolean matchRule(Event event, String upn) {
         for(EventReceiveRule receiveRule: receiveRules) {
-            BaseEntity sourceEntity = entityService.getEntity(event.getSource());
+            BaseEntity sourceEntity = idMappingService.getEntity(event.getSource());
             if(receiveRule.evaluate(event, upn, sourceEntity)) {
                 return true;
             }
