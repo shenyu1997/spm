@@ -1,7 +1,9 @@
 ### Done 
-Event message to message file
-
+- Event message to message file
+- IdType refactor: Entity change, id generated 
+- Remove empty message
 ### Suspend
 
 ### Next
-- IdType refactor: Entity change, id generated 
+- Us, Modify project
+

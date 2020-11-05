@@ -44,13 +44,15 @@ public class MessageService {
         log.debug("MessageService.bulkProcessEvent: {}", events);
         List<String> allCandidate = getAllCandidate();
         for(String upn: allCandidate) {
-            List<Event> interested = new ArrayList<>();
+            List<Event> interestedEvent = new ArrayList<>();
             for(Event event : events) {
                 if(isNotTriggerMan(event, upn) && matchRule(event, upn)) {
-                    interested.add(event);
+                    interestedEvent.add(event);
                 }
             }
-            sendMessageTo(interested, upn);
+            if(!CollectionUtils.isEmpty(interestedEvent)) {
+                sendMessageTo(interestedEvent, upn);
+            }
         }
     }
 
