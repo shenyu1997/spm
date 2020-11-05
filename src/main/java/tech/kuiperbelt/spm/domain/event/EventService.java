@@ -23,16 +23,10 @@ public class EventService {
     private UserContextHolder userContextHolder;
 
     @Autowired
-    private MessageService messageService;
-
-    @Autowired
-    private EventRepository eventRepository;
-
-    @Autowired
-    private TaskScheduler taskScheduler;
-
-    @Autowired
     private MessageSource messageSource;
+
+    @Autowired
+    private EventPostProcessService eventPostProcessService;
 
     private Map<String, Queue<Event>> eventMap = new ConcurrentHashMap<>();
 
@@ -45,9 +39,8 @@ public class EventService {
                 event.getArgs().toArray(new String[0]),
                 Locale.CHINA);
         event.setContent(content);
-        eventRepository.save(event);
 
-        postProcessEvent(event);
+        eventPostProcessService.postProcessEvent(event);
     }
 
     public void endEmit() {
@@ -59,32 +52,6 @@ public class EventService {
                 .type(Event.Type.SYSTEM_BULK_END)
                 .correlationId(correlationId)
                 .build();
-        postProcessEvent(endBulk);
+        eventPostProcessService.postProcessEvent(endBulk);
     }
-
-    private void postProcessEvent(Event event) {
-        final String correlationId = event.getCorrelationId();
-        Queue<Event> events = eventMap.computeIfAbsent(correlationId, this::newEventQueue);
-        if(Event.Type.SYSTEM_BULK_END == event.getType()) {
-            sendToMessageService(eventMap.remove(correlationId));
-        } else {
-            events.add(event);
-        }
-    }
-
-    private void sendToMessageService(Queue<Event> events) {
-        messageService.bulkProcessEvent(events);
-    }
-
-    private Queue<Event> newEventQueue(String correlationId) {
-        taskScheduler.schedule(() ->
-                sendToMessageService(eventMap.remove(correlationId)),
-                fallbackTime());
-        return new ConcurrentLinkedQueue<>();
-    }
-
-    private Date fallbackTime() {
-        return new Date(System.currentTimeMillis() + EVENTS_MAX_WINDOW);
-    }
-
 }
