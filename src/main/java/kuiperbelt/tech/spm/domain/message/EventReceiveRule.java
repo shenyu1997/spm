@@ -1,6 +1,8 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.message;
 
 import kuiperbelt.tech.spm.common.BaseEntity;
+import kuiperbelt.tech.spm.domain.event.Event;
+import kuiperbelt.tech.spm.domain.core.Project;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
@@ -8,7 +10,7 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @Builder
-public class MessageReceiveRule {
+public class EventReceiveRule {
 
     private Event.Type type;
 

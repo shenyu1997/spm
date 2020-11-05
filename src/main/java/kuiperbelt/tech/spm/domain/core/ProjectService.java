@@ -2,6 +2,8 @@ package kuiperbelt.tech.spm.domain.core;
 
 import com.google.common.collect.Lists;
 import kuiperbelt.tech.spm.common.UserContextHolder;
+import kuiperbelt.tech.spm.domain.event.Event;
+import kuiperbelt.tech.spm.domain.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;

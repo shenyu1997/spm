@@ -1,7 +1,8 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.event;
 
 import kuiperbelt.tech.spm.common.UserContext;
 import kuiperbelt.tech.spm.common.UserContextHolder;
+import kuiperbelt.tech.spm.domain.message.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.TaskScheduler;

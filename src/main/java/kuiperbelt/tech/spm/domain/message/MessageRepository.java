@@ -1,4 +1,4 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.message;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

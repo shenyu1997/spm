@@ -1,4 +1,4 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

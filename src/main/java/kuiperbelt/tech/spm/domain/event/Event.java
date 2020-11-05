@@ -1,4 +1,4 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.event;
 
 import kuiperbelt.tech.spm.common.BaseEntity;
 import lombok.*;

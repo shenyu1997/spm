@@ -1,6 +1,8 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.message;
 
 import kuiperbelt.tech.spm.common.BaseEntity;
+import kuiperbelt.tech.spm.domain.event.Event;
+import kuiperbelt.tech.spm.domain.idmapping.EntityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,15 +16,15 @@ import java.util.*;
 @Transactional
 public class MessageService {
 
-    private static List<MessageReceiveRule> receiveRules = new ArrayList<>();
+    private static List<EventReceiveRule> receiveRules = new ArrayList<>();
 
     static {
-        receiveRules.add(MessageReceiveRule.builder()
+        receiveRules.add(EventReceiveRule.builder()
                 .type(Event.Type.EXECUTION_STATUS_CHANGED)
                 .participant(true)
                 .build());
 
-        receiveRules.add(MessageReceiveRule.builder()
+        receiveRules.add(EventReceiveRule.builder()
                 .type(Event.Type.PARTICIPANT_CHANGED)
                 .member(true)
                 .build());
@@ -53,7 +55,7 @@ public class MessageService {
     }
 
     private boolean matchRule(Event event, String upn) {
-        for(MessageReceiveRule receiveRule: receiveRules) {
+        for(EventReceiveRule receiveRule: receiveRules) {
             BaseEntity sourceEntity = entityService.getEntity(event.getSource());
             if(receiveRule.evaluate(event, upn, sourceEntity)) {
                 return true;

@@ -1,6 +1,10 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.idmapping;
 
 import kuiperbelt.tech.spm.common.BaseEntity;
+import kuiperbelt.tech.spm.domain.event.Event;
+import kuiperbelt.tech.spm.domain.event.EventRepository;
+import kuiperbelt.tech.spm.domain.core.Project;
+import kuiperbelt.tech.spm.domain.core.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;

@@ -1,12 +1,11 @@
-package kuiperbelt.tech.spm.domain.core;
+package kuiperbelt.tech.spm.domain.message;
 
 import kuiperbelt.tech.spm.common.BaseEntity;
+import kuiperbelt.tech.spm.domain.event.Event;
 import lombok.*;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import java.util.List;
 
 @Getter
