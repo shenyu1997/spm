@@ -2,6 +2,7 @@ package tech.kuiperbelt.spm.domain.message;
 
 import tech.kuiperbelt.spm.common.BaseEntity;
 import tech.kuiperbelt.spm.domain.event.Event;
+import tech.kuiperbelt.spm.domain.event.EventService;
 import tech.kuiperbelt.spm.domain.idmapping.IdMappingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,6 +38,9 @@ public class MessageService {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private EventService eventService;
 
 
     public void bulkProcessEvent(Queue<Event> events) {
@@ -80,5 +86,14 @@ public class MessageService {
 
     private List<String> getAllCandidate() {
         return Arrays.asList("yu.shen","huanhuan.dong","yongjian.sha");
+    }
+
+    public List<Event> findMessageEvents(Long id) {
+        return messageRepository.findById(id)
+                .map(Message::getEvents)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(eventService::enhance)
+                .collect(Collectors.toList());
     }
 }

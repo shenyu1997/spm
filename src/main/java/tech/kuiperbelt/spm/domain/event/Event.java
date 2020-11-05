@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.Transient;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class Event extends BaseEntity {
 
     private Long source;
 
+    @Transient
     private String content;
 
     private LocalDateTime timestamp;
