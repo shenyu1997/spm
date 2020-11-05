@@ -37,19 +37,19 @@ public class EventReceiveRule {
         if(subType != null && subType != event.getSubType()) {
             return false;
         }
-        if(owner != null && owner && Objects.equals(upn,project.getOwner())) {
+        if(owner != null && owner && !Objects.equals(upn,project.getOwner())) {
             return false;
         }
 
-        if(manager != null && manager && Objects.equals(upn,project.getManager())) {
+        if(manager != null && manager && !Objects.equals(upn,project.getManager())) {
             return false;
         }
-        if(participant != null && participant &&
-                project.getManager() !=null &&
-                project.getManager().contains(upn)) {
+        if(member != null && member &&
+                (project.getMembers() == null ||
+                !project.getMembers().contains(upn))) {
             return false;
         }
-        if(participant != null && participant && project.getParticipants().contains(upn)) {
+        if(participant != null && participant && !project.getParticipants().contains(upn)) {
             return false;
         }
         return true;

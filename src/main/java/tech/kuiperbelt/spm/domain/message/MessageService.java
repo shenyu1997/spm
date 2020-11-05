@@ -22,7 +22,7 @@ public class MessageService {
 
     static {
         receiveRules.add(EventReceiveRule.builder()
-                .type(Event.Type.EXECUTION_STATUS_CHANGED)
+                .type(Event.Type.INFORMATION_CHANGED)
                 .participant(true)
                 .build());
 

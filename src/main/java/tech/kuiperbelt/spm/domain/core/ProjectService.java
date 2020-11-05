@@ -46,7 +46,7 @@ public class ProjectService {
     @HandleAfterCreate
     public void postHandleProjectCreate(Project project) {
         eventService.emit(Event.builder()
-                .type(Event.Type.EXECUTION_STATUS_CHANGED)
+                .type(Event.Type.INFORMATION_CHANGED)
                 .subType(EVENT_PROJECT_CREATED)
                 .source(project.getId())
                 .args(Lists.newArrayList(project.getName()))

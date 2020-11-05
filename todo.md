@@ -8,5 +8,5 @@
 
 ### Next
 
-- Us, Modify project
+- Us, Modify project, include modify the owner, the manager, the name
 
