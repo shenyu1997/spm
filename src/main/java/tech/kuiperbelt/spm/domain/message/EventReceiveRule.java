@@ -14,7 +14,7 @@ public class EventReceiveRule {
 
     private Event.Type type;
 
-    private String subType;
+    private String key;
 
     private Boolean owner;
 
@@ -34,7 +34,7 @@ public class EventReceiveRule {
         if(type != null && type != event.getType()) {
             return false;
         }
-        if(subType != null && subType != event.getSubType()) {
+        if(key != null && key != event.getKey()) {
             return false;
         }
         if(owner != null && owner && !Objects.equals(upn,project.getOwner())) {

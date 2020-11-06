@@ -23,7 +23,7 @@ public class Event extends BaseEntity {
 
     private Type type;
 
-    private String subType;
+    private String key;
 
     private String triggeredMan;
 

@@ -47,7 +47,7 @@ public class ProjectService {
     public void postHandleProjectCreate(Project project) {
         eventService.emit(Event.builder()
                 .type(Event.Type.INFORMATION_CHANGED)
-                .subType(EVENT_PROJECT_CREATED)
+                .key(EVENT_PROJECT_CREATED)
                 .source(project.getId())
                 .args(Lists.newArrayList(project.getName()))
                 .build());
@@ -55,7 +55,7 @@ public class ProjectService {
         if(!StringUtils.isEmpty(project.getOwner())) {
             eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .subType(EVENT_PROJECT_OWNER_CHANGED)
+                    .key(EVENT_PROJECT_OWNER_CHANGED)
                     .source(project.getId())
                     .args(Lists.newArrayList(project.getName(), project.getOwner()))
                     .build());
@@ -65,7 +65,7 @@ public class ProjectService {
         if(!StringUtils.isEmpty(project.getManager())) {
             eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .subType(EVENT_PROJECT_MANAGER_CHANGED)
+                    .key(EVENT_PROJECT_MANAGER_CHANGED)
                     .source(project.getId())
                     .args(Lists.newArrayList(project.getName(), project.getManager()))
                     .build());

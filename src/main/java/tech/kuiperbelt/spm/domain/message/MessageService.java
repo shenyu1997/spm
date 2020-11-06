@@ -43,9 +43,6 @@ public class MessageService {
 
 
     public void bulkProcessEvent(Queue<Event> events) {
-        if(CollectionUtils.isEmpty(events)) {
-            return;
-        }
         log.debug("MessageService.bulkProcessEvent: {}", events);
         List<String> allCandidate = getAllCandidate();
         for(String upn: allCandidate) {

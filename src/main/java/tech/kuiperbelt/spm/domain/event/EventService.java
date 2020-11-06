@@ -62,7 +62,7 @@ public class EventService {
     }
 
     public Event enhance(Event event) {
-        String content = messageSource.getMessage(event.getSubType(),
+        String content = messageSource.getMessage(event.getKey(),
                 event.getArgs().toArray(new String[0]),
                 FIX_LOCALE);
         event.setContent(content);
