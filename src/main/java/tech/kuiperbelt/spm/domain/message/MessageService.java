@@ -54,14 +54,14 @@ public class MessageService {
         }
         List<String> allCandidate = getAllCandidate();
         for(String upn: allCandidate) {
-            List<Event> interestedEvent = new ArrayList<>();
+            List<Event> interestedEvents = new ArrayList<>();
             for(Event event : events) {
                 if(isNotTriggerMan(event, upn) && matchRule(event, upn)) {
-                    interestedEvent.add(event);
+                    interestedEvents.add(event);
                 }
             }
-            if(!CollectionUtils.isEmpty(interestedEvent)) {
-                sendMessageTo(interestedEvent, upn);
+            if(!CollectionUtils.isEmpty(interestedEvents)) {
+                sendMessageTo(interestedEvents, upn);
             }
         }
     }
