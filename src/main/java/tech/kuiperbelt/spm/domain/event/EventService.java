@@ -1,14 +1,18 @@
 package tech.kuiperbelt.spm.domain.event;
 
-import tech.kuiperbelt.spm.common.UserContext;
-import tech.kuiperbelt.spm.common.UserContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tech.kuiperbelt.spm.common.UserContext;
+import tech.kuiperbelt.spm.common.UserContextHolder;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Transactional
@@ -27,7 +31,8 @@ public class EventService {
     private MessageSource messageSource;
 
     @Autowired
-    private EventPostProcessService eventPostProcessService;
+    private ApplicationEventPublisher applicationEventPublisher;
+
 
     private Map<String, Queue<Event>> eventMap = new ConcurrentHashMap<>();
 
@@ -36,7 +41,7 @@ public class EventService {
         event.setCorrelationId(userContext.getCorrelationId());
         event.setTriggeredMan(userContext.getUpn());
         event.setTimestamp(LocalDateTime.now());
-        eventPostProcessService.postProcessEvent(event);
+        applicationEventPublisher.publishEvent(event);
     }
 
     public void endEmit() {
@@ -48,7 +53,7 @@ public class EventService {
                 .type(Event.Type.SYSTEM_BULK_END)
                 .correlationId(correlationId)
                 .build();
-        eventPostProcessService.postProcessEvent(endBulk);
+        emit(endBulk);
     }
 
     public Optional<Event> findEventById(Long id) {

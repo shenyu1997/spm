@@ -6,6 +6,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 import tech.kuiperbelt.spm.domain.message.MessageService;
 
 import java.util.Date;
@@ -34,6 +35,7 @@ public class EventPostProcessService {
     private Map<String, Queue<Event>> eventMap = new ConcurrentHashMap<>();
 
     @Async
+    @TransactionalEventListener
     public void postProcessEvent(Event event) {
         final String correlationId = event.getCorrelationId();
         Queue<Event> events = eventMap.computeIfAbsent(correlationId, this::newEventQueue);
