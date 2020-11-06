@@ -22,6 +22,17 @@ import java.util.stream.Stream;
 @Table(name = "events")
 public class Event extends BaseEntity {
 
+    public static final String EVENT_PROJECT_CREATED = "event.project.created";
+    public static final String EVENT_PROJECT_OWNER_CHANGED = "event.project.owner.changed";
+    public static final String EVENT_PROJECT_MANAGER_CHANGED = "event.project.manager.changed";
+    public static final String EVENT_PROJECT_NAME_CHANGE = "event.project.name.change";
+    public static final String EVENT_PROJECT_MEMBER_ADDED = "event.project.member.added";
+    public static final String EVENT_PROJECT_MEMBER_REMOVED = "event.project.member.removed";
+
+    public enum Type {
+        INFORMATION_CHANGED, PARTICIPANT_CHANGED, SCHEDULE_CHANGED, EXECUTION_STATUS_CHANGED, OTHER, SYSTEM_BULK_END
+    }
+
     private String correlationId;
 
     private Type type;
@@ -41,10 +52,6 @@ public class Event extends BaseEntity {
     @ToString.Include
     @ElementCollection
     private List<String> args;
-
-    public enum Type {
-        INFORMATION_CHANGED, PARTICIPANT_CHANGED, SCHEDULE_CHANGED, EXECUTION_STATUS_CHANGED, OTHER, SYSTEM_BULK_END
-    }
 
     public static class EventBuilder {
         private List<String> args;

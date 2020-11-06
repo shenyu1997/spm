@@ -23,13 +23,6 @@ import java.util.Set;
 @RepositoryEventHandler
 public class ProjectService {
 
-    public static final String EVENT_PROJECT_CREATED = "event.project.created";
-    public static final String EVENT_PROJECT_OWNER_CHANGED = "event.project.owner.changed";
-    public static final String EVENT_PROJECT_MANAGER_CHANGED = "event.project.manager.changed";
-
-    public static final String EVENT_PROJECT_NAME_CHANGE = "event.project.name.change";
-    public static final String EVENT_PROJECT_MEMBER_ADDED = "event.project.member.added";
-    public static final String EVENT_PROJECT_MEMBER_REMOVED = "event.project.member.removed";
     @Autowired
     private UserContextHolder userContextHolder;
 
@@ -60,7 +53,7 @@ public class ProjectService {
     public void postHandleProjectCreate(Project project) {
         eventService.emit(Event.builder()
                 .type(Event.Type.INFORMATION_CHANGED)
-                .key(EVENT_PROJECT_CREATED)
+                .key(Event.EVENT_PROJECT_CREATED)
                 .source(project.getId())
                 .args(project.getName())
                 .build());
@@ -68,7 +61,7 @@ public class ProjectService {
         if(!StringUtils.isEmpty(project.getOwner())) {
             eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .key(EVENT_PROJECT_OWNER_CHANGED)
+                    .key(Event.EVENT_PROJECT_OWNER_CHANGED)
                     .source(project.getId())
                     .args(project.getName(), project.getOwner())
                     .build());
@@ -78,7 +71,7 @@ public class ProjectService {
         if(!StringUtils.isEmpty(project.getManager())) {
             eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .key(EVENT_PROJECT_MANAGER_CHANGED)
+                    .key(Event.EVENT_PROJECT_MANAGER_CHANGED)
                     .source(project.getId())
                     .args(project.getName(), project.getManager())
                     .build());
@@ -87,7 +80,7 @@ public class ProjectService {
         if(!CollectionUtils.isEmpty(project.getMembers())) {
             project.getMembers().forEach(upn -> eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .key(EVENT_PROJECT_MEMBER_ADDED)
+                    .key(Event.EVENT_PROJECT_MEMBER_ADDED)
                     .source(project.getId())
                     .args(upn, project.getName())
                     .build()));
@@ -106,7 +99,7 @@ public class ProjectService {
             if(!Objects.equals(previous.getName(), current.getName())) {
                 eventService.emit(Event.builder()
                         .type(Event.Type.INFORMATION_CHANGED)
-                        .key(EVENT_PROJECT_NAME_CHANGE)
+                        .key(Event.EVENT_PROJECT_NAME_CHANGE)
                         .source(current.getId())
                         .args(previous.getName(), current.getName())
                         .build());
@@ -115,7 +108,7 @@ public class ProjectService {
             if(!Objects.equals(previous.getManager(), current.getManager())) {
                 eventService.emit(Event.builder()
                         .type(Event.Type.PARTICIPANT_CHANGED)
-                        .key(EVENT_PROJECT_MANAGER_CHANGED)
+                        .key(Event.EVENT_PROJECT_MANAGER_CHANGED)
                         .source(current.getId())
                         .args(current.getName(), current.getManager())
                         .build());
@@ -124,7 +117,7 @@ public class ProjectService {
             if(!Objects.equals(previous.getOwner(), current.getOwner())) {
                 eventService.emit(Event.builder()
                         .type(Event.Type.PARTICIPANT_CHANGED)
-                        .key(EVENT_PROJECT_OWNER_CHANGED)
+                        .key(Event.EVENT_PROJECT_OWNER_CHANGED)
                         .source(current.getId())
                         .args(current.getName(), current.getOwner())
                         .build());
@@ -135,7 +128,7 @@ public class ProjectService {
             previousMembers.removeAll(new HashSet<>(current.getMembers()));
             previousMembers.forEach(upn -> eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .key(EVENT_PROJECT_MEMBER_REMOVED)
+                    .key(Event.EVENT_PROJECT_MEMBER_REMOVED)
                     .source(previous.getId())
                     .args(upn, previous.getName())
                     .build()));
@@ -145,7 +138,7 @@ public class ProjectService {
             currentMembers.removeAll(new HashSet<>(previous.getMembers()));
             currentMembers.forEach(upn -> eventService.emit(Event.builder()
                     .type(Event.Type.PARTICIPANT_CHANGED)
-                    .key(EVENT_PROJECT_MEMBER_ADDED)
+                    .key(Event.EVENT_PROJECT_MEMBER_ADDED)
                     .source(current.getId())
                     .args(upn, current.getName())
                     .build()));
