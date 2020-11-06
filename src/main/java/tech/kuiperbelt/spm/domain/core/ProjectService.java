@@ -93,7 +93,7 @@ public class ProjectService {
         Optional<Project> previousVersion = auditService.getPreviousVersion(current);
         previousVersion.ifPresent(previous -> {
             if(log.isDebugEnabled()) {
-                log.debug("Previous: {}, current {}", previous, current);
+                log.debug("Previous: {}, current: {}", previous, current);
             }
             // if 'name' is changed
             if(!Objects.equals(previous.getName(), current.getName())) {
