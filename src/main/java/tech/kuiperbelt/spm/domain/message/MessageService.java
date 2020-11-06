@@ -21,15 +21,21 @@ public class MessageService {
     private static List<EventReceiveRule> receiveRules = new ArrayList<>();
 
     static {
+        // all participant will notify INFORMATION_CHANGED
         receiveRules.add(EventReceiveRule.builder()
+                .priority(0)
                 .type(Event.Type.INFORMATION_CHANGED)
                 .participant(true)
                 .build());
 
+        //  all new/removed member will receive notify
         receiveRules.add(EventReceiveRule.builder()
+                .priority(1)
                 .type(Event.Type.PARTICIPANT_CHANGED)
-                .member(true)
+                .key("event.project.member.*")
+                .arg(0)
                 .build());
+
     }
 
     @Autowired
@@ -43,7 +49,9 @@ public class MessageService {
 
 
     public void bulkProcessEvent(Queue<Event> events) {
-        log.debug("MessageService.bulkProcessEvent: {}", events);
+        if(log.isDebugEnabled()) {
+            log.debug("MessageService.bulkProcessEvent: {}", events);
+        }
         List<String> allCandidate = getAllCandidate();
         for(String upn: allCandidate) {
             List<Event> interestedEvent = new ArrayList<>();
@@ -73,6 +81,9 @@ public class MessageService {
     }
 
     private void sendMessageTo(List<Event> interested, String upn) {
+        if(log.isDebugEnabled()) {
+            log.debug("Send message to {}, events {}", upn, interested);
+        }
         Message message = Message.builder()
                 .receiver(upn)
                 .events(interested)

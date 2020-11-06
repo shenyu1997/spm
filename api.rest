@@ -31,4 +31,14 @@ Authorization: Basic {{currentUser}} 123456
 http://localhost:8080/events
 Authorization: Basic {{currentUser}} 123456
 
+### Update Project
+PATCH  http://localhost:8080/projects/6059147580253684832
+Authorization: Basic {{currentUser}} 123456
+
+{
+    "name": "New project"
+}
+
+
+
 

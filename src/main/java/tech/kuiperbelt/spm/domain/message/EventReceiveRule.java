@@ -12,6 +12,8 @@ import java.util.Objects;
 @Builder
 public class EventReceiveRule {
 
+    private int priority;
+
     private Event.Type type;
 
     private String key;
@@ -21,6 +23,8 @@ public class EventReceiveRule {
     private Boolean manager;
 
     private Boolean member;
+
+    private Integer arg;
 
     private Boolean participant;
     public boolean evaluate(Event event, String upn, BaseEntity baseEntity) {
@@ -34,7 +38,7 @@ public class EventReceiveRule {
         if(type != null && type != event.getType()) {
             return false;
         }
-        if(key != null && key != event.getKey()) {
+        if(key != null && !matchKey(event.getKey(), key)) {
             return false;
         }
         if(owner != null && owner && !Objects.equals(upn,project.getOwner())) {
@@ -51,6 +55,30 @@ public class EventReceiveRule {
         }
         if(participant != null && participant && !project.getParticipants().contains(upn)) {
             return false;
+        }
+
+        if(arg != null && !Objects.equals(event.getArgs().get(arg), upn)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param actual event.project.member.add
+     * @param expect event.project.member.*
+     * @return
+     */
+    private boolean matchKey(String actual, String expect) {
+        String[] actualParts = actual.split("\\.");
+        String[] expectParts = expect.split("\\.");
+        if(actualParts.length != expectParts.length) {
+            return false;
+        }
+        for(int i=0; i<expectParts.length; i++) {
+            if(!("*".equals(expectParts[i]) || Objects.equals(actualParts[i], expectParts[i]))) {
+                return false;
+            }
         }
         return true;
     }
