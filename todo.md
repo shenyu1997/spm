@@ -7,6 +7,7 @@
 ### Suspend
 
 ### Next
+- publish event
+- Us, Modify project, include modify the owner, the manager, the name, might need audit record
 
-- Us, Modify project, include modify the owner, the manager, the name
 
