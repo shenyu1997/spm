@@ -54,7 +54,7 @@ public class MessageService {
         }
         List<String> allCandidate = getAllCandidate();
         for(String upn: allCandidate) {
-            List<Event> interestedEvents = new ArrayList<>();
+            List<Event> interestedEvents = new LinkedList<>();
             for(Event event : events) {
                 if(isNotTriggerMan(event, upn) && matchRule(event, upn)) {
                     interestedEvents.add(event);
