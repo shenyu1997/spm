@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 @Table(name = "events")
 public class Event extends BaseEntity {
-    public final static String ENTITY_TYPE = "Event";
 
     private String correlationId;
 

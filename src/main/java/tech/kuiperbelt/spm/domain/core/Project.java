@@ -26,7 +26,6 @@ import java.util.Set;
 @ToString
 @Table(name = "projects")
 public class Project extends BaseEntity implements AuditableEntity {
-    public final static String ENTITY_TYPE = "Project";
 
     private String name;
 

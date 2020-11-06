@@ -6,9 +6,7 @@ import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.kuiperbelt.spm.common.BaseEntity;
-import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.ProjectRepository;
-import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventRepository;
 
 import java.util.Optional;
@@ -17,6 +15,8 @@ import java.util.Optional;
 @Service
 @RepositoryEventHandler
 public class IdMappingService {
+    public final static String ENTITY_TYPE_PROJECT = "Project";
+    public final static String ENTITY_TYPE_EVENT = "Event";
 
     @Autowired
     private IdMappingRepository idMappingRepository;
@@ -40,10 +40,10 @@ public class IdMappingService {
                 .orElseThrow(this::idNotFound);
         Optional<? extends BaseEntity> result;
         switch (byTarget.getType()) {
-            case Project.ENTITY_TYPE:
+            case ENTITY_TYPE_PROJECT:
                 result =  projectRepository.findById(entityId);
                 break;
-            case Event.ENTITY_TYPE:
+            case ENTITY_TYPE_EVENT:
                 result = eventRepository.findById(entityId);
                 break;
             default:
