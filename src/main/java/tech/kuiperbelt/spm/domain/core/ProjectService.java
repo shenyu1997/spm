@@ -1,10 +1,12 @@
 package tech.kuiperbelt.spm.domain.core;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import tech.kuiperbelt.spm.common.AuditService;
@@ -17,10 +19,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+@Setter
 @Slf4j
 @Transactional
 @Service
-@RepositoryEventHandler
+@RepositoryEventHandler()
 public class ProjectService {
 
     @Autowired
@@ -31,6 +34,9 @@ public class ProjectService {
 
     @Autowired
     private AuditService auditService;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @HandleBeforeCreate
     public void preHandleProjectCreate(Project project) {
@@ -88,8 +94,13 @@ public class ProjectService {
         eventService.endEmit();
     }
 
-    @HandleAfterSave
+    @HandleBeforeSave
     public void preHandleProjectSave(Project current) {
+        Assert.isTrue(RunningStatus.STOP != current.getStatus(),"Project can not be modify after STOP");
+    }
+
+    @HandleAfterSave
+    public void postHandleProjectSave(Project current) {
         Optional<Project> previousVersion = auditService.getPreviousVersion(current);
         previousVersion.ifPresent(previous -> {
             if(log.isDebugEnabled()) {
@@ -145,5 +156,11 @@ public class ProjectService {
 
             eventService.endEmit();
         });
+    }
+
+    public void cancelProject(long id) {
+        Project project = projectRepository.getOne(id);
+        project.setStatus(RunningStatus.STOP);
+        projectRepository.save(project);
     }
 }

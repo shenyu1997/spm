@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 
 ### View my Projects
-GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING
+GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING,STOP
 Authorization: Basic {{currentUser}} 123456
 
 ### List Projects
@@ -38,6 +38,15 @@ Authorization: Basic {{currentUser}} 123456
 {
     "name": "New project 333",
     "members":["huanhuan.dong"]
+}
+
+### Cancel a project
+
+PATCH  http://localhost:8080/projects/3394581405255253323
+Authorization: Basic {{currentUser}} 123456
+
+{
+    "status":"STOP"
 }
 
 
