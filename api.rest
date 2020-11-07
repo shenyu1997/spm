@@ -14,8 +14,8 @@ Content-Type: application/json
     "members":["huanhuan.dong","yongjian.sha"]
 }
 
-### Find my Projects
-GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}
+### View my Projects
+GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING
 Authorization: Basic {{currentUser}} 123456
 
 ### List Projects
@@ -32,11 +32,12 @@ http://localhost:8080/events
 Authorization: Basic {{currentUser}} 123456
 
 ### Update Project
-PATCH  http://localhost:8080/projects/6059147580253684832
+PATCH  http://localhost:8080/projects/4781467596765545898
 Authorization: Basic {{currentUser}} 123456
 
 {
-    "name": "New project"
+    "name": "New project 333",
+    "members":["huanhuan.dong"]
 }
 
 
