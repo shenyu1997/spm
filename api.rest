@@ -1,4 +1,9 @@
 @currentUser=yu.shen
+@currentProject=6133615428639830998
+
+### Ping
+GET http://localhost:8080/ping
+Authorization: Basic {{currentUser}} 123456
 
 ### Home
 GET http://localhost:8080/ 
@@ -15,7 +20,11 @@ Content-Type: application/json
 }
 
 ### View my Projects
-GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING,STOP
+GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING
+Authorization: Basic {{currentUser}} 123456
+
+### View a Projects
+GET http://localhost:8080/projects/{{currentProject}}
 Authorization: Basic {{currentUser}} 123456
 
 ### List Projects
@@ -32,7 +41,7 @@ http://localhost:8080/events
 Authorization: Basic {{currentUser}} 123456
 
 ### Update Project
-PATCH  http://localhost:8080/projects/4781467596765545898
+PATCH http://localhost:8080/projects/{{currentProject}}
 Authorization: Basic {{currentUser}} 123456
 
 {
@@ -41,13 +50,12 @@ Authorization: Basic {{currentUser}} 123456
 }
 
 ### Cancel a project
-
-PATCH  http://localhost:8080/projects/3394581405255253323
+POST http://localhost:8080/projects/{{currentProject}}/actions/cancel
 Authorization: Basic {{currentUser}} 123456
 
-{
-    "status":"STOP"
-}
+### Delete a project
+DELETE http://localhost:8080/projects/{{currentProject}}/actions/cancel
+Authorization: Basic {{currentUser}} 123456
 
 
 

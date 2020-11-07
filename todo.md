@@ -15,7 +15,7 @@ Aa a Project owner, or mamager I can delete/cancel my project, delete will drop 
 - Add action cancel (done)
 - Can not modify project after STOP, 400 should be return (done)
 - Notify all participants that the project was cancel.  (done)
-- Delete project, and notify all participants
+- Delete project, and notify all participants (done)
 
 refine message rule and event
 

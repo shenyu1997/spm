@@ -41,6 +41,8 @@ public class Project extends BaseEntity implements AuditableEntity {
     @Enumerated(EnumType.STRING)
     private RunningStatus status;
 
+    private boolean cancelled;
+
     @JsonIgnore
     @Embedded
     @Delegate

@@ -100,6 +100,12 @@ public class ProjectService {
         Assert.isTrue(RunningStatus.STOP != current.getStatus(),"Project can not be modify after STOP");
     }
 
+    @HandleBeforeDelete
+    public void preHandleProjectDelete(Project current) {
+        Assert.isTrue(RunningStatus.STOP == current.getStatus() && current.isCancelled(),
+                "Only Cancelled Project can be deleted");
+    }
+
     @HandleAfterSave
     public void postHandleProjectSave(Project current) {
         if(RunningStatus.STOP == current.getStatus()) {
@@ -138,7 +144,6 @@ public class ProjectService {
                         .args(current.getName(), current.getOwner())
                         .build());
             }
-
             // if 'member' was removed
             Set<String> previousMembers = new HashSet<>(previous.getMembers());
             previousMembers.removeAll(new HashSet<>(current.getMembers()));
@@ -174,6 +179,7 @@ public class ProjectService {
 
         // Do action
         project.setStatus(RunningStatus.STOP);
+        project.setCancelled(true);
         projectRepository.save(project);
 
         // Send event to all participants
