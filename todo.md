@@ -13,7 +13,10 @@
 Delete/cancel a projct
 Aa a Project owner, or mamager I can delete/cancel my project, delete will drop all of project data. related data should be dropped cascadelly; cancel will mark project as 'STOP', related person will receive Message.
 - Add action cancel (done)
-- Can not modify project after STOP, 400 should be return (doing)
-- Notify all participants that the project was cancel.  (todo)
+- Can not modify project after STOP, 400 should be return (done)
+- Notify all participants that the project was cancel.  (done)
+- Delete project, and notify all participants
+
+refine message rule and event
 
 

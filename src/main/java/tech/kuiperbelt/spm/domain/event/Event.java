@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 public class Event extends BaseEntity {
 
     public static final String EVENT_PROJECT_CREATED = "event.project.created";
+    public static final String EVENT_PROJECT_CANCELED = "event.project.canceled";
+    public static final String EVENT_PROJECT_REMOVED = "event.project.removed";
     public static final String EVENT_PROJECT_OWNER_CHANGED = "event.project.owner.changed";
     public static final String EVENT_PROJECT_MANAGER_CHANGED = "event.project.manager.changed";
     public static final String EVENT_PROJECT_NAME_CHANGE = "event.project.name.change";

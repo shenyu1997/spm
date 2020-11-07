@@ -28,12 +28,19 @@ public class MessageService {
                 .participant(true)
                 .build());
 
-        //  all new/removed member will receive notify
+        // all new/removed member will receive notify
         receiveRules.add(EventReceiveRule.builder()
                 .priority(1)
                 .type(Event.Type.PARTICIPANT_CHANGED)
                 .key("event.project.member.*")
                 .arg(0)
+                .build());
+
+        // all participants will care the project be canceled
+        receiveRules.add(EventReceiveRule.builder()
+                .priority(2)
+                .participant(true)
+                .key("event.project.*")
                 .build());
 
     }

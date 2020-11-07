@@ -3,6 +3,7 @@ package tech.kuiperbelt.spm.common;
 import org.hibernate.Session;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
 import org.hibernate.envers.query.AuditQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,9 @@ public class AuditService {
         if(!previousVersion.isPresent()) {
             return Optional.empty();
         }
-        AuditQuery auditQuery = reader.createQuery().forEntitiesAtRevision(current.getClass(), previousVersion.get());
+        AuditQuery auditQuery = reader.createQuery()
+                .forEntitiesAtRevision(current.getClass(), previousVersion.get())
+                .add(AuditEntity.id().eq(current.getId()));
         T t = (T)auditQuery.getSingleResult();
         return Optional.of(t);
     }
