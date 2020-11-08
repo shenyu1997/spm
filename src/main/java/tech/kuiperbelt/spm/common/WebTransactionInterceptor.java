@@ -3,6 +3,7 @@ package tech.kuiperbelt.spm.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -12,6 +13,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
+import tech.kuiperbelt.spm.domain.event.Event;
 
 @Slf4j
 @Component
@@ -19,6 +21,9 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
 
     @Autowired
     private PlatformTransactionManager platformTransactionManager;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     private ThreadLocal<TransactionStatus> transactionStatusThreadLocal = new ThreadLocal<>();
 
@@ -39,6 +44,7 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
 
     @Override
     public void afterCompletion(WebRequest webRequest, Exception ex) throws Exception {
+        applicationEventPublisher.publishEvent(Event.BULK_END);
         TransactionStatus status = transactionStatusThreadLocal.get();
         try {
             if(status.isCompleted()) {

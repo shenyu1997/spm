@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 @Table(name = "events")
 public class Event extends BaseEntity {
 
+    public static Signal BULK_END = new Signal();
+
     private String correlationId;
 
     @Enumerated(EnumType.STRING)
@@ -48,6 +50,7 @@ public class Event extends BaseEntity {
         }
     }
 
+    public static class Signal {}
 }
 
 

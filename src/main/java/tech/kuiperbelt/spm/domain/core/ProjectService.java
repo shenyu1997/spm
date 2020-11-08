@@ -89,7 +89,6 @@ public class ProjectService {
                     .args(upn, project.getName())
                     .build()));
         }
-        eventService.endEmit();
     }
 
     @HandleBeforeSave
@@ -150,7 +149,6 @@ public class ProjectService {
                     .args(upn, current.getName())
                     .build()));
 
-            eventService.endEmit();
         });
     }
 
@@ -167,7 +165,6 @@ public class ProjectService {
                 .source(tobeRemoved.getId())
                 .args(tobeRemoved.getName())
                 .build());
-        eventService.endEmit();
     }
 
 
@@ -191,6 +188,5 @@ public class ProjectService {
                 .source(project.getId())
                 .args(project.getName())
                 .build());
-        eventService.endEmit();
     }
 }
