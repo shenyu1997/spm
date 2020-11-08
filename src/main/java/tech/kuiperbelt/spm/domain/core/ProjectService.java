@@ -97,12 +97,6 @@ public class ProjectService {
         Assert.isTrue(RunningStatus.STOP != current.getStatus(),"Project can not be modify after STOP");
     }
 
-    @HandleBeforeDelete
-    public void preHandleProjectDelete(Project current) {
-        Assert.isTrue(RunningStatus.STOP == current.getStatus() && current.isCancelled(),
-                "Only Cancelled Project can be deleted");
-    }
-
     @HandleAfterSave
     public void postHandleProjectSave(Project current) {
         if(RunningStatus.STOP == current.getStatus()) {
@@ -159,6 +153,22 @@ public class ProjectService {
             eventService.endEmit();
         });
     }
+
+    @HandleBeforeDelete
+    public void preHandleProjectDelete(Project current) {
+        Assert.isTrue(RunningStatus.STOP == current.getStatus() && current.isCancelled(),
+                "Only Cancelled Project can be deleted");
+    }
+
+    @HandleAfterDelete
+    public void postHandleProjectDelete(Project tobeRemoved) {
+        eventService.emit(Event.builder()
+                .type(EventType.EVENT_PROJECT_REMOVED)
+                .args(tobeRemoved.getName())
+                .build());
+        eventService.endEmit();
+    }
+
 
     public void cancelProject(long id) {
         UserContext userContext = userContextHolder.getUserContext();

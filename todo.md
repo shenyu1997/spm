@@ -23,6 +23,6 @@ refine message rule and event, save event args in array
 - args saved in one field  (todo)
 - type + key => enum (done)
 - remove priority (done)
-- send project.removed event (todo)
+- send project.removed event (done)
 
 
