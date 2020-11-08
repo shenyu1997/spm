@@ -50,7 +50,7 @@ public class EventService {
 
     public void endEmit(String correlationId) {
         Event endBulk = Event.builder()
-                .type(Event.Type.SYSTEM_BULK_END)
+                .type(EventType.SYSTEM_BULK_END)
                 .correlationId(correlationId)
                 .build();
         emit(endBulk);
@@ -62,7 +62,7 @@ public class EventService {
     }
 
     public Event enhance(Event event) {
-        String content = messageSource.getMessage(event.getKey(),
+        String content = messageSource.getMessage(event.getType().key(),
                 event.getArgs().toArray(new String[0]),
                 FIX_LOCALE);
         event.setContent(content);

@@ -1,21 +1,16 @@
-package tech.kuiperbelt.spm.domain.message;
+package tech.kuiperbelt.spm.domain.message.rule;
 
-import tech.kuiperbelt.spm.common.BaseEntity;
-import tech.kuiperbelt.spm.domain.event.Event;
-import tech.kuiperbelt.spm.domain.core.Project;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import tech.kuiperbelt.spm.common.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.Project;
+import tech.kuiperbelt.spm.domain.event.Event;
 
 import java.util.Objects;
 
 @AllArgsConstructor
 @Builder
-public class EventReceiveRule {
-
-    private int priority;
-
-    private Event.Type type;
-
+public class ProjectEventReceiveRule {
     private String key;
 
     private Boolean owner;
@@ -24,9 +19,10 @@ public class EventReceiveRule {
 
     private Boolean member;
 
-    private Integer arg;
-
     private Boolean participant;
+
+    private Integer args;
+
     public boolean evaluate(Event event, String upn, BaseEntity baseEntity) {
         if(baseEntity instanceof Project) {
             return evaluate(event, upn, (Project) baseEntity);
@@ -35,32 +31,35 @@ public class EventReceiveRule {
     }
 
     public boolean evaluate(Event event, String upn, Project project) {
-        if(type != null && type != event.getType()) {
-            return false;
-        }
-        if(key != null && !matchKey(event.getKey(), key)) {
-            return false;
-        }
-        if(owner != null && owner && !Objects.equals(upn,project.getOwner())) {
+        if(key != null && !matchKey(event.getType().key(), key)) {
             return false;
         }
 
-        if(manager != null && manager && !Objects.equals(upn,project.getManager())) {
-            return false;
+        // match upn
+        if(owner != null && owner && Objects.equals(upn,project.getOwner())) {
+            return true;
+        }
+        if(manager != null && manager && Objects.equals(upn,project.getManager())) {
+            return true;
         }
         if(member != null && member &&
-                (project.getMembers() == null ||
-                !project.getMembers().contains(upn))) {
-            return false;
+                (project.getMembers() != null &&
+                project.getMembers().contains(upn))) {
+            return true;
         }
-        if(participant != null && participant && !project.getParticipants().contains(upn)) {
-            return false;
+        if(participant != null && participant && project.getParticipants().contains(upn)) {
+            return true;
         }
 
-        if(arg != null && !Objects.equals(event.getArgs().get(arg), upn)) {
-            return false;
+        if(args != null && matchArgs(event, upn)) {
+            return true;
         }
-        return true;
+        return false;
+    }
+
+    private boolean matchArgs(Event event, String upn) {
+        String arg = event.getArgs().get(this.args);
+        return Objects.equals(arg, upn);
     }
 
     /**

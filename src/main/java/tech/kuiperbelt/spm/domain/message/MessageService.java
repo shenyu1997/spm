@@ -9,6 +9,7 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventService;
 import tech.kuiperbelt.spm.domain.idmapping.IdMappingService;
+import tech.kuiperbelt.spm.domain.message.rule.ProjectEventReceiveRule;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,31 +19,41 @@ import java.util.stream.Collectors;
 @Transactional
 public class MessageService {
 
-    private static List<EventReceiveRule> receiveRules = new ArrayList<>();
+    private static List<ProjectEventReceiveRule> receiveRules = new ArrayList<>();
 
     static {
-        // all participant will notify INFORMATION_CHANGED
-        receiveRules.add(EventReceiveRule.builder()
-                .priority(0)
-                .type(Event.Type.INFORMATION_CHANGED)
+        // project.create/project.removed/project.canceled
+        receiveRules.add(ProjectEventReceiveRule.builder()
+                .key("event.project.*")
                 .participant(true)
+                .build());
+
+        // event.project.owner.changed
+        receiveRules.add(ProjectEventReceiveRule.builder()
+                .key("event.project.owner.changed")
+                .owner(true)
+                .manager(true)
+                .build());
+
+        //event.project.manager.changed
+        receiveRules.add(ProjectEventReceiveRule.builder()
+                .key("event.project.manager.changed")
+                .owner(true)
+                .manager(true)
                 .build());
 
         // all new/removed member will receive notify
-        receiveRules.add(EventReceiveRule.builder()
-                .priority(1)
-                .type(Event.Type.PARTICIPANT_CHANGED)
+        receiveRules.add(ProjectEventReceiveRule.builder()
                 .key("event.project.member.*")
-                .arg(0)
+                .manager(true)
+                .args(0)
                 .build());
 
-        // all participants will care the project be canceled
-        receiveRules.add(EventReceiveRule.builder()
-                .priority(2)
-                .participant(true)
-                .key("event.project.*")
+        // event.project.properties.*.change
+        receiveRules.add(ProjectEventReceiveRule.builder()
+                .key("event.project.properties.*.change")
+                .member(true)
                 .build());
-
     }
 
     @Autowired
@@ -74,7 +85,7 @@ public class MessageService {
     }
 
     private boolean matchRule(Event event, String upn) {
-        for(EventReceiveRule receiveRule: receiveRules) {
+        for(ProjectEventReceiveRule receiveRule: receiveRules) {
             BaseEntity sourceEntity = idMappingService.getEntity(event.getSource());
             if(receiveRule.evaluate(event, upn, sourceEntity)) {
                 return true;

@@ -45,7 +45,7 @@ public class EventPostProcessService {
     public void receiveEvent(Event event) {
         final String correlationId = event.getCorrelationId();
         Queue<Event> events = eventMap.computeIfAbsent(correlationId, this::newEventQueue);
-        if(Event.Type.SYSTEM_BULK_END == event.getType()) {
+        if(EventType.SYSTEM_BULK_END == event.getType()) {
             processingEvents(eventMap.remove(correlationId), false);
         } else {
             events.add(event);

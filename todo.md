@@ -6,9 +6,6 @@
 - RF, Calculate content field 
 - publish event
 - Us, Modify project, include modify the owner, the manager, the name, might need audit record
-### Suspend
-
-### Next
 
 Delete/cancel a projct
 Aa a Project owner, or mamager I can delete/cancel my project, delete will drop all of project data. related data should be dropped cascadelly; cancel will mark project as 'STOP', related person will receive Message.
@@ -17,6 +14,15 @@ Aa a Project owner, or mamager I can delete/cancel my project, delete will drop 
 - Notify all participants that the project was cancel.  (done)
 - Delete project, and notify all participants (done)
 
-refine message rule and event
+### Suspend
+
+### Next
+
+
+refine message rule and event, save event args in array
+- args saved in one field  (todo)
+- type + key => enum (done)
+- remove priority (done)
+- send project.removed event (todo)
 
 
