@@ -2,6 +2,7 @@ package tech.kuiperbelt.spm.domain.idmapping;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleAfterCreate;
+import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,25 +36,23 @@ public class IdMappingService {
                 .build());
     }
 
-    public <T extends BaseEntity> T getEntity(Long entityId) {
-        IdMapping byTarget = idMappingRepository.findById(entityId)
-                .orElseThrow(this::idNotFound);
-        Optional<? extends BaseEntity> result;
-        switch (byTarget.getType()) {
-            case ENTITY_TYPE_PROJECT:
-                result =  projectRepository.findById(entityId);
-                break;
-            case ENTITY_TYPE_EVENT:
-                result = eventRepository.findById(entityId);
-                break;
-            default:
-                result = Optional.empty();
-        }
-        return (T) result
-                .orElseThrow(this::idNotFound);
+    @HandleAfterDelete
+    public void postHandleEntityDelete(BaseEntity entityToBeDelete) {
+        idMappingRepository.deleteById(entityToBeDelete.getId());
     }
 
-    private IllegalArgumentException idNotFound() {
-        return new IllegalArgumentException("Id: is not found within all entities");
+    public Optional<? extends BaseEntity> findEntity(Long entityId) {
+        Optional<IdMapping> byTarget = idMappingRepository.findById(entityId);
+        if(!byTarget.isPresent()) {
+            return Optional.empty();
+        }
+        switch (byTarget.get().getType()) {
+            case ENTITY_TYPE_PROJECT:
+                return projectRepository.findById(entityId);
+            case ENTITY_TYPE_EVENT:
+                return  eventRepository.findById(entityId);
+            default:
+                return Optional.empty();
+        }
     }
 }

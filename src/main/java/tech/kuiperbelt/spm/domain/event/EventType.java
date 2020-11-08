@@ -13,6 +13,7 @@ public enum EventType implements RoutingKey {
     PROJECT_MEMBER_REMOVED("event.project.member.removed"),
 
     PROJECT_PROPERTIES_NAME_CHANGE("event.project.properties.name.change"),
+
     SYSTEM_BULK_END("event.system.bulk.end");
 
     private final String key;

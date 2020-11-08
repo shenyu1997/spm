@@ -86,8 +86,11 @@ public class MessageService {
 
     private boolean matchRule(Event event, String upn) {
         for(ProjectEventReceiveRule receiveRule: receiveRules) {
-            BaseEntity sourceEntity = idMappingService.getEntity(event.getSource());
-            if(receiveRule.evaluate(event, upn, sourceEntity)) {
+            Optional<? extends BaseEntity> sourceEntityOptional = idMappingService.findEntity(event.getSource());
+            if(!sourceEntityOptional.isPresent()) {
+                return false;
+            }
+            if(receiveRule.evaluate(event, upn, sourceEntityOptional.get())) {
                 return true;
             }
         }

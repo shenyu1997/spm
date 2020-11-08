@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.common.UserContext;
 import tech.kuiperbelt.spm.common.UserContextHolder;
 
@@ -37,6 +38,9 @@ public class EventService {
     private Map<String, Queue<Event>> eventMap = new ConcurrentHashMap<>();
 
     public void emit(Event event) {
+        Assert.notNull(event.getType(), "Type must not null");
+        Assert.notNull(event.getSource(), "Source must not null");
+
         UserContext userContext = userContextHolder.getUserContext();
         event.setCorrelationId(userContext.getCorrelationId());
         event.setTriggeredMan(userContext.getUpn());
@@ -51,6 +55,7 @@ public class EventService {
     public void endEmit(String correlationId) {
         Event endBulk = Event.builder()
                 .type(EventType.SYSTEM_BULK_END)
+                .source(0l)
                 .correlationId(correlationId)
                 .build();
         emit(endBulk);

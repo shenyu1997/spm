@@ -24,5 +24,6 @@ refine message rule and event, save event args in array
 - type + key => enum (done)
 - remove priority (done)
 - send project.removed event (done)
+- remove endEmit
 
 

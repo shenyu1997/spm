@@ -164,6 +164,7 @@ public class ProjectService {
     public void postHandleProjectDelete(Project tobeRemoved) {
         eventService.emit(Event.builder()
                 .type(EventType.EVENT_PROJECT_REMOVED)
+                .source(tobeRemoved.getId())
                 .args(tobeRemoved.getName())
                 .build());
         eventService.endEmit();

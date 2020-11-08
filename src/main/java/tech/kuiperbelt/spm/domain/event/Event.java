@@ -47,6 +47,7 @@ public class Event extends BaseEntity {
             return this;
         }
     }
+
 }
 
 
