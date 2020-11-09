@@ -20,10 +20,11 @@ Aa a Project owner, or mamager I can delete/cancel my project, delete will drop 
 
 
 refine message rule and event, save event args in array
-- args saved in one field  (todo)
+- args saved in one field  (done)
 - type + key => enum (done)
 - remove priority (done)
 - send project.removed event (done)
 - remove endEmit (done)
+- remove enum EventType (todo)
 
 
