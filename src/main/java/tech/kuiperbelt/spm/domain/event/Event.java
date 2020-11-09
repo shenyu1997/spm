@@ -6,6 +6,8 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.Queue;
 
 @Getter
 @Setter
@@ -28,7 +30,9 @@ public class Event extends BaseEntity {
 
     public static final String PROJECT_PROPERTIES_NAME_CHANGE = "event.project.properties.name.change";
 
+    public static Signal BULK_BEGIN = new Signal();
     public static Signal BULK_END = new Signal();
+
 
     private String correlationId;
 
@@ -68,6 +72,8 @@ public class Event extends BaseEntity {
     }
 
     public static class Signal {}
+
+    public static class EventQueue extends LinkedList<Event> implements Queue<Event> {}
 }
 
 

@@ -52,6 +52,7 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
         if(log.isDebugEnabled()) {
             log.debug("SPM-DATA-REST-TX start");
         }
+        applicationEventPublisher.publishEvent(Event.BULK_BEGIN);
     }
 
 

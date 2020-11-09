@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,10 +14,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.common.UserContext;
 import tech.kuiperbelt.spm.common.UserContextHolder;
-import tech.kuiperbelt.spm.domain.message.MessageService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Queue;
 
 @Slf4j
 @Transactional
@@ -39,23 +41,35 @@ public class EventService {
     @Autowired
     private TaskExecutor taskExecutor;
 
-    @Autowired
-    private MessageService messageService;
 
+    private ThreadLocal<Event.EventQueue> eventQueue = new ThreadLocal<>();
 
-    private ThreadLocal<Queue<Event>> eventQueue = new ThreadLocal<>();
+    @EventListener
+    public void preparedEventQueue(Event.Signal signal) {
+        if(signal != Event.BULK_BEGIN) {
+            return;
+        }
+        eventQueue.set(new Event.EventQueue());
+    }
 
     @TransactionalEventListener
     public void endBulk(Event.Signal signal) {
+        if(signal != Event.BULK_END) {
+            return;
+        }
         if(eventQueue.get() != null) {
             postProcessingEvents(eventQueue.get());
             eventQueue.remove();
         }
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void cleanEventQueue(Event.Signal signal) {
-        // fallback if tx is rollback
+        if(signal != Event.BULK_END) {
+            return;
+        }
+        // fallback if tx is rollback, can not use AFTER_COMPLETION,
+        // because AFTER_COMPLETION will triggered before AFTER_COMMIT in normal case
         if(eventQueue.get() != null) {
             eventQueue.remove();
         }
@@ -69,9 +83,6 @@ public class EventService {
         event.setCorrelationId(userContext.getCorrelationId());
         event.setTriggeredMan(userContext.getUpn());
         event.setTimestamp(LocalDateTime.now());
-        if(eventQueue.get() == null) {
-            eventQueue.set(new LinkedList<>());
-        }
         eventQueue.get().add(event);
     }
 
@@ -95,7 +106,6 @@ public class EventService {
 
         taskExecutor.execute(() -> {
             eventRepository.saveAll(events);
-            messageService.bulkProcessEvent(events);
             // re-public events to other svc
             events.forEach(applicationEventPublisher::publishEvent);
             applicationEventPublisher.publishEvent(events);
