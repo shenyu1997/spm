@@ -17,13 +17,23 @@ import java.time.LocalDateTime;
 @Table(name = "events")
 public class Event extends BaseEntity {
 
+    public static final String PROJECT_CREATED = "event.project.created";
+    public static final String PROJECT_CANCELED = "event.project.canceled";
+    public static final String EVENT_PROJECT_REMOVED = "event.project.removed";
+
+    public static final String PROJECT_OWNER_CHANGED = "event.project.owner.changed";
+    public static final String PROJECT_MANAGER_CHANGED = "event.project.manager.changed";
+    public static final String PROJECT_MEMBER_ADDED = "event.project.member.added";
+    public static final String PROJECT_MEMBER_REMOVED = "event.project.member.removed";
+
+    public static final String PROJECT_PROPERTIES_NAME_CHANGE = "event.project.properties.name.change";
+
     public static Signal BULK_END = new Signal();
 
     private String correlationId;
 
-    @Enumerated(EnumType.STRING)
     @ToString.Include
-    private EventType type;
+    private String key;
 
     private String triggeredMan;
 

@@ -32,7 +32,7 @@ public class ProjectEventReceiveRule {
     }
 
     public boolean evaluate(Event event, String upn, Project project) {
-        if(key != null && !matchKey(event.getType().key(), key)) {
+        if(key != null && !matchKey(event.getKey(), key)) {
             return false;
         }
 

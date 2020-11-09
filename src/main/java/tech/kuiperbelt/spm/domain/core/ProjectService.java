@@ -14,13 +14,14 @@ import tech.kuiperbelt.spm.common.UserContext;
 import tech.kuiperbelt.spm.common.UserContextHolder;
 import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventService;
-import tech.kuiperbelt.spm.domain.event.EventType;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static tech.kuiperbelt.spm.domain.event.Event.*;
 
 @Setter
 @Slf4j
@@ -61,14 +62,14 @@ public class ProjectService {
     @HandleAfterCreate
     public void postHandleProjectCreate(Project project) {
         eventService.emit(Event.builder()
-                .type(EventType.PROJECT_CREATED)
+                .key(PROJECT_CREATED)
                 .source(project.getId())
                 .args(project.getName())
                 .build());
 
         if(!StringUtils.isEmpty(project.getOwner())) {
             eventService.emit(Event.builder()
-                    .type(EventType.PROJECT_OWNER_CHANGED)
+                    .key(PROJECT_OWNER_CHANGED)
                     .source(project.getId())
                     .args(project.getName(), project.getOwner())
                     .build());
@@ -77,7 +78,7 @@ public class ProjectService {
         // set manager if need
         if(!StringUtils.isEmpty(project.getManager())) {
             eventService.emit(Event.builder()
-                    .type(EventType.PROJECT_MANAGER_CHANGED)
+                    .key(PROJECT_MANAGER_CHANGED)
                     .source(project.getId())
                     .args(project.getName(), project.getManager())
                     .build());
@@ -86,7 +87,7 @@ public class ProjectService {
         if(!CollectionUtils.isEmpty(project.getMembers())) {
             String membersUpn = project.getMembers().stream().collect(Collectors.joining(", "));
             eventService.emit(Event.builder()
-                    .type(EventType.PROJECT_MEMBER_ADDED)
+                    .key(PROJECT_MEMBER_ADDED)
                     .source(project.getId())
                     .args(membersUpn, project.getName(), project.getMembers())
                     .build());
@@ -114,7 +115,7 @@ public class ProjectService {
             // if 'name' is changed
             if(!Objects.equals(previous.getName(), current.getName())) {
                 eventService.emit(Event.builder()
-                        .type(EventType.PROJECT_PROPERTIES_NAME_CHANGE)
+                        .key(PROJECT_PROPERTIES_NAME_CHANGE)
                         .source(current.getId())
                         .args(previous.getName(), current.getName())
                         .build());
@@ -123,7 +124,7 @@ public class ProjectService {
             // if 'manager' is changed
             if(!Objects.equals(previous.getManager(), current.getManager())) {
                 eventService.emit(Event.builder()
-                        .type(EventType.PROJECT_MANAGER_CHANGED)
+                        .key(PROJECT_MANAGER_CHANGED)
                         .source(current.getId())
                         .args(current.getName(), current.getManager())
                         .build());
@@ -132,7 +133,7 @@ public class ProjectService {
             // if 'owner' is changed
             if(!Objects.equals(previous.getOwner(), current.getOwner())) {
                 eventService.emit(Event.builder()
-                        .type(EventType.PROJECT_OWNER_CHANGED)
+                        .key(PROJECT_OWNER_CHANGED)
                         .source(current.getId())
                         .args(current.getName(), current.getOwner())
                         .build());
@@ -143,7 +144,7 @@ public class ProjectService {
             previousMembers.removeAll(new HashSet<>(current.getMembers()));
             String previousMembersUpn = previousMembers.stream().collect(Collectors.joining(", "));
             eventService.emit(Event.builder()
-                    .type(EventType.PROJECT_MEMBER_REMOVED)
+                    .key(PROJECT_MEMBER_REMOVED)
                     .source(previous.getId())
                     .args(previousMembersUpn, previous.getName(), previousMembers)
                     .build());
@@ -153,7 +154,7 @@ public class ProjectService {
             currentMembers.removeAll(new HashSet<>(previous.getMembers()));
             String currentMembersUpn = currentMembers.stream().collect(Collectors.joining(", "));
             eventService.emit(Event.builder()
-                    .type(EventType.PROJECT_MEMBER_ADDED)
+                    .key(PROJECT_MEMBER_ADDED)
                     .source(current.getId())
                     .args(currentMembersUpn, current.getName(), currentMembers)
                     .build());
@@ -169,7 +170,7 @@ public class ProjectService {
     @HandleAfterDelete
     public void postHandleProjectDelete(Project tobeRemoved) {
         eventService.emit(Event.builder()
-                .type(EventType.EVENT_PROJECT_REMOVED)
+                .key(EVENT_PROJECT_REMOVED)
                 .source(tobeRemoved.getId())
                 .args(tobeRemoved.getName())
                 .build());
@@ -192,7 +193,7 @@ public class ProjectService {
 
         // Send event to all participants
         eventService.emit(Event.builder()
-                .type(EventType.PROJECT_CANCELED)
+                .key(PROJECT_CANCELED)
                 .source(project.getId())
                 .args(project.getName())
                 .build());

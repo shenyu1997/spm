@@ -62,7 +62,7 @@ public class EventService {
     }
 
     public void emit(Event event) {
-        Assert.notNull(event.getType(), "Type must not null");
+        Assert.notNull(event.getKey(), "Key must not null");
         Assert.notNull(event.getSource(), "Source must not null");
 
         UserContext userContext = userContextHolder.getUserContext();
@@ -81,7 +81,7 @@ public class EventService {
     }
 
     public Event enhance(Event event) {
-        String content = messageSource.getMessage(event.getType().key(),
+        String content = messageSource.getMessage(event.getKey(),
                 event.getArgs(),
                 FIX_LOCALE);
         event.setContent(content);

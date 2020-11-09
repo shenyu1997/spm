@@ -14,17 +14,18 @@ Aa a Project owner, or mamager I can delete/cancel my project, delete will drop 
 - Notify all participants that the project was cancel.  (done)
 - Delete project, and notify all participants (done)
 
-### Suspend
-
-### Next
-
-
 refine message rule and event, save event args in array
 - args saved in one field  (done)
 - type + key => enum (done)
 - remove priority (done)
 - send project.removed event (done)
 - remove endEmit (done)
-- remove enum EventType (todo)
+- remove enum EventType (done)
+
+### Suspend
+
+### Next
+
+
 
 
