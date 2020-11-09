@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=5703563069821764465
+@currentProject=1810834078290325575
 
 ### Ping
 GET http://localhost:8080/ping
@@ -46,7 +46,7 @@ Authorization: Basic {{currentUser}} 123456
 
 {
     "name": "New project 333",
-    "members":["yongjian.sha"]
+    "members":["huanhuan.dong"]
 }
 
 ### Cancel a project
@@ -57,6 +57,16 @@ Authorization: Basic {{currentUser}} 123456
 DELETE http://localhost:8080/projects/{{currentProject}}
 Authorization: Basic {{currentUser}} 123456
 
+### Add Phase (Planning)
+POST http://localhost:8080/phases
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "Planning",
+    "project":"projects/{{currentProject}}",
+    "plannedEndDate": "2020-10-30"
+}
 
 
 

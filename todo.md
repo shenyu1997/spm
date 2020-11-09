@@ -26,6 +26,12 @@ refine message rule and event, save event args in array
 
 ### Next
 
+Add new phase
+
+As a project manager, I can insert phase in Project Edit view, information I provided: after/before phase, phase name, planned end date. Constraint, planned start date < planned end date .
+
+- Add phase entity
+
 
 
 
