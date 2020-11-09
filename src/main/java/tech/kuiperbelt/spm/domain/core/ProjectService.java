@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Setter
 @Slf4j
@@ -83,12 +84,14 @@ public class ProjectService {
         }
 
         if(!CollectionUtils.isEmpty(project.getMembers())) {
-            project.getMembers().forEach(upn -> eventService.emit(Event.builder()
+            String membersUpn = project.getMembers().stream().collect(Collectors.joining(", "));
+            eventService.emit(Event.builder()
                     .type(EventType.PROJECT_MEMBER_ADDED)
                     .source(project.getId())
-                    .args(upn, project.getName())
-                    .build()));
+                    .args(membersUpn, project.getName(), project.getMembers())
+                    .build());
         }
+
     }
 
     @HandleBeforeSave
@@ -107,6 +110,7 @@ public class ProjectService {
             if(log.isDebugEnabled()) {
                 log.debug("Previous: {}, current: {}", previous, current);
             }
+
             // if 'name' is changed
             if(!Objects.equals(previous.getName(), current.getName())) {
                 eventService.emit(Event.builder()
@@ -115,6 +119,7 @@ public class ProjectService {
                         .args(previous.getName(), current.getName())
                         .build());
             }
+
             // if 'manager' is changed
             if(!Objects.equals(previous.getManager(), current.getManager())) {
                 eventService.emit(Event.builder()
@@ -123,6 +128,7 @@ public class ProjectService {
                         .args(current.getName(), current.getManager())
                         .build());
             }
+
             // if 'owner' is changed
             if(!Objects.equals(previous.getOwner(), current.getOwner())) {
                 eventService.emit(Event.builder()
@@ -131,24 +137,26 @@ public class ProjectService {
                         .args(current.getName(), current.getOwner())
                         .build());
             }
+
             // if 'member' was removed
             Set<String> previousMembers = new HashSet<>(previous.getMembers());
             previousMembers.removeAll(new HashSet<>(current.getMembers()));
-            previousMembers.forEach(upn -> eventService.emit(Event.builder()
+            String previousMembersUpn = previousMembers.stream().collect(Collectors.joining(", "));
+            eventService.emit(Event.builder()
                     .type(EventType.PROJECT_MEMBER_REMOVED)
                     .source(previous.getId())
-                    .args(upn, previous.getName())
-                    .build()));
+                    .args(previousMembersUpn, previous.getName(), previousMembers)
+                    .build());
 
             // if 'member' was added
             Set<String> currentMembers = new HashSet<>(current.getMembers());
             currentMembers.removeAll(new HashSet<>(previous.getMembers()));
-            currentMembers.forEach(upn -> eventService.emit(Event.builder()
+            String currentMembersUpn = currentMembers.stream().collect(Collectors.joining(", "));
+            eventService.emit(Event.builder()
                     .type(EventType.PROJECT_MEMBER_ADDED)
                     .source(current.getId())
-                    .args(upn, current.getName())
-                    .build()));
-
+                    .args(currentMembersUpn, current.getName(), currentMembers)
+                    .build());
         });
     }
 

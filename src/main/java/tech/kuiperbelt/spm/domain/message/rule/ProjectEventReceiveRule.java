@@ -6,6 +6,7 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.event.Event;
 
+import java.util.Collection;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -58,8 +59,12 @@ public class ProjectEventReceiveRule {
     }
 
     private boolean matchArgs(Event event, String upn) {
-        String arg = event.getArgs().get(this.args);
-        return Objects.equals(arg, upn);
+        Object arg = event.getArgs()[this.args];
+        if(arg instanceof Collection) {
+            return ((Collection) arg).contains(upn);
+        } else {
+            return Objects.equals(arg, upn);
+        }
     }
 
     /**

@@ -1,13 +1,11 @@
 package tech.kuiperbelt.spm.domain.event;
 
+import com.google.gson.Gson;
 import lombok.*;
 import tech.kuiperbelt.spm.common.BaseEntity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -37,15 +35,24 @@ public class Event extends BaseEntity {
     private LocalDateTime timestamp;
 
     @ToString.Include
-    @ElementCollection
-    private List<String> args;
+    private String args;
+
+    public Object[] getArgs() {
+        if(args == null) {
+            return new Object[0];
+        }
+        return new Gson().fromJson(args, Object[].class);
+    }
+
+    public void setArgs(Object... args) {
+        this.args = new Gson().toJson(args);
+    }
 
     public static class EventBuilder {
-        private List<String> args;
+        private String args;
 
-        public EventBuilder args(String... args) {
-            this.args = new ArrayList();
-            Stream.of(args).forEach(this.args::add);
+        public EventBuilder args(Object... args) {
+            this.args = new Gson().toJson(args);
             return this;
         }
     }

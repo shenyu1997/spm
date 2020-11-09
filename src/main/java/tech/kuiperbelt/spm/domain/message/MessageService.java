@@ -46,7 +46,7 @@ public class MessageService {
         receiveRules.add(ProjectEventReceiveRule.builder()
                 .key("event.project.member.*")
                 .manager(true)
-                .args(0)
+                .args(2)
                 .build());
 
         // event.project.properties.*.change
