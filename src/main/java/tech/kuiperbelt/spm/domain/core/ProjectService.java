@@ -27,7 +27,7 @@ import static tech.kuiperbelt.spm.domain.event.Event.*;
 @Slf4j
 @Transactional
 @Service
-@RepositoryEventHandler()
+@RepositoryEventHandler
 public class ProjectService {
 
     @Autowired

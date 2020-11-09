@@ -1,18 +1,19 @@
 package tech.kuiperbelt.spm.domain.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Delegate;
 import org.hibernate.envers.Audited;
+import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
 import tech.kuiperbelt.spm.common.AuditableEntity;
 import tech.kuiperbelt.spm.common.BaseEntity;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.util.CollectionUtils;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Set;
 @Table(name = "projects")
 public class Project extends BaseEntity implements AuditableEntity {
 
+    @NotNull
     private String name;
 
     private String description;
