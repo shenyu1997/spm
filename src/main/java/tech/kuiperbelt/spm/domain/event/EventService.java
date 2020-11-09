@@ -53,7 +53,7 @@ public class EventService {
         }
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     public void cleanEventQueue(Event.Signal signal) {
         // fallback if tx is rollback
         if(eventQueue.get() != null) {

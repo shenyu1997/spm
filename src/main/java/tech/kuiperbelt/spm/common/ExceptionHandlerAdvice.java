@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -16,17 +17,22 @@ import java.util.Optional;
 public class ExceptionHandlerAdvice {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorMessage illegalArgumentException(IllegalArgumentException ex) {
-        return ErrorMessage.builder().message(ex.getMessage()).build();
+    public ResponseEntity<ErrorMessage> handle(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest()
+                .body(ErrorMessage.builder()
+                        .message(ex.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorMessage runtimeException(RuntimeException ex) {
+    public ResponseEntity<ErrorMessage> handle(Exception ex) {
         String message = Optional.of(ex.getMessage())
                 .orElse(ex.getClass().getSimpleName());
-        return ErrorMessage.builder().message(message).build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorMessage.builder()
+                        .message(message)
+                        .build());
     }
 
     @Getter
