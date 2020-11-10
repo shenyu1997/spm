@@ -22,10 +22,12 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @ToString
-@Table(name = "phases")
+@Table(name = "phases", uniqueConstraints={@UniqueConstraint(columnNames={"id","seq"})})
 public class Phase extends BaseEntity implements AuditableEntity {
     @NotNull
     private String name;
+
+    private int seq;
 
     @Enumerated(EnumType.STRING)
     private RunningStatus status;
@@ -37,12 +39,9 @@ public class Phase extends BaseEntity implements AuditableEntity {
     @NotNull
     private LocalDate plannedEndDate;
 
-    @NotNull
     @ManyToOne
     private Project project;
 
-    @OneToOne
-    private Phase previous;
 
     @JsonIgnore
     @Embedded

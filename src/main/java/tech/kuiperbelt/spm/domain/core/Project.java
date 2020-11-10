@@ -45,6 +45,9 @@ public class Project extends BaseEntity implements AuditableEntity {
 
     private boolean cancelled;
 
+    @OneToMany(mappedBy = "project")
+    private List<Phase> phases;
+
     @JsonIgnore
     @Embedded
     @Delegate

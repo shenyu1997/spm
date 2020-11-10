@@ -198,4 +198,8 @@ public class ProjectService {
                 .args(project.getName())
                 .build());
     }
+
+    public Project getProjectById(Long projectId) {
+        return projectRepository.getOne(projectId);
+    }
 }

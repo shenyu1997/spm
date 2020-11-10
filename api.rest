@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=1810834078290325575
+@currentProject=1733942397589435067
 
 ### Ping
 GET http://localhost:8080/ping
@@ -58,15 +58,16 @@ DELETE http://localhost:8080/projects/{{currentProject}}
 Authorization: Basic {{currentUser}} 123456
 
 ### Add Phase (Planning)
-POST http://localhost:8080/phases
+POST  http://localhost:8080/projects/{{currentProject}}/phases/actions/append
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
 {
     "name": "Planning",
-    "project":"projects/{{currentProject}}",
+    "plannedStartDate": "2020-10-01",
     "plannedEndDate": "2020-10-30"
 }
+
 
 
 
