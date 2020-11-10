@@ -30,6 +30,8 @@ public class Event extends BaseEntity {
 
     public static final String PROJECT_PROPERTIES_NAME_CHANGE = "event.project.properties.name.change";
 
+    public static final String PROJECT_SCHEDULE_PHASE_APPEND = "event.project.schedule.phase.append";
+
     public static Signal BULK_BEGIN = new Signal();
     public static Signal BULK_END = new Signal();
 
