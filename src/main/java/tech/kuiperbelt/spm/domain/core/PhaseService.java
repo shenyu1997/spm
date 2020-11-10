@@ -2,7 +2,9 @@ package tech.kuiperbelt.spm.domain.core;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.core.annotation.*;
+import org.springframework.data.rest.core.annotation.HandleAfterDelete;
+import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -11,12 +13,9 @@ import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventService;
 
 import java.time.Period;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static tech.kuiperbelt.spm.domain.event.Event.PROJECT_SCHEDULE_PHASE_APPEND;
+import static tech.kuiperbelt.spm.domain.event.Event.PROJECT_SCHEDULE_PHASE_ADDED;
 
 @Transactional
 @Setter
@@ -37,9 +36,7 @@ public class PhaseService {
     public void preHandlePhaseDelete(Phase phase) {
         List<Phase> phases = phase.getProject().getPhases();
         phases.remove(phase);
-        rePlaning(phases.stream()
-                .sorted(Comparator.comparing(Phase::getSeq))
-                .collect(Collectors.toList()));
+        rePlaning(phases);
     }
 
     private void rePlaning(List<Phase> phases) {
@@ -79,30 +76,39 @@ public class PhaseService {
 
     public void appendPhase(Long projectId, Phase phase) {
         Project project = projectService.getProjectById(projectId);
+        phase.setSeq(project.getPhases().size());
+        insertPhase(projectId, phase);
+    }
+
+    public void insertPhase(Long projectId, Phase phase) {
+        Project project = projectService.getProjectById(projectId);
         phase.setProject(project);
         phase.setStatus(RunningStatus.INIT);
 
-        Optional<Phase> lastPhaseOp = phaseRepository.findLastPhase(project);
-        if(lastPhaseOp.isPresent()) {
-            // Add to tail if not first phase
-            Phase lastPhase = lastPhaseOp.get();
-            phase.setSeq(lastPhase.getSeq() + 1);
-            phase.setPlannedStartDate(lastPhase.getPlannedEndDate().plusDays(1));
-        } else {
-            // Add to head if is first
-            phase.setSeq(0);
+        // Check seq in reasonable range
+        Assert.notNull(phase.getSeq(), "Seq can not be null when insert a phase");
+        List<Phase> phases = project.getPhases();
+        Assert.isTrue(phase.getSeq() >= 0 && phase.getSeq() <= phases.size(),
+                "Seq should be in range 0 to " + phases.size());
+
+        if(phase.getSeq() != 0) {
+            phase.setPlannedStartDate(phases.get(phase.getSeq() - 1)
+                    .getPlannedEndDate().plusDays(1));
         }
         validateBeforeSave(phase);
+        phases.add(phase.getSeq(), phase);
+        rePlaning(phases);
         phaseRepository.save(phase);
 
         eventService.emit(Event.builder()
-                .key(PROJECT_SCHEDULE_PHASE_APPEND)
+                .key(PROJECT_SCHEDULE_PHASE_ADDED)
                 .source(phase.getId())
                 .args(project.getName(),
                         phase.getName(),
                         phase.getPlannedStartDate().toString(),
                         phase.getPlannedEndDate().toString())
                 .build());
+
     }
 
     private void validateBeforeSave(Phase phase) {

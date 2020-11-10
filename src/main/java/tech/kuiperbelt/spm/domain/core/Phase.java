@@ -28,7 +28,7 @@ public class Phase extends BaseEntity implements AuditableEntity {
     @NotNull
     private String name;
 
-    private int seq;
+    private Integer seq;
 
     @Enumerated(EnumType.STRING)
     private RunningStatus status;

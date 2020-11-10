@@ -14,10 +14,8 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Audited
 @EntityListeners(AuditListener.class)
@@ -63,5 +61,15 @@ public class Project extends BaseEntity implements AuditableEntity {
         }
         result.add(owner);
         return result;
+    }
+
+    public List<Phase> getPhases() {
+        if(this.phases == null) {
+            return Collections.emptyList();
+        }
+
+        return phases.stream()
+                .sorted(Comparator.comparing(Phase::getSeq))
+                .collect(Collectors.toList());
     }
 }

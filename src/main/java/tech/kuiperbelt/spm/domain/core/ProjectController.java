@@ -27,4 +27,9 @@ public class ProjectController {
         phaseService.appendPhase(id, phase);
     }
 
+    @PostMapping("/{id}/phases/actions/insert")
+    public void insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
+        phaseService.insertPhase(id, phase);
+    }
+
 }
