@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=8447956468171060495
+@currentProject=472927559347452297
 
 ### Ping
 GET http://localhost:8080/ping
@@ -63,11 +63,36 @@ Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
 {
-    "name": "GoGoGo",
-    "plannedEndDate": "2020-09-30",
-    "plannedEndDate": "2020-12-30"
+    "name": "Planning",
+    "plannedStartDate": "2020-09-01",
+    "plannedEndDate": "2020-10-01"
 }
 
+### Add Phase (GOGOGO)
+POST  http://localhost:8080/projects/{{currentProject}}/phases/actions/append
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "GoGoGo",
+    "plannedEndDate": "2020-10-30"
+}
+
+### Add Phase (error)
+POST  http://localhost:8080/projects/{{currentProject}}/phases/actions/append
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "Testing2",
+    "plannedEndDate": "2020-11-20"
+}
+
+@firstPhase=8813888436995375126
+### Delete phase
+DELETE http://localhost:8080/phases/{{firstPhase}}
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
 
 
 

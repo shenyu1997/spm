@@ -1,9 +1,10 @@
 package tech.kuiperbelt.spm.domain.idmapping;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.core.annotation.HandleAfterCreate;
-import org.springframework.data.rest.core.annotation.HandleAfterDelete;
-import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
+import org.springframework.jdbc.core.JdbcOperations;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.kuiperbelt.spm.common.BaseEntity;
@@ -11,15 +12,20 @@ import tech.kuiperbelt.spm.domain.core.PhaseRepository;
 import tech.kuiperbelt.spm.domain.core.ProjectRepository;
 import tech.kuiperbelt.spm.domain.event.EventRepository;
 
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+
+import static tech.kuiperbelt.spm.domain.idmapping.IdMapping.ID_MAPPINGS;
 
 @Transactional
 @Service
-@RepositoryEventHandler
 public class IdMappingService {
     public final static String ENTITY_TYPE_EVENT = "Event";
     public final static String ENTITY_TYPE_PROJECT = "Project";
     public final static String ENTITY_TYPE_PHASE = "Phase";
+    public static final String DELETE_SQL = "delete from " + ID_MAPPINGS + " where id=?";
 
     @Autowired
     private IdMappingRepository idMappingRepository;
@@ -33,18 +39,27 @@ public class IdMappingService {
     @Autowired
     private PhaseRepository phaseRepository;
 
+    private NamedParameterJdbcOperations namedParameterJdbcOperations;
 
-    @HandleAfterCreate
-    public void postHandleEntityCreate(BaseEntity entity) {
-        idMappingRepository.save(IdMapping.builder()
-                .id(entity.getId())
-                .type(entity.getClass().getSimpleName())
-                .build());
+    private SimpleJdbcInsert insertActor;
+
+    private JdbcOperations jdbcOperations;
+
+    @Autowired
+    public void setDataSource(DataSource dataSource) {
+        insertActor = new SimpleJdbcInsert(dataSource).withTableName(ID_MAPPINGS);
+        jdbcOperations = new JdbcTemplate(dataSource);
     }
 
-    @HandleAfterDelete
+    public void postHandleEntityCreate(BaseEntity entity) {
+        Map<String, Object> parameters = new HashMap<>(2);
+        parameters.put(IdMapping.Fields.id, entity.getId());
+        parameters.put(IdMapping.Fields.type, entity.getClass().getSimpleName());
+        insertActor.execute(parameters);
+    }
+
     public void postHandleEntityDelete(BaseEntity entityToBeDelete) {
-        idMappingRepository.deleteById(entityToBeDelete.getId());
+        jdbcOperations.update(DELETE_SQL,entityToBeDelete.getId());
     }
 
     public Optional<? extends BaseEntity> findEntity(Long entityId) {
