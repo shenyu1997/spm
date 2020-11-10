@@ -14,6 +14,7 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.Period;
 
 
 @Audited
@@ -41,6 +42,10 @@ public class Phase extends BaseEntity implements AuditableEntity {
 
     @ManyToOne
     private Project project;
+
+    public Period getPeriod() {
+        return Period.between(plannedStartDate, plannedEndDate);
+    }
 
 
     @JsonIgnore
