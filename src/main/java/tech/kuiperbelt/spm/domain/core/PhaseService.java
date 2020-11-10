@@ -40,13 +40,17 @@ public class PhaseService {
 
         Optional<Phase> lastPhaseOp = phaseRepository.findLastPhase(project);
         if(lastPhaseOp.isPresent()) {
+            // Add to tail if not first phase
             Phase lastPhase = lastPhaseOp.get();
             phase.setSeq(lastPhase.getSeq() + 1);
-            phase.setPlannedStartDate(lastPhase.getPlannedStartDate());
+            phase.setPlannedStartDate(lastPhase.getPlannedEndDate().plusDays(1));
         } else {
+            // Add to head if is first
             phase.setSeq(0);
             Assert.notNull(phase.getPlannedStartDate(), "Planned start date of first phase can not be null.");
         }
+        Assert.isTrue(phase.getPlannedStartDate().isBefore(phase.getPlannedEndDate()),
+                "Planned start date must before planned end date");
         phaseRepository.save(phase);
     }
 }

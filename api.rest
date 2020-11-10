@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=1733942397589435067
+@currentProject=8447956468171060495
 
 ### Ping
 GET http://localhost:8080/ping
@@ -63,9 +63,9 @@ Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
 {
-    "name": "Planning",
-    "plannedStartDate": "2020-10-01",
-    "plannedEndDate": "2020-10-30"
+    "name": "GoGoGo",
+    "plannedEndDate": "2020-09-30",
+    "plannedEndDate": "2020-12-30"
 }
 
 
