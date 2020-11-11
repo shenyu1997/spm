@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=3899136678378228799
+@currentProject=806039025194782344
 
 ### Ping
 GET http://localhost:8080/ping
@@ -88,14 +88,15 @@ Content-Type: application/json
     "plannedEndDate": "2020-11-25"
 }
 
-@firstPhase=8447171315052163445
+
 ### Delete phase
+@firstPhase=2817863012005361272
 DELETE http://localhost:8080/phases/{{firstPhase}}
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
 ### Insert Phase (error)
-POST  http://localhost:8080/projects/{{currentProject}}/phases/actions/append
+POST  http://localhost:8080/projects/{{currentProject}}/phases/actions/insert
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
@@ -105,5 +106,25 @@ Content-Type: application/json
     "seq": 1
 }
 
+
+### UPdate Phase (last , end date)
+@updatePhase=4533148795377568470
+PATCH http://localhost:8080/phases/{{updatePhase}}
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "Sample2",
+    "plannedEndDate": "2020-12-10"
+}
+
+### UPdate Phase (last , start date)
+PATCH http://localhost:8080/phases/{{updatePhase}}
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "plannedStartDate": "2020-12-01"
+}
 
 

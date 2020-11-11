@@ -28,10 +28,16 @@ public class Event extends BaseEntity {
     public static final String PROJECT_MEMBER_ADDED = "event.project.member.added";
     public static final String PROJECT_MEMBER_REMOVED = "event.project.member.removed";
 
-    public static final String PROJECT_PROPERTIES_NAME_CHANGE = "event.project.properties.name.change";
+    public static final String PROJECT_PROPERTIES_CHANGE = "event.project.properties.change";
+
+    public static final String PROJECT_PHASE_PROPERTIES_CHANGE = "event.project.phase.properties.change";
 
     public static final String PROJECT_SCHEDULE_PHASE_ADDED = "event.project.schedule.phase.added";
     public static final String PROJECT_SCHEDULE_PHASE_REMOVED = "event.project.schedule.phase.removed";
+    public static final String PROJECT_SCHEDULE_PHASE_MOVED_LEFT = "event.project.schedule.phase.moved.left";
+    public static final String PROJECT_SCHEDULE_PHASE_MOVED_RIGHT = "event.project.schedule.phase.moved.right";
+    public static final String PROJECT_SCHEDULE_PHASE_START_CHANGED = "event.project.schedule.phase.start.change";
+    public static final String PROJECT_SCHEDULE_PHASE_END_CHANGED = "event.project.schedule.phase.end.change";
 
     public static Signal BULK_BEGIN = new Signal();
     public static Signal BULK_END = new Signal();

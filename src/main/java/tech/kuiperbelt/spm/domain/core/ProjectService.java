@@ -14,6 +14,8 @@ import tech.kuiperbelt.spm.common.UserContext;
 import tech.kuiperbelt.spm.common.UserContextHolder;
 import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventService;
+import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
+import tech.kuiperbelt.spm.domain.event.PropertyChanged;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -113,16 +115,18 @@ public class ProjectService {
             }
 
             // if 'name' is changed
-            if(!Objects.equals(previous.getName(), current.getName())) {
+            if(PropertyChanged.isChange(previousVersion, current, Project.Fields.name)) {
                 eventService.emit(Event.builder()
-                        .key(PROJECT_PROPERTIES_NAME_CHANGE)
+                        .key(PROJECT_PROPERTIES_CHANGE)
                         .source(current.getId())
-                        .args(previous.getName(), current.getName())
+                        .args(PropertiesChanged.builder()
+                                .append(Project.Fields.name, previous.getName(), current.getName())
+                                .build())
                         .build());
             }
 
             // if 'manager' is changed
-            if(!Objects.equals(previous.getManager(), current.getManager())) {
+            if(PropertyChanged.isChange(previousVersion, current, Project.Fields.manager)) {
                 eventService.emit(Event.builder()
                         .key(PROJECT_MANAGER_CHANGED)
                         .source(current.getId())
@@ -131,7 +135,7 @@ public class ProjectService {
             }
 
             // if 'owner' is changed
-            if(!Objects.equals(previous.getOwner(), current.getOwner())) {
+            if(PropertyChanged.isChange(previousVersion, current, Project.Fields.owner)) {
                 eventService.emit(Event.builder()
                         .key(PROJECT_OWNER_CHANGED)
                         .source(current.getId())

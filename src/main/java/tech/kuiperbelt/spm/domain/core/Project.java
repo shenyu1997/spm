@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Delegate;
+import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.common.AuditDelegate;
@@ -17,6 +18,7 @@ import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@FieldNameConstants
 @Audited
 @EntityListeners(AuditListener.class)
 @Getter

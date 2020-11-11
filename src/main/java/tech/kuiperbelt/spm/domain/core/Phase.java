@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Delegate;
+import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
@@ -16,7 +17,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.Period;
 
-
+@FieldNameConstants
 @Audited
 @EntityListeners(AuditListener.class)
 @Getter
@@ -33,8 +34,6 @@ public class Phase extends BaseEntity implements AuditableEntity {
     @Enumerated(EnumType.STRING)
     private RunningStatus status;
 
-    private boolean cancelled;
-
     private LocalDate plannedStartDate;
 
     @NotNull
@@ -45,6 +44,11 @@ public class Phase extends BaseEntity implements AuditableEntity {
 
     public Period getPeriod() {
         return Period.between(plannedStartDate, plannedEndDate);
+    }
+
+    public void move(Period offset) {
+        this.plannedStartDate = this.plannedStartDate.plus(offset);
+        this.plannedEndDate = this.plannedEndDate.plus(offset);
     }
 
 
