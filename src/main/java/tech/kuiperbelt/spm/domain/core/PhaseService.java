@@ -15,6 +15,7 @@ import tech.kuiperbelt.spm.domain.event.PropertyChanged;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.LinkedList;
 import java.util.List;
 
 import static tech.kuiperbelt.spm.domain.event.Event.PROJECT_SCHEDULE_PHASE_ADDED;
@@ -40,9 +41,11 @@ public class PhaseService {
 
     @HandleBeforeDelete
     public void preHandlePhaseDelete(Phase phase) {
-        List<Phase> phases = phase.getProject().getPhases();
-        phases.remove(phase);
-        rePlaning(phases);
+        List<Phase> allPhases = phase.getProject().getPhases();
+        allPhases.remove(phase);
+        List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq(), allPhases.size()));
+        resetSeq(allPhases);
+        movePhases(phase.getPeriod().negated(), laterImpactedPhases);
     }
 
     @HandleAfterDelete
@@ -58,41 +61,43 @@ public class PhaseService {
                 .build());
     }
 
-    public void appendPhase(Long projectId, Phase phase) {
+    public Phase appendPhase(Long projectId, Phase phase) {
         Project project = projectService.getProjectById(projectId);
         phase.setSeq(project.getPhases().size());
-        insertPhase(projectId, phase);
+        return insertPhase(projectId, phase);
     }
 
-    public void insertPhase(Long projectId, Phase phase) {
+    public Phase insertPhase(Long projectId, Phase phase) {
         Project project = projectService.getProjectById(projectId);
         phase.setProject(project);
         phase.setStatus(RunningStatus.INIT);
 
         // Check seq in reasonable range
         Assert.notNull(phase.getSeq(), "Seq can not be null when insert a phase");
-        List<Phase> phases = project.getPhases();
-        Assert.isTrue(phase.getSeq() >= 0 && phase.getSeq() <= phases.size(),
-                "Seq should be in range 0 to " + phases.size());
+        List<Phase> allPhases = project.getPhases();
+        Assert.isTrue(phase.getSeq() >= 0 && phase.getSeq() <= allPhases.size(),
+                "Seq should be in range 0 to " + allPhases.size());
 
         if(phase.getSeq() != FIRST) {
-            phase.setPlannedStartDate(phases.get(phase.getSeq() - 1)
+            phase.setPlannedStartDate(allPhases.get(phase.getSeq() - 1)
                     .getPlannedEndDate().plusDays(1));
         }
         validateBeforeSave(phase);
-        phases.add(phase.getSeq(), phase);
-        rePlaning(phases);
-        phaseRepository.save(phase);
+        List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq(), allPhases.size()));
 
+        allPhases.add(phase.getSeq(), phase);
+        resetSeq(allPhases);
+        movePhases(phase.getPeriod(), laterImpactedPhases);
+        Phase createPhase = phaseRepository.save(phase);
         eventService.emit(Event.builder()
                 .key(PROJECT_SCHEDULE_PHASE_ADDED)
-                .source(phase.getId())
+                .source(createPhase.getId())
                 .args(project.getName(),
-                        phase.getName(),
-                        phase.getPlannedStartDate().toString(),
-                        phase.getPlannedEndDate().toString())
+                        createPhase.getName(),
+                        createPhase.getPlannedStartDate().toString(),
+                        createPhase.getPlannedEndDate().toString())
                 .build());
-
+        return createPhase;
     }
 
     @HandleBeforeSave
@@ -138,7 +143,8 @@ public class PhaseService {
         if(PropertyChanged.isChange(previousVersion, phase, Phase.Fields.plannedEndDate)) {
             if(phase.getSeq() < allPhases.size() - 1) {
                 Period offset = Period.between(previousVersion.getPlannedEndDate(), phase.getPlannedEndDate());
-                movePhases(offset, allPhases.subList(phase.getSeq() + 1, allPhases.size()));
+                List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq() + 1, allPhases.size()));
+                movePhases(offset, laterImpactedPhases);
             }
         }
     }
@@ -177,36 +183,26 @@ public class PhaseService {
         }
     }
 
-    private void rePlaning(List<Phase> phases) {
+    private void resetSeq(List<Phase> phases) {
         if(CollectionUtils.isEmpty(phases)) {
-            return;
-        }
-
-        // Set first sequence
-        phases.get(FIRST).setSeq(FIRST);
-        if(phases.size() == 1) {
             return;
         }
 
         // Reset planned start date, planned end data
         for(int i=1; i<phases.size(); i++) {
-            Phase previous = phases.get(i - 1);
             Phase current = phases.get(i);
             current.setSeq(i);
-            Period period = current.getPeriod();
-            current.setPlannedStartDate(previous.getPlannedEndDate().plusDays(1));
-            current.setPlannedEndDate(current.getPlannedStartDate().plus(period));
         }
     }
 
-    private void movePhases(Period offset, List<Phase> laterPhases) {
-        if(offset.getDays() == 0 || CollectionUtils.isEmpty(laterPhases)) {
+    private void movePhases(Period offset, List<Phase> laterImpactedPhases) {
+        if(offset.isZero() || CollectionUtils.isEmpty(laterImpactedPhases)) {
             return;
         }
-        String eventKey = offset.getDays() < 0?
+        String eventKey = offset.isNegative()?
                 Event.PROJECT_SCHEDULE_PHASE_MOVED_LEFT:
                 Event.PROJECT_SCHEDULE_PHASE_MOVED_RIGHT;
-        laterPhases.forEach( phase -> {
+        laterImpactedPhases.forEach( phase -> {
             phase.move(offset);
             validateBeforeSave(phase);
             moveWorkItemsInPhase(offset, phase);
