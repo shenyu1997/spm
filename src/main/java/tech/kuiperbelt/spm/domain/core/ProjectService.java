@@ -115,7 +115,7 @@ public class ProjectService {
             }
 
             // if 'name' is changed
-            if(PropertyChanged.isChange(previousVersion, current, Project.Fields.name)) {
+            if(PropertyChanged.isChange(previous, current, Project.Fields.name)) {
                 eventService.emit(Event.builder()
                         .key(PROJECT_PROPERTIES_CHANGE)
                         .source(current.getId())
@@ -126,7 +126,7 @@ public class ProjectService {
             }
 
             // if 'manager' is changed
-            if(PropertyChanged.isChange(previousVersion, current, Project.Fields.manager)) {
+            if(PropertyChanged.isChange(previous, current, Project.Fields.manager)) {
                 eventService.emit(Event.builder()
                         .key(PROJECT_MANAGER_CHANGED)
                         .source(current.getId())
@@ -135,7 +135,7 @@ public class ProjectService {
             }
 
             // if 'owner' is changed
-            if(PropertyChanged.isChange(previousVersion, current, Project.Fields.owner)) {
+            if(PropertyChanged.isChange(previous, current, Project.Fields.owner)) {
                 eventService.emit(Event.builder()
                         .key(PROJECT_OWNER_CHANGED)
                         .source(current.getId())
@@ -174,7 +174,7 @@ public class ProjectService {
     @HandleAfterDelete
     public void postHandleProjectDelete(Project tobeRemoved) {
         eventService.emit(Event.builder()
-                .key(EVENT_PROJECT_REMOVED)
+                .key(PROJECT_REMOVED)
                 .source(tobeRemoved.getId())
                 .args(tobeRemoved.getName())
                 .build());
@@ -188,11 +188,9 @@ public class ProjectService {
 
         // Verify owner and status
         Assert.isTrue(Objects.equals(project.getOwner(), currentUpn), "Only project owner can cancel the project");
-        Assert.isTrue(!Objects.equals(project.getStatus(), RunningStatus.STOP), "Project can be canceled at most once");
 
         // Do action
-        project.setStatus(RunningStatus.STOP);
-        project.setCancelled(true);
+        project.cancel();
         projectRepository.save(project);
 
         // Send event to all participants
@@ -205,5 +203,24 @@ public class ProjectService {
 
     public Project getProjectById(Long projectId) {
         return projectRepository.getOne(projectId);
+    }
+
+    public void startProject(long id) {
+        Project project = projectRepository.getOne(id);
+        project.start();
+        eventService.emit(Event.builder()
+                .key(PROJECT_START)
+                .source(project.getId())
+                .args(project.getName())
+                .build());
+
+        project.getPhases().stream().findFirst().ifPresent(phase -> {
+            phase.start();
+            eventService.emit(Event.builder()
+                    .key(PROJECT_EXECUTION_PHASE_START)
+                    .source(phase.getId())
+                    .args(project.getName(), phase.getName())
+                    .build());
+        });
     }
 }

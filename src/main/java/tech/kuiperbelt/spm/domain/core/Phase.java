@@ -7,6 +7,7 @@ import lombok.ToString;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
+import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
 import tech.kuiperbelt.spm.common.AuditableEntity;
@@ -39,6 +40,10 @@ public class Phase extends BaseEntity implements AuditableEntity {
     @NotNull
     private LocalDate plannedEndDate;
 
+    private LocalDate actualStartDate;
+
+    private LocalDate actualEndDate;
+
     @ManyToOne
     private Project project;
 
@@ -49,6 +54,18 @@ public class Phase extends BaseEntity implements AuditableEntity {
     public void move(Period offset) {
         this.plannedStartDate = this.plannedStartDate.plus(offset);
         this.plannedEndDate = this.plannedEndDate.plus(offset);
+    }
+
+    public void start() {
+        Assert.isTrue(this.getStatus() == RunningStatus.INIT, "Only INIT phase can be started");
+        this.setStatus(RunningStatus.RUNNING);
+        this.setActualStartDate(LocalDate.now());
+    }
+
+    public void done() {
+        Assert.isTrue(this.getStatus() == RunningStatus.RUNNING, "Only RUNNING phase can be done");
+        this.setStatus(RunningStatus.STOP);
+        this.setActualEndDate(LocalDate.now());
     }
 
 

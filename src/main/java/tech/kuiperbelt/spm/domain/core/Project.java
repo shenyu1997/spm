@@ -7,6 +7,7 @@ import lombok.ToString;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
@@ -15,6 +16,7 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,6 +50,10 @@ public class Project extends BaseEntity implements AuditableEntity {
     @OneToMany(mappedBy = "project")
     private List<Phase> phases;
 
+    private LocalDate actualStartDate;
+
+    private LocalDate actualEndDate;
+
     @JsonIgnore
     @Embedded
     @Delegate
@@ -73,5 +79,23 @@ public class Project extends BaseEntity implements AuditableEntity {
         return phases.stream()
                 .sorted(Comparator.comparing(Phase::getSeq))
                 .collect(Collectors.toList());
+    }
+
+    public void start() {
+        Assert.isTrue(this.getStatus() == RunningStatus.INIT, "Only INIT project can be started");
+        this.setStatus(RunningStatus.RUNNING);
+        this.setActualStartDate(LocalDate.now());
+    }
+
+    public void done() {
+        Assert.isTrue(this.getStatus() == RunningStatus.RUNNING, "Only RUNNING project can be done");
+        this.setStatus(RunningStatus.STOP);
+        this.setActualEndDate(LocalDate.now());
+    }
+
+    public void cancel() {
+        Assert.isTrue(this.getStatus() != RunningStatus.STOP, "STOP project can not be cancelled");
+        this.setStatus(RunningStatus.STOP);
+        this.setCancelled(true);
     }
 }

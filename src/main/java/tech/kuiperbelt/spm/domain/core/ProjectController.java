@@ -30,6 +30,11 @@ public class ProjectController {
         projectService.cancelProject(id);
     }
 
+    @PostMapping("/{id}/actions/start")
+    public void start(@PathVariable("id") long id) {
+        projectService.startProject(id);
+    }
+
     @PostMapping("/{id}/phases/actions/append")
     public ResponseEntity appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
         Phase createdPhase = phaseService.appendPhase(id, phase);
