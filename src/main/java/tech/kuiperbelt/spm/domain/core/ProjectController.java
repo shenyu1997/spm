@@ -2,9 +2,13 @@ package tech.kuiperbelt.spm.domain.core;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.net.URI;
 
 @Setter
 @RestController
@@ -17,19 +21,27 @@ public class ProjectController {
     @Autowired
     private PhaseService phaseService;
 
+    @Lazy
+    @Autowired
+    private RepositoryEntityLinks entityLinks;
+
     @PostMapping("/{id}/actions/cancel")
     public void cancel(@PathVariable("id") long id) {
         projectService.cancelProject(id);
     }
 
     @PostMapping("/{id}/phases/actions/append")
-    public void appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
-        phaseService.appendPhase(id, phase);
+    public ResponseEntity appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
+        Phase createdPhase = phaseService.appendPhase(id, phase);
+        URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
     @PostMapping("/{id}/phases/actions/insert")
-    public void insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
-        phaseService.insertPhase(id, phase);
+    public ResponseEntity insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
+        Phase createdPhase = phaseService.insertPhase(id, phase);
+        URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
 }
