@@ -44,6 +44,8 @@ public class Phase extends BaseEntity implements AuditableEntity {
 
     private LocalDate actualEndDate;
 
+    private boolean cancelled;
+
     @ManyToOne
     private Project project;
 
@@ -66,6 +68,12 @@ public class Phase extends BaseEntity implements AuditableEntity {
         Assert.isTrue(this.getStatus() == RunningStatus.RUNNING, "Only RUNNING phase can be done");
         this.setStatus(RunningStatus.STOP);
         this.setActualEndDate(LocalDate.now());
+    }
+
+    public void cancel() {
+        Assert.isTrue(this.getStatus() != RunningStatus.STOP, "STOP project can not be cancelled");
+        this.setStatus(RunningStatus.STOP);
+        this.setCancelled(true);
     }
 
 

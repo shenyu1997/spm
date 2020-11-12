@@ -18,7 +18,7 @@ import java.time.Period;
 import java.util.LinkedList;
 import java.util.List;
 
-import static tech.kuiperbelt.spm.domain.event.Event.PROJECT_SCHEDULE_PHASE_ADDED;
+import static tech.kuiperbelt.spm.domain.event.Event.*;
 
 @Transactional
 @Setter
@@ -39,8 +39,20 @@ public class PhaseService {
     @Autowired
     private AuditService auditService;
 
+    /**
+     * It will be trigger by project delete so just delete workItems cascade
+     */
+    public void deletePhase(Phase phase) {
+        deleteWorkItems(phase);
+        phaseRepository.delete(phase);
+        postHandlePhaseDelete(phase);
+    }
+
     @HandleBeforeDelete
     public void preHandlePhaseDelete(Phase phase) {
+        Assert.isTrue(phase.getStatus() == RunningStatus.INIT, "Only INIT phase can be removed");
+
+        deleteWorkItems(phase);
         List<Phase> allPhases = phase.getProject().getPhases();
         allPhases.remove(phase);
         List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq(), allPhases.size()));
@@ -69,6 +81,8 @@ public class PhaseService {
 
     public Phase insertPhase(Long projectId, Phase phase) {
         Project project = projectService.getProjectById(projectId);
+        Assert.isTrue(project.getStatus() != RunningStatus.STOP, "STOP project can not insert phase");
+
         phase.setProject(project);
         phase.setStatus(RunningStatus.INIT);
 
@@ -77,6 +91,11 @@ public class PhaseService {
         List<Phase> allPhases = project.getPhases();
         Assert.isTrue(phase.getSeq() >= 0 && phase.getSeq() <= allPhases.size(),
                 "Seq should be in range 0 to " + allPhases.size());
+
+        if(phase.getSeq() < allPhases.size()) {
+            Assert.isTrue(allPhases.get(phase.getSeq()).getStatus() == RunningStatus.INIT,
+                    "Only can insert before an INIT phase");
+        }
 
         if(phase.getSeq() != FIRST) {
             phase.setPlannedStartDate(allPhases.get(phase.getSeq() - 1)
@@ -215,6 +234,42 @@ public class PhaseService {
     }
 
 
+    private void validateBeforeSave(Phase phase) {
+        Assert.notNull(phase.getPlannedStartDate(), "Planned start date of first phase can not be null.");
+        Assert.isTrue(phase.getPlannedStartDate().isBefore(phase.getPlannedEndDate()),
+                "Planned start date must before planned end date");
+        Assert.notNull(phase.getProject(), "Phase.project can not be null");
+    }
+
+    public void startPhase(long id) {
+        Phase phase = phaseRepository.getOne(id);
+        phase.start();
+        eventService.emit(Event.builder()
+                .key(PROJECT_EXECUTION_PHASE_START)
+                .source(phase.getId())
+                .args(phase.getProject().getName(), phase.getName())
+                .build());
+    }
+
+    public void cancelPhase(long id) {
+        Phase phase = phaseRepository.getOne(id);
+        cancelWorkItems(phase);
+        phase.cancel();
+        eventService.emit(Event.builder()
+                .key(PROJECT_EXECUTION_PHASE_CANCEL)
+                .source(phase.getId())
+                .args(phase.getProject().getName(), phase.getName())
+                .build());
+    }
+
+    private void cancelWorkItems(Phase phase) {
+        //TODO
+    }
+
+    private void deleteWorkItems(Phase phase) {
+        //TODO
+    }
+
     /**
      * Check all workItems, mark overflow flag if any workItem was over range of current Phase
      * @param phase
@@ -230,12 +285,5 @@ public class PhaseService {
      */
     private void moveWorkItemsInPhase(Period offSet, Phase phase) {
         // TODO if we have workItems
-    }
-
-    private void validateBeforeSave(Phase phase) {
-        Assert.notNull(phase.getPlannedStartDate(), "Planned start date of first phase can not be null.");
-        Assert.isTrue(phase.getPlannedStartDate().isBefore(phase.getPlannedEndDate()),
-                "Planned start date must before planned end date");
-        Assert.notNull(phase.getProject(), "Phase.project can not be null");
     }
 }

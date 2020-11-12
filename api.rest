@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=806039025194782344
+@currentProject=4972033486724053173
 
 ### Ping
 GET http://localhost:8080/ping
@@ -53,6 +53,10 @@ Authorization: Basic {{currentUser}} 123456
 POST http://localhost:8080/projects/{{currentProject}}/actions/cancel
 Authorization: Basic {{currentUser}} 123456
 
+### Start a project
+POST http://localhost:8080/projects/{{currentProject}}/actions/start
+Authorization: Basic {{currentUser}} 123456
+
 ### Delete a project
 DELETE http://localhost:8080/projects/{{currentProject}}
 Authorization: Basic {{currentUser}} 123456
@@ -90,8 +94,8 @@ Content-Type: application/json
 
 
 ### Delete phase
-@firstPhase=2817863012005361272
-DELETE http://localhost:8080/phases/{{firstPhase}}
+@deletePhase=6124646102660985088
+DELETE http://localhost:8080/phases/{{deletePhase}}
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
@@ -101,14 +105,14 @@ Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
 {
-    "name": "Sample",
+    "name": "Go",
     "plannedEndDate": "2020-11-25",
     "seq": 1
 }
 
 
 ### UPdate Phase (last , end date)
-@updatePhase=4533148795377568470
+@updatePhase=7284626308206214449
 PATCH http://localhost:8080/phases/{{updatePhase}}
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
@@ -124,7 +128,7 @@ Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
 
 {
-    "plannedStartDate": "2020-12-01"
+    "plannedStartDate": "2020-09-25"
 }
 
 

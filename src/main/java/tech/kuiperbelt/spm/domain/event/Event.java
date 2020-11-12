@@ -43,6 +43,8 @@ public class Event extends BaseEntity {
 
     public static final String PROJECT_EXECUTION_PHASE_START = "event.project.execution.phase.start"; //TODO
     public static final String PROJECT_EXECUTION_PHASE_DONE = "event.project.execution.phase.done"; //TODO
+    public static final String PROJECT_EXECUTION_PHASE_CANCEL = "event.project.execution.phase.cancel"; //TODO
+    public static final String PROJECT_EXECUTION_PHASE_REMOVE = "event.project.execution.phase.remove"; //TODO
 
 
     public static Signal BULK_BEGIN = new Signal();

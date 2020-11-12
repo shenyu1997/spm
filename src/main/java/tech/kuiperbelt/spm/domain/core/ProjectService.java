@@ -44,6 +44,9 @@ public class ProjectService {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private PhaseService phaseService;
+
     @HandleBeforeCreate
     public void preHandleProjectCreate(Project project) {
         //set owner if need
@@ -167,6 +170,8 @@ public class ProjectService {
 
     @HandleBeforeDelete
     public void preHandleProjectDelete(Project current) {
+        current.getPhases().forEach(phase ->
+                phaseService.deletePhase(phase));
         Assert.isTrue(RunningStatus.STOP == current.getStatus() && current.isCancelled(),
                 "Only Cancelled Project can be deleted");
     }
@@ -188,6 +193,11 @@ public class ProjectService {
 
         // Verify owner and status
         Assert.isTrue(Objects.equals(project.getOwner(), currentUpn), "Only project owner can cancel the project");
+
+        project.getPhases().stream()
+                .filter(phase -> phase.getStatus() != RunningStatus.STOP)
+                .forEach(phase ->
+                phaseService.cancelPhase(phase.getId()));
 
         // Do action
         project.cancel();
@@ -215,12 +225,7 @@ public class ProjectService {
                 .build());
 
         project.getPhases().stream().findFirst().ifPresent(phase -> {
-            phase.start();
-            eventService.emit(Event.builder()
-                    .key(PROJECT_EXECUTION_PHASE_START)
-                    .source(phase.getId())
-                    .args(project.getName(), phase.getName())
-                    .build());
+            phaseService.startPhase(phase.getId());
         });
     }
 }
