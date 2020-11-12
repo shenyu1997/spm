@@ -64,16 +64,33 @@ public class Phase extends BaseEntity implements AuditableEntity {
         this.setActualStartDate(LocalDate.now());
     }
 
+    public boolean isCanBeStarted() {
+        return this.getStatus() == RunningStatus.INIT;
+    }
+
     public void done() {
         Assert.isTrue(this.getStatus() == RunningStatus.RUNNING, "Only RUNNING phase can be done");
         this.setStatus(RunningStatus.STOP);
         this.setActualEndDate(LocalDate.now());
     }
 
+    public boolean isCanBeDone() {
+        return this.getStatus() == RunningStatus.RUNNING;
+    }
+
+    public boolean isCanBeCancelled() {
+        return this.getStatus() != RunningStatus.STOP;
+    }
+
+
     public void cancel() {
         Assert.isTrue(this.getStatus() != RunningStatus.STOP, "STOP project can not be cancelled");
         this.setStatus(RunningStatus.STOP);
         this.setCancelled(true);
+    }
+
+    public boolean isCanBeRemoved() {
+        return RunningStatus.STOP == getStatus() && isCancelled();
     }
 
 

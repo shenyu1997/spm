@@ -170,10 +170,12 @@ public class ProjectService {
 
     @HandleBeforeDelete
     public void preHandleProjectDelete(Project current) {
-        current.getPhases().forEach(phase ->
-                phaseService.deletePhase(phase));
-        Assert.isTrue(RunningStatus.STOP == current.getStatus() && current.isCancelled(),
+        Assert.isTrue(current.isCanBeRemoved(),
                 "Only Cancelled Project can be deleted");
+        current.getPhases().stream()
+                .filter(Phase::isCanBeRemoved)
+                .forEach(phase ->
+                phaseService.deletePhase(phase));
     }
 
     @HandleAfterDelete
@@ -185,7 +187,6 @@ public class ProjectService {
                 .build());
     }
 
-
     public void cancelProject(long id) {
         UserContext userContext = userContextHolder.getUserContext();
         String currentUpn = userContext.getUpn();
@@ -195,7 +196,7 @@ public class ProjectService {
         Assert.isTrue(Objects.equals(project.getOwner(), currentUpn), "Only project owner can cancel the project");
 
         project.getPhases().stream()
-                .filter(phase -> phase.getStatus() != RunningStatus.STOP)
+                .filter(Phase::isCanBeCancelled)
                 .forEach(phase ->
                 phaseService.cancelPhase(phase.getId()));
 
