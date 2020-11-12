@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=4972033486724053173
+@currentProject=26038505615834300
 
 ### Ping
 GET http://localhost:8080/ping
@@ -94,7 +94,7 @@ Content-Type: application/json
 
 
 ### Delete phase
-@deletePhase=6124646102660985088
+@deletePhase=679179226578042908
 DELETE http://localhost:8080/phases/{{deletePhase}}
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json

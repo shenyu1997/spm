@@ -22,18 +22,18 @@ refine message rule and event, save event args in array
 - remove endEmit (done)
 - remove enum EventType (done)
 
-### Suspend
-
-### Next
-
-Add new phase
-
 As a project manager, I can insert phase in Project Edit view, information I provided: after/before phase, phase name, planned end date. Constraint, planned start date < planned end date .
 
 - Append phase entity(done)
 - Remove phase (done)
 - Insert phase (done)
 - Change plannedStartDate and plannedEndDate (doing)
+
+
+
+### Suspend
+
+### Next
 
 
 

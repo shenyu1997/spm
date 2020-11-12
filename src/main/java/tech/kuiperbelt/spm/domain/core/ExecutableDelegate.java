@@ -7,11 +7,13 @@ import org.springframework.util.Assert;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.MappedSuperclass;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @Embeddable
+@MappedSuperclass
 public class ExecutableDelegate implements ExecutableEntity {
 
     @Enumerated(EnumType.STRING)
@@ -37,7 +39,8 @@ public class ExecutableDelegate implements ExecutableEntity {
 
     @Override
     public void done() {
-        Assert.isTrue(this.getStatus() == RunningStatus.RUNNING, "Only RUNNING project can be done");
+        Assert.isTrue( this.isCanBeDone(),
+                "Only RUNNING project can be done");
         this.setStatus(RunningStatus.STOP);
         this.setActualEndDate(LocalDate.now());
     }

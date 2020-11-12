@@ -229,4 +229,16 @@ public class ProjectService {
             phaseService.startPhase(phase.getId());
         });
     }
+
+    public void doneProject(long id) {
+        Project project = projectRepository.getOne(id);
+        Assert.isTrue(project.isCanBeDone(), "Project can not be done yet.");
+
+        project.done();
+        eventService.emit(Event.builder()
+                .key(PROJECT_DONE)
+                .source(id)
+                .args(project.getName())
+                .build());
+    }
 }

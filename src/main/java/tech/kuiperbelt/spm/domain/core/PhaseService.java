@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static tech.kuiperbelt.spm.domain.event.Event.*;
 
@@ -43,21 +44,28 @@ public class PhaseService {
      * It will be trigger by project delete so just delete workItems cascade
      */
     public void deletePhase(Phase phase) {
-        deleteWorkItems(phase);
+        preHandlePhaseDelete(phase);
         phaseRepository.delete(phase);
         postHandlePhaseDelete(phase);
     }
 
     @HandleBeforeDelete
     public void preHandlePhaseDelete(Phase phase) {
-        Assert.isTrue(phase.getStatus() == RunningStatus.INIT, "Only INIT phase can be removed");
+        // cancel first
+        Assert.isTrue(phase.isCanBeCancelled(), "Only INIT phase can be removed");
+        cancelPhase(phase.getId());
 
+        // then remove
+        Assert.isTrue(phase.isCanBeRemoved(), "Only INIT phase can be removed");
         deleteWorkItems(phase);
         List<Phase> allPhases = phase.getProject().getPhases();
         allPhases.remove(phase);
         List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq(), allPhases.size()));
         resetSeq(allPhases);
         movePhases(phase.getPeriod().negated(), laterImpactedPhases);
+
+        // check project is allPhasesStop
+        phase.getProject().checkAllPhaseStop();
     }
 
     @HandleAfterDelete
@@ -83,18 +91,27 @@ public class PhaseService {
         Project project = projectService.getProjectById(projectId);
         Assert.isTrue(project.getStatus() != RunningStatus.STOP, "STOP project can not insert phase");
 
-        phase.setProject(project);
-        phase.setStatus(RunningStatus.INIT);
+        List<Phase> allPhases = project.getPhases();
 
         // Check seq in reasonable range
         Assert.notNull(phase.getSeq(), "Seq can not be null when insert a phase");
-        List<Phase> allPhases = project.getPhases();
         Assert.isTrue(phase.getSeq() >= 0 && phase.getSeq() <= allPhases.size(),
                 "Seq should be in range 0 to " + allPhases.size());
 
-        if(phase.getSeq() < allPhases.size()) {
-            Assert.isTrue(allPhases.get(phase.getSeq()).getStatus() == RunningStatus.INIT,
+        Optional<Phase> firstRunningPhase = allPhases.stream()
+                .filter(p -> p.getStatus() == RunningStatus.RUNNING).findFirst();
+
+        if(firstRunningPhase.isPresent()) {
+            Assert.isTrue(firstRunningPhase.get().getSeq() < phase.getSeq(),
                     "Only can insert before an INIT phase");
+        }
+
+        phase.setProject(project);
+        phase.setStatus(RunningStatus.INIT);
+
+        // start phase if Project is start and there is running phase
+        if(project.getStatus() == RunningStatus.RUNNING && !firstRunningPhase.isPresent()) {
+            phase.start();
         }
 
         if(phase.getSeq() != FIRST) {
@@ -116,6 +133,8 @@ public class PhaseService {
                         createPhase.getPlannedStartDate().toString(),
                         createPhase.getPlannedEndDate().toString())
                 .build());
+        // Mark project is not all phasesStop
+        createPhase.getProject().setAllPhasesStop(false);
         return createPhase;
     }
 
@@ -255,12 +274,36 @@ public class PhaseService {
         Phase phase = phaseRepository.getOne(id);
         cancelWorkItems(phase);
         phase.cancel();
+        Project project = phase.getProject();
         eventService.emit(Event.builder()
                 .key(PROJECT_EXECUTION_PHASE_CANCEL)
                 .source(phase.getId())
+                .args(project.getName(), phase.getName())
+                .build());
+
+        // check project allPhaseStop
+        project.checkAllPhaseStop();
+    }
+
+    public void donePhase(long id) {
+        Phase phase = phaseRepository.getOne(id);
+        Assert.isTrue(phase.isCanBeDone(), "Phase can not be done");
+        phase.done();
+        List<Phase> allPhases = phase.getProject().getPhases();
+
+        if(phase.getSeq() < allPhases.size() - 1) {
+            Phase nextPhase = allPhases.get(phase.getSeq() + 1);
+            nextPhase.start();
+        } else {
+            phase.getProject().checkAllPhaseStop();
+        }
+        eventService.emit(Event.builder()
+                .key(PROJECT_EXECUTION_PHASE_DONE)
+                .source(id)
                 .args(phase.getProject().getName(), phase.getName())
                 .build());
     }
+
 
     private void cancelWorkItems(Phase phase) {
         //TODO
@@ -286,4 +329,5 @@ public class PhaseService {
     private void moveWorkItemsInPhase(Period offSet, Phase phase) {
         // TODO if we have workItems
     }
+
 }

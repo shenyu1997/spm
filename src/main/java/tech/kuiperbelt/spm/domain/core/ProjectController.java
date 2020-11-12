@@ -35,6 +35,11 @@ public class ProjectController {
         projectService.startProject(id);
     }
 
+    @PostMapping("/{id}/actions/done")
+    public void done(@PathVariable("id") long id) {
+        projectService.doneProject(id);
+    }
+
     @PostMapping("/{id}/phases/actions/append")
     public ResponseEntity appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
         Phase createdPhase = phaseService.appendPhase(id, phase);

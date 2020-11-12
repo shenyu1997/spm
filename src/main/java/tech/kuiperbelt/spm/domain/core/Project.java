@@ -52,7 +52,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
     @JsonIgnore
     @Embedded
-    @Delegate
+    @Delegate(excludes = ProjectExecutableExclude.class)
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     @Version
@@ -75,5 +75,30 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
         return phases.stream()
                 .sorted(Comparator.comparing(Phase::getSeq))
                 .collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    private boolean allPhasesStop = true;
+
+
+    public void checkAllPhaseStop () {
+        allPhasesStop = this.getPhases().stream()
+                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP);
+    }
+
+    @Override
+    public boolean isCanBeDone() {
+        return allPhasesStop && executableDelegate.isCanBeDone();
+    }
+
+    @Override
+    public void done() {
+        Assert.isTrue(allPhasesStop, "all phases stop");
+        executableDelegate.done();;
+    }
+
+    private interface ProjectExecutableExclude {
+        void isCanBeDone();
+        void done();
     }
 }
