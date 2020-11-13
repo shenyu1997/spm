@@ -47,6 +47,13 @@ public class ProjectService {
     @Autowired
     private PhaseService phaseService;
 
+    public Project createProject(Project project) {
+        preHandleProjectCreate(project);
+        Project savedProject = projectRepository.save(project);
+        postHandleProjectCreate(savedProject);
+        return savedProject;
+    }
+
     @HandleBeforeCreate
     public void preHandleProjectCreate(Project project) {
         //set owner if need

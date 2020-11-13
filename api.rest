@@ -1,5 +1,5 @@
 @currentUser=yu.shen
-@currentProject=26038505615834300
+@currentProject=4950295244069122689
 
 ### Ping
 GET http://localhost:8080/ping
@@ -7,6 +7,10 @@ Authorization: Basic {{currentUser}} 123456
 
 ### Home
 GET http://localhost:8080/ 
+Authorization: Basic {{currentUser}} 123456
+
+### Import sample data
+POST http://localhost:8080/sample-data/actions/import 
 Authorization: Basic {{currentUser}} 123456
 
 ### Create Projects
@@ -55,6 +59,10 @@ Authorization: Basic {{currentUser}} 123456
 
 ### Start a project
 POST http://localhost:8080/projects/{{currentProject}}/actions/start
+Authorization: Basic {{currentUser}} 123456
+
+### Done a project
+POST http://localhost:8080/projects/{{currentProject}}/actions/done
 Authorization: Basic {{currentUser}} 123456
 
 ### Delete a project
@@ -130,5 +138,16 @@ Content-Type: application/json
 {
     "plannedStartDate": "2020-09-25"
 }
+
+### Done Phase (last , start date)
+@donePhase=785171069497160111
+POST http://localhost:8080/phases/{{donePhase}}/actions/done
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "plannedStartDate": "2020-09-25"
+}
+
 
 

@@ -81,14 +81,12 @@ public class PhaseService {
                 .build());
     }
 
-    public Phase appendPhase(Long projectId, Phase phase) {
-        Project project = projectService.getProjectById(projectId);
+    public Phase appendPhase(Project project, Phase phase) {
         phase.setSeq(project.getPhases().size());
-        return insertPhase(projectId, phase);
+        return insertPhase(project, phase);
     }
 
-    public Phase insertPhase(Long projectId, Phase phase) {
-        Project project = projectService.getProjectById(projectId);
+    public Phase insertPhase(Project project, Phase phase) {
         Assert.isTrue(project.getStatus() != RunningStatus.STOP, "STOP project can not insert phase");
 
         List<Phase> allPhases = project.getPhases();

@@ -1,9 +1,7 @@
 package tech.kuiperbelt.spm.domain.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
@@ -24,6 +22,9 @@ import java.time.Period;
 @Setter
 @Entity
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @Table(name = "phases", uniqueConstraints={@UniqueConstraint(columnNames={"id","seq"})})
 public class Phase extends BaseEntity implements AuditableEntity, ExecutableEntity {
     @NotNull

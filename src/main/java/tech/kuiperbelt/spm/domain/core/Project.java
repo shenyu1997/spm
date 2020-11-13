@@ -1,9 +1,7 @@
 package tech.kuiperbelt.spm.domain.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
@@ -16,7 +14,6 @@ import tech.kuiperbelt.spm.common.BaseEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +24,9 @@ import java.util.stream.Collectors;
 @Setter
 @Entity
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 @Table(name = "projects")
 public class Project extends BaseEntity implements AuditableEntity, ExecutableEntity {
 
@@ -69,7 +69,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
     public List<Phase> getPhases() {
         if(this.phases == null) {
-            return Collections.emptyList();
+            return new LinkedList<>();
         }
 
         return phases.stream()
