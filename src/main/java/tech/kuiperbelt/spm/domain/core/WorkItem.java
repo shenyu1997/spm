@@ -62,7 +62,7 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @Delegate
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
-    private enum Priority {
+    public enum Priority {
         LOW, MEDIUM, HIGH, TOP
     }
 
