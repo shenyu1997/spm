@@ -91,7 +91,7 @@ As a person, I can view Message from my message box, and mark message as readed.
 ## Model Design
 ### Common Enum & List
 - RunningStatus: INIT ,RUNNING, STOP
-- Priority: TOP, HIGHT, MEDIUM, LOW
+- Priority: TOP, HIGH, MEDIUM, LOW
 
 ### Model & Properties
 #### Project

@@ -42,7 +42,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @ElementCollection
     private List<String> members = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = Phase.Fields.project)
     private List<Phase> phases;
 
     @JsonIgnore

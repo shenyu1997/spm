@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
 import tech.kuiperbelt.spm.common.AuditableEntity;
@@ -14,6 +16,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 
 @FieldNameConstants
 @Audited
@@ -32,7 +36,6 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
 
     private Integer seq;
 
-
     private LocalDate plannedStartDate;
 
     @NotNull
@@ -41,6 +44,10 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     @ManyToOne
     private Project project;
 
+    @RestResource(path = "work-items")
+    @OneToMany(mappedBy = WorkItem.Fields.phase)
+    private List<WorkItem> workItems = new ArrayList<>();
+
     @JsonIgnore
     @Embedded
     @Delegate
@@ -48,7 +55,7 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
 
     @JsonIgnore
     @Embedded
-    @Delegate
+    @Delegate(excludes = PhaseExecutableExclude.class)
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     public Period getPeriod() {
@@ -58,5 +65,32 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     public void move(Period offset) {
         this.plannedStartDate = this.plannedStartDate.plus(offset);
         this.plannedEndDate = this.plannedEndDate.plus(offset);
+    }
+
+    private boolean allItemStop = true;
+
+    public void checkAllPhaseStop () {
+        allItemStop = this.workItems.stream()
+                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP);
+    }
+
+    @Override
+    public boolean isCanBeDone() {
+        return allItemStop && executableDelegate.isCanBeDone();
+    }
+
+    @Override
+    public void done() {
+        Assert.isTrue(allItemStop, "all workItems stop");
+        executableDelegate.done();
+    }
+
+    private interface PhaseExecutableExclude {
+        void isCanBeDone();
+        void done();
+    }
+
+    public boolean isOverflowBy(LocalDate timeFrame) {
+        return timeFrame != null && timeFrame.isAfter(this.getPlannedEndDate());
     }
 }

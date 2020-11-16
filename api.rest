@@ -149,5 +149,58 @@ Content-Type: application/json
     "plannedStartDate": "2020-09-25"
 }
 
+### Add workItem 
+@currentPhase=6724958578848871891
+POST http://localhost:8080/phases/{{currentPhase}}/work-items/actions/create
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "Poc discuss"
+}
+
+### Add workItem
+@currentPhase=3081796219856569063
+POST http://localhost:8080/phases/{{currentPhase}}/work-items/actions/create
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "name": "Setup CD pipeline"
+}
+
+### Start workItem
+@currentItem=4804930263034737536
+POST http://localhost:8080/work-items/{{currentItem}}/actions/start
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
 
 
+### Done workItem
+@currentItem=4804930263034737536
+POST http://localhost:8080/work-items/{{currentItem}}/actions/done
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+
+### Cancel workItem
+@currentItem=1415536763186988314
+POST http://localhost:8080/work-items/{{currentItem}}/actions/cancel
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+### Cancel workItem
+@currentItem=1415536763186988314
+DELETE  http://localhost:8080/work-items/{{currentItem}}
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+### Move phase workItem
+@currentItem=4804930263034737536
+PATCH http://localhost:8080/work-items/{{currentItem}}
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "phase": "phases/5060159618735490761"
+}

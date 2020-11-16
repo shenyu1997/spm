@@ -42,16 +42,14 @@ public class ProjectController {
 
     @PostMapping("/{id}/phases/actions/append")
     public ResponseEntity appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
-        Project project = projectService.getProjectById(id);
-        Phase createdPhase = phaseService.appendPhase(project, phase);
+        Phase createdPhase = projectService.appendPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
     @PostMapping("/{id}/phases/actions/insert")
     public ResponseEntity insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
-        Project project = projectService.getProjectById(id);
-        Phase createdPhase = phaseService.insertPhase(project, phase);
+        Phase createdPhase = projectService.insertPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }

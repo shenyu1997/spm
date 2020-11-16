@@ -213,7 +213,7 @@ public class ProjectService {
 
         // Send event to all participants
         eventService.emit(Event.builder()
-                .key(PROJECT_CANCELED)
+                .key(PROJECT_EXECUTION_PROJECT_CANCELED)
                 .source(project.getId())
                 .args(project.getName())
                 .build());
@@ -227,13 +227,13 @@ public class ProjectService {
         Project project = projectRepository.getOne(id);
         project.start();
         eventService.emit(Event.builder()
-                .key(PROJECT_START)
+                .key(PROJECT_EXECUTION_PROJECT_START)
                 .source(project.getId())
                 .args(project.getName())
                 .build());
 
         project.getPhases().stream().findFirst().ifPresent(phase -> {
-            phaseService.startPhase(phase.getId());
+            phaseService.startPhase(phase);
         });
     }
 
@@ -243,9 +243,23 @@ public class ProjectService {
 
         project.done();
         eventService.emit(Event.builder()
-                .key(PROJECT_DONE)
+                .key(PROJECT_EXECUTION_PROJECT_DONE)
                 .source(id)
                 .args(project.getName())
                 .build());
+    }
+
+    public Phase appendPhase(long id, Phase phase) {
+        Project project = projectRepository.getOne(id);
+        Phase createdPhase = phaseService.appendPhase(project, phase);
+        project.setAllPhasesStop(false);
+        return createdPhase;
+    }
+
+    public Phase insertPhase(Long id, Phase phase) {
+        Project project = projectRepository.getOne(id);
+        Phase createdPhase = phaseService.insertPhase(project, phase);
+        project.setAllPhasesStop(false);
+        return createdPhase;
     }
 }

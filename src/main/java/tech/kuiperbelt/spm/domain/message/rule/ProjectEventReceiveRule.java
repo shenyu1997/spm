@@ -14,6 +14,8 @@ import java.util.Objects;
 public class ProjectEventReceiveRule {
     private String key;
 
+    private boolean trigger; //TODO
+
     private Boolean owner;
 
     private Boolean manager;

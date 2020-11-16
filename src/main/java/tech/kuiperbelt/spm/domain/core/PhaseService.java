@@ -32,7 +32,7 @@ public class PhaseService {
     private PhaseRepository phaseRepository;
 
     @Autowired
-    private ProjectService projectService;
+    private WorkItemService workItemService;
 
     @Autowired
     private EventService eventService;
@@ -109,7 +109,7 @@ public class PhaseService {
 
         // start phase if Project is start and there is running phase
         if(project.getStatus() == RunningStatus.RUNNING && !firstRunningPhase.isPresent()) {
-            phase.start();
+            startPhase(phase);
         }
 
         if(phase.getSeq() != FIRST) {
@@ -131,8 +131,6 @@ public class PhaseService {
                         createPhase.getPlannedStartDate().toString(),
                         createPhase.getPlannedEndDate().toString())
                 .build());
-        // Mark project is not all phasesStop
-        createPhase.getProject().setAllPhasesStop(false);
         return createPhase;
     }
 
@@ -159,20 +157,19 @@ public class PhaseService {
 
                 previousPhase.setPlannedEndDate(phase.getPlannedStartDate().minusDays(1));
                 validateBeforeSave(previousPhase);
-                checkOverflow(previousPhase);
                 eventService.emit(Event.builder()
-                        .key(Event.PROJECT_SCHEDULE_PHASE_END_CHANGED)
+                        .key(Event.PROJECT_SCHEDULE_PHASE_START_CHANGED)
                         .source(previousPhase.getId())
                         .args(previousPhase.getProject().getName(),
                                 previousPhase.getName(),
                                 previousPlannedStartDate.toString(),
-                                previousPhase.getPlannedEndDate().toString())
+                                previousPhase.getPlannedStartDate().toString())
                         .build());
             }
 
             // Change planned start date also need update time frame of it's workItems
             Period offset = Period.between(previousVersion.getPlannedStartDate(), phase.getPlannedStartDate());
-            moveWorkItemsInPhase(offset,phase);
+            moveWorkItemsInPhase(phase, offset);
         }
 
         // Change planned end date will impact all phases after it.
@@ -241,7 +238,7 @@ public class PhaseService {
         laterImpactedPhases.forEach( phase -> {
             phase.move(offset);
             validateBeforeSave(phase);
-            moveWorkItemsInPhase(offset, phase);
+            moveWorkItemsInPhase(phase, offset);
             eventService.emit(Event.builder()
                     .key(eventKey)
                     .source(phase.getId())
@@ -258,9 +255,9 @@ public class PhaseService {
         Assert.notNull(phase.getProject(), "Phase.project can not be null");
     }
 
-    public void startPhase(long id) {
-        Phase phase = phaseRepository.getOne(id);
+    public void startPhase(Phase phase) {
         phase.start();
+        workItemService.setWorkItemsReady(phase);
         eventService.emit(Event.builder()
                 .key(PROJECT_EXECUTION_PHASE_START)
                 .source(phase.getId())
@@ -291,7 +288,7 @@ public class PhaseService {
 
         if(phase.getSeq() < allPhases.size() - 1) {
             Phase nextPhase = allPhases.get(phase.getSeq() + 1);
-            nextPhase.start();
+            startPhase(nextPhase);
         } else {
             phase.getProject().checkAllPhaseStop();
         }
@@ -302,30 +299,35 @@ public class PhaseService {
                 .build());
     }
 
+    public WorkItem createWorkItem(long phaseId, WorkItem workItem) {
+        Phase phase = phaseRepository.getOne(phaseId);
+        Assert.isTrue(phase.getStatus() != RunningStatus.STOP, "STOP phase can not add workItem.");
+        if(phase.getStatus() == RunningStatus.RUNNING) {
+            workItem.setReady(true);
+        }
+        WorkItem createdWorkItem = workItemService.createWorkItem(phase, workItem);
+
+        // check can be done with project
+        phase.setAllItemStop(false);
+        return createdWorkItem;
+    }
 
     private void cancelWorkItems(Phase phase) {
-        //TODO
+        workItemService.cancelWorkItems(phase);
     }
 
     private void deleteWorkItems(Phase phase) {
-        //TODO
-    }
-
-    /**
-     * Check all workItems, mark overflow flag if any workItem was over range of current Phase
-     * @param phase
-     */
-    private void checkOverflow(Phase phase) {
-        // TODO if we have workItems
+        workItemService.deleteWorkItems(phase);
     }
 
     /**
      * Move time frame of all workItems in phase
-     * @param offSet
      * @param phase
+     * @param offSet
      */
-    private void moveWorkItemsInPhase(Period offSet, Phase phase) {
-        // TODO if we have workItems
+    private void moveWorkItemsInPhase(Phase phase, Period offSet) {
+        workItemService.moveWorkItems(phase, offSet);
     }
+
 
 }

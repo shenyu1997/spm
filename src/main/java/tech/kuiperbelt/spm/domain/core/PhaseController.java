@@ -2,15 +2,22 @@ package tech.kuiperbelt.spm.domain.core;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.net.URI;
 
 @Setter
 @RestController
 @RequestMapping("/phases")
 public class PhaseController {
+
+    @Lazy
+    @Autowired
+    private RepositoryEntityLinks entityLinks;
 
     @Autowired
     private PhaseService phaseService;
@@ -19,4 +26,12 @@ public class PhaseController {
     public void donePhase(@PathVariable("id") long id) {
         phaseService.donePhase(id);
     }
+
+    @PostMapping("/{id}/work-items/actions/create")
+    public ResponseEntity createWorkItem(@PathVariable("id") long id, @Valid @RequestBody WorkItem workItem) {
+        WorkItem createdWorkItem = phaseService.createWorkItem(id, workItem);
+        URI uri = entityLinks.linkToItemResource(WorkItem.class, createdWorkItem.getId()).toUri();
+        return ResponseEntity.created(uri).build();
+    }
+
 }

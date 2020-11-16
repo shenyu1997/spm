@@ -4,6 +4,7 @@ import lombok.*;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Setter
 @Getter
@@ -20,5 +21,17 @@ public class PropertyChanged {
         Object oldValue = PropertyUtils.getSimpleProperty(oldBean, property);
         Object newValue = PropertyUtils.getSimpleProperty(newBean, property);
         return !Objects.equals(oldValue, newValue);
+    }
+
+    @SneakyThrows
+    public static <T>  Optional<PropertyChanged> of(T oldBean, T newBean, String property) {
+        if(isChange(oldBean, newBean, property)) {
+            return Optional.of(PropertyChanged.builder()
+                    .oldValue(PropertyUtils.getSimpleProperty(oldBean, property))
+                    .newValue(PropertyUtils.getSimpleProperty(newBean, property))
+                    .build());
+        } else {
+            return Optional.empty();
+        }
     }
 }

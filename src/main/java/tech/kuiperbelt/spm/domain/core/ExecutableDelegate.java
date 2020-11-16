@@ -64,6 +64,6 @@ public class ExecutableDelegate implements ExecutableEntity {
 
     @Override
     public boolean isCanBeRemoved() {
-        return RunningStatus.STOP == getStatus() && isCancelled();
+        return RunningStatus.RUNNING != getStatus();
     }
 }
