@@ -209,7 +209,7 @@ Content-Type: application/json
 }
 
 ### Take a note for workItem
-@currentItem=2934783753425368810
+@currentItem=1616970278439177457
 POST http://localhost:8080/work-items/{{currentItem}}/notes/actions/take-note
 Authorization: Basic {{currentUser}} 123456
 Content-Type: application/json
