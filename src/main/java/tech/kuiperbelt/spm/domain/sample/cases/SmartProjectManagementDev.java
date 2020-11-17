@@ -154,6 +154,26 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
         step("Start workItem Write Design doc", () -> {
             workItemService.startWorkItem(workItemServicePOCId);
         });
+
+        step("Take a note on workItemHLDId", () -> {
+            workItemService.takeNote(workItemHLDId, new Note().toBuilder()
+                    .content("Please update status")
+                    .build());
+
+            workItemService.takeNote(workItemHLDId, new Note().toBuilder()
+                    .content("Hi guy, update status, please")
+                    .build());
+        });
+
+        step("Take a note on Client UI POC", () -> {
+            workItemService.takeNote(workItemClientUIId, new Note().toBuilder()
+                    .content("I am going to do it.")
+                    .build());
+
+            workItemService.takeNote(workItemClientUIId, new Note().toBuilder()
+                    .content("It's hard, but I am going to do it really.")
+                    .build());
+        });
     }
 
 
