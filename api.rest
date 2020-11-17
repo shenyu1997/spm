@@ -1,4 +1,4 @@
-@currentUser=yu.shen
+@currentUser=huanhuan.dong
 @currentProject=4950295244069122689
 
 ### Ping
@@ -9,9 +9,25 @@ Authorization: Basic {{currentUser}} 123456
 GET http://localhost:8080/ 
 Authorization: Basic {{currentUser}} 123456
 
+####################################################################################
+## Quick Start
+####################################################################################
+
 ### Import sample data
 POST http://localhost:8080/sample-data/actions/import 
 Authorization: Basic {{currentUser}} 123456
+
+### My Projects
+GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING
+Authorization: Basic {{currentUser}} 123456
+
+### My Tasks
+GET http://localhost:8080/work-items/search/findByAssignee?assignee={{currentUser}}
+Authorization: Basic {{currentUser}} 123456
+
+####################################################################################
+## CRUD of main entity
+####################################################################################
 
 ### Create Projects
 POST http://localhost:8080/projects
@@ -23,25 +39,12 @@ Content-Type: application/json
     "members":["huanhuan.dong","yongjian.sha"]
 }
 
-### View my Projects
-GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&status=INIT,RUNNING
-Authorization: Basic {{currentUser}} 123456
-
 ### View a Projects
 GET http://localhost:8080/projects/{{currentProject}}
 Authorization: Basic {{currentUser}} 123456
 
 ### List Projects
 GET http://localhost:8080/projects
-Authorization: Basic {{currentUser}} 123456
-
-
-### Get message 
-http://localhost:8080/messages/search/findByReceiver?upn=huanhuan.dong
-Authorization: Basic {{currentUser}} 123456
-
-### Get Event 
-http://localhost:8080/events
 Authorization: Basic {{currentUser}} 123456
 
 ### Update Project
@@ -204,3 +207,22 @@ Content-Type: application/json
 {
     "phase": "phases/5060159618735490761"
 }
+
+### Take a note for workItem
+@currentItem=2934783753425368810
+POST http://localhost:8080/work-items/{{currentItem}}/notes/actions/take-note
+Authorization: Basic {{currentUser}} 123456
+Content-Type: application/json
+
+{
+    "content": "Please update status."
+}
+
+
+### Get message 
+http://localhost:8080/messages/search/findByReceiver?upn=huanhuan.dong
+Authorization: Basic {{currentUser}} 123456
+
+### Get Event 
+http://localhost:8080/events
+Authorization: Basic {{currentUser}} 123456

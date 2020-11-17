@@ -33,6 +33,9 @@ public class WorkItemService {
     @Autowired
     private UserContextHolder userContextHolder;
 
+    @Autowired
+    private NoteService noteService;
+
     public WorkItem createWorkItem(Phase phase, WorkItem workItem) {
         workItem.setPhase(phase);
         workItem.setProject(phase.getProject());
@@ -272,5 +275,10 @@ public class WorkItemService {
             builder.key(Event.ITEM_SCHEDULE_MOVE_RIGHT);
         }
         eventService.emit(builder.args(workItem.getName(), offset.getDays()).build());
+    }
+
+    public Note takeNote(long workItemId, Note note) {
+        WorkItem workItem = workItemRepository.getOne(workItemId);
+        return noteService.takeNote(workItem, note);
     }
 }

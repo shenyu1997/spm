@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
 import tech.kuiperbelt.spm.common.AuditableEntity;
@@ -14,6 +15,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.List;
 
 @FieldNameConstants
 @Audited
@@ -51,6 +53,10 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     private String owner;
 
     private String assignee;
+
+    @NotAudited
+    @OneToMany(mappedBy = Note.Fields.workItem)
+    private List<Note> notes;
 
     @JsonIgnore
     @Embedded

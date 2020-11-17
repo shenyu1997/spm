@@ -67,6 +67,7 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
         this.plannedEndDate = this.plannedEndDate.plus(offset);
     }
 
+    @JsonIgnore
     private boolean allItemStop = true;
 
     public void checkAllPhaseStop () {

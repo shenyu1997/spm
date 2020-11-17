@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RepositoryRestResource
-public interface PhaseRepository extends JpaRepository<Phase, Long> {
-
+public interface NoteRepository extends JpaRepository<Note, Long> {
 }

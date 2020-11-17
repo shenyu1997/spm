@@ -4,10 +4,11 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.net.URI;
 
 @Setter
 @RestController
@@ -34,6 +35,13 @@ public class WorkItemController {
     @PostMapping("/{id}/actions/cancel")
     public void cancelWorkItem(@PathVariable("id") long id) {
         workItemService.cancelWorkItem(id);
+    }
+
+    @PostMapping("/{id}/notes/actions/take-note")
+    public ResponseEntity<Object> takeNote(@PathVariable("id") long id, @Valid @RequestBody Note note) {
+        Note createdNote = workItemService.takeNote(id, note);
+        URI uri = entityLinks.linkToItemResource(Note.class, createdNote.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 
 }

@@ -69,6 +69,8 @@ public class Event extends BaseEntity {
     public static final String ITEM_EXECUTION_DONE = "event.item.execution.done"; //TODO
     public static final String ITEM_EXECUTION_CANCEL = "event.item.execution.cancel"; //TODO
 
+    public static final String ITEM_EXECUTION_NOTE_TAKE = "event.item.execution.note.take"; //TODO
+
 
     public static Signal BULK_BEGIN = new Signal();
     public static Signal BULK_END = new Signal();
