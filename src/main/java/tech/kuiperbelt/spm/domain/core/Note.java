@@ -1,16 +1,19 @@
 package tech.kuiperbelt.spm.domain.core;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
+import tech.kuiperbelt.spm.common.AuditDelegate;
+import tech.kuiperbelt.spm.common.AuditListener;
+import tech.kuiperbelt.spm.common.AuditableEntity;
 import tech.kuiperbelt.spm.common.BaseEntity;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
+@EntityListeners(AuditListener.class)
 @FieldNameConstants
 @Getter
 @Setter
@@ -19,16 +22,17 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "notes")
-public class Note extends BaseEntity {
-
-    private String author;
+public class Note extends BaseEntity implements AuditableEntity{
 
     private String content;
 
     private LocalDate createDate;
 
-    private LocalDateTime timestamp;
-
     @ManyToOne
     private WorkItem workItem;
+
+    @JsonIgnore
+    @Embedded
+    @Delegate
+    private AuditDelegate auditDelegate = new AuditDelegate();
 }

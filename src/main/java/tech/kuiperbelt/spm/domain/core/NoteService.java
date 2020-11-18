@@ -29,10 +29,6 @@ public class NoteService {
         Assert.notNull(workItem, "WorkItem can not be null");
         note.setWorkItem(workItem);
 
-        String upn = userContextHolder.getUserContext().getUpn();
-        note.setAuthor(upn);
-        note.setTimestamp(LocalDateTime.now());
-
         Note createNote = noteRepository.save(note);
 
         sendEvent(Event.ITEM_EXECUTION_NOTE_TAKE, note);
