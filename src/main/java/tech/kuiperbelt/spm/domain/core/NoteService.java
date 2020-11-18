@@ -36,10 +36,16 @@ public class NoteService {
         return createNote;
     }
 
+    public void deleteNote(Note note) {
+        noteRepository.delete(note);
+        sendEvent(Event.ITEM_EXECUTION_NOTE_DELETE, note);
+    }
+
     private void sendEvent(String key, Note note) {
         Event.EventBuilder eventBuilder = Event.builder().key(key).source(note);
         switch (key) {
             case Event.ITEM_EXECUTION_NOTE_TAKE:
+            case  Event.ITEM_EXECUTION_NOTE_DELETE:
                 eventBuilder.args(note.getWorkItem().getName());
                 break;
             default:
@@ -47,4 +53,6 @@ public class NoteService {
         }
         eventService.emit(eventBuilder.build());
     }
+
+
 }
