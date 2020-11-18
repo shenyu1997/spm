@@ -52,7 +52,7 @@ public class PhaseService {
     @HandleBeforeDelete
     public void preHandlePhaseDelete(Phase phase) {
         // then remove
-        Assert.isTrue(phase.isCanBeRemoved(), "Only INIT phase can be removed");
+        Assert.isTrue(phase.isCanBeDeleted(), "Only INIT phase can be removed");
         deleteWorkItems(phase);
         List<Phase> allPhases = phase.getProject().getPhases();
         allPhases.remove(phase);

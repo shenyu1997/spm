@@ -41,7 +41,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.manager", equalTo(MOCK_UERR)))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)))
 				.andExpect(jsonPath("$._links['self'].href", equalTo(newProjectHref)));
@@ -60,7 +60,7 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(false)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(false)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(true)));
 	}
@@ -82,7 +82,7 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(false)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(false)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because there are Non STOP phase
 	}
@@ -104,7 +104,7 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
 
@@ -143,7 +143,7 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
 
@@ -175,7 +175,7 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
 
@@ -211,7 +211,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.cancelled", equalTo(true)))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
 

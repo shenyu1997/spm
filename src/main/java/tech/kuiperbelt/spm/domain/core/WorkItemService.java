@@ -176,7 +176,7 @@ public class WorkItemService {
 
     @HandleBeforeDelete
     public void preHandleDelete(WorkItem workItem) {
-        Assert.isTrue(workItem.isCanBeRemoved(), "WorkItem can not be delete");
+        Assert.isTrue(workItem.isCanBeDeleted(), "WorkItem can not be delete");
     }
 
     @HandleAfterDelete

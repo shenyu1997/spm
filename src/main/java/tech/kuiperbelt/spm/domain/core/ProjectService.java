@@ -177,10 +177,10 @@ public class ProjectService {
 
     @HandleBeforeDelete
     public void preHandleProjectDelete(Project current) {
-        Assert.isTrue(current.isCanBeRemoved(),
+        Assert.isTrue(current.isCanBeDeleted(),
                 "Only Cancelled Project can be deleted");
         current.getPhases().stream()
-                .filter(Phase::isCanBeRemoved)
+                .filter(Phase::isCanBeDeleted)
                 .forEach(phase ->
                 phaseService.deletePhase(phase));
     }

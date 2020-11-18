@@ -17,5 +17,5 @@ public interface ExecutableEntity {
 
     boolean isCancelled();
 
-    boolean isCanBeRemoved();
+    boolean isCanBeDeleted();
 }

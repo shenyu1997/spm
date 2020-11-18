@@ -63,10 +63,12 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @lombok.experimental.Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
+
 
     public enum Priority {
         LOW, MEDIUM, HIGH, TOP
