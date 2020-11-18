@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tech.kuiperbelt.spm.SpmApplication;
 
@@ -27,8 +27,15 @@ public class ExceptionHandlerAdvice {
                         .build());
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorMessage> handle(ResourceNotFoundException ex) {
+        if(log.isDebugEnabled()) {
+            log.debug(ex.getMessage());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorMessage> handle(Exception ex) {
         String message = Optional.ofNullable(ex.getMessage())
                 .orElse(ex.getClass().getSimpleName());
