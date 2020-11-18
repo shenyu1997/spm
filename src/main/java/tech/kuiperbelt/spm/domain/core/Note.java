@@ -31,6 +31,7 @@ public class Note extends BaseEntity implements AuditableEntity{
     @ManyToOne
     private WorkItem workItem;
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate

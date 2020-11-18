@@ -44,15 +44,18 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     @ManyToOne
     private Project project;
 
+    @Builder.Default
     @RestResource(path = "work-items")
     @OneToMany(mappedBy = WorkItem.Fields.phase)
     private List<WorkItem> workItems = new ArrayList<>();
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate(excludes = PhaseExecutableExclude.class)
@@ -71,6 +74,7 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
         this.plannedEndDate = this.plannedEndDate.plus(offset);
     }
 
+    @Builder.Default
     @JsonIgnore
     private boolean allItemStop = true;
 

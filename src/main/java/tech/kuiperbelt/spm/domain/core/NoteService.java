@@ -9,6 +9,7 @@ import tech.kuiperbelt.spm.common.UserContextHolder;
 import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Transactional
@@ -28,6 +29,7 @@ public class NoteService {
     public Note takeNote(WorkItem workItem, Note note) {
         Assert.notNull(workItem, "WorkItem can not be null");
         note.setWorkItem(workItem);
+        note.setCreateDate(LocalDate.now());
 
         Note createNote = noteRepository.save(note);
 

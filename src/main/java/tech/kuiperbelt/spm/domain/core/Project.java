@@ -39,17 +39,21 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
     private String manager;
 
+    @Builder.Default
     @ElementCollection
     private List<String> members = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = Phase.Fields.project)
-    private List<Phase> phases;
+    private List<Phase> phases = new ArrayList<>();
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate(excludes = ProjectExecutableExclude.class)
@@ -59,7 +63,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     private long version;
 
     public Set<String> getParticipants() {
-        Set result = new HashSet();
+        Set<String> result = new HashSet<>();
         if(!CollectionUtils.isEmpty(members)) {
             result.addAll(members);
         }
@@ -77,6 +81,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
                 .collect(Collectors.toList());
     }
 
+    @Builder.Default
     @JsonIgnore
     private boolean allPhasesStop = true;
 
@@ -94,7 +99,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @Override
     public void done() {
         Assert.isTrue(allPhasesStop, "all phases stop");
-        executableDelegate.done();;
+        executableDelegate.done();
     }
 
     private interface ProjectExecutableExclude {

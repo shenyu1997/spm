@@ -58,6 +58,7 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @OneToMany(mappedBy = Note.Fields.workItem)
     private List<Note> notes;
 
+    @Builder.Default
     @JsonIgnore
     @Embedded
     @lombok.experimental.Delegate
