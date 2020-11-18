@@ -10,13 +10,24 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.persistence.EntityManager;
+
 @ActiveProfiles("test")
 @Transactional
 @SpringBootTest
-public abstract class MvcTest {
+public abstract class ApiTest {
     protected MockMvc mockMvc;
+
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    protected void reloadSession() {
+        entityManager.flush();
+        entityManager.clear();
+    }
 
     @BeforeEach
     public void setup(WebApplicationContext webApplicationContext) {

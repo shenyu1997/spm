@@ -59,7 +59,11 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     public Period getPeriod() {
-        return Period.between(plannedStartDate, plannedEndDate);
+        if(plannedStartDate != null) {
+            return Period.between(plannedStartDate, plannedEndDate);
+        } else {
+            return null;
+        }
     }
 
     public void move(Period offset) {

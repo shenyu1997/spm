@@ -30,7 +30,7 @@ public class ExceptionHandlerAdvice {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorMessage> handle(Exception ex) {
-        String message = Optional.of(ex.getMessage())
+        String message = Optional.ofNullable(ex.getMessage())
                 .orElse(ex.getClass().getSimpleName());
         log.error("error: {}", message, ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

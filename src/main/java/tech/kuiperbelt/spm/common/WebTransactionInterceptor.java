@@ -5,15 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.Assert;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
@@ -31,8 +30,6 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
-    private ThreadLocal<TransactionStatus> transactionStatusThreadLocal = new ThreadLocal<>();
-
     @Autowired
     private ExceptionHandlerAdvice exceptionHandlerAdvice;
 
@@ -42,36 +39,48 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
 
     @Override
     public void preHandle(WebRequest webRequest) throws Exception {
-        Assert.isNull(transactionStatusThreadLocal.get(), "TransactionStatusThreadLocal supposed be null");
-        DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
-        definition.setName("SPM-DATA-REST-TX");
-        definition.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
-        definition.setTimeout(3000);
-        TransactionStatus status = platformTransactionManager.getTransaction(definition);
-        transactionStatusThreadLocal.set(status);
-        if(log.isDebugEnabled()) {
-            log.debug("SPM-DATA-REST-TX start");
+        if(TransactionSynchronizationManager.isActualTransactionActive()) {
+            if(log.isDebugEnabled()) {
+                log.debug("SPM-DATA-REST-TX continue");
+            }
+        } else {
+            DefaultTransactionDefinition definition = getDefaultTransactionDefinition();
+            TransactionStatus status = platformTransactionManager.getTransaction(definition);
+            TransactionSynchronizationManager.bindResource(this, status);
+            if(log.isDebugEnabled()) {
+                log.debug("SPM-DATA-REST-TX start");
+            }
         }
         applicationEventPublisher.publishEvent(Event.BULK_BEGIN);
     }
 
-
+    private DefaultTransactionDefinition getDefaultTransactionDefinition() {
+        DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+        definition.setName("SPM-DATA-REST-TX");
+        definition.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
+        definition.setTimeout(3000);
+        return definition;
+    }
 
     @Override
     public void afterCompletion(WebRequest webRequest, Exception ex) throws Exception {
         applicationEventPublisher.publishEvent(Event.BULK_END);
-        TransactionStatus status = transactionStatusThreadLocal.get();
+        if(!TransactionSynchronizationManager.hasResource(this)) {
+            return;
+        }
         try {
+            TransactionStatus status = (TransactionStatus) TransactionSynchronizationManager.getResource(this);
             if (status.isCompleted()) {
                 return;
             }
-            if (ex != null || status.isRollbackOnly()) {
+            boolean needRollback = ex != null || status.isRollbackOnly();
+            if (needRollback) {
                 platformTransactionManager.rollback(status);
             } else {
                 platformTransactionManager.commit(status);
             }
             if (log.isDebugEnabled()) {
-                log.debug("SPM-DATA-REST-TX end");
+                log.debug("SPM-DATA-REST-TX {}", needRollback? "rollback": "commit");
             }
         } catch (Exception e) {
             // We need handle exception in case it is thrown by "Commit" phase.
@@ -86,7 +95,7 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
             }
             throw e;
         } finally {
-            transactionStatusThreadLocal.remove();
+            TransactionSynchronizationManager.unbindResource(this);
         }
     }
 
