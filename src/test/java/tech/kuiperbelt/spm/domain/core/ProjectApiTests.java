@@ -10,14 +10,14 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WithMockUser(username = ProjectApiTests.MOCK_UERR)
 class ProjectApiTests extends ApiTest {
 
 	public static final String MOCK_UERR = "sjdfs.ldjfds";
+	public static final String LOCATION = "location";
 
 	@Test
 	public void getProjects() throws Exception {
@@ -87,18 +87,166 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because there are Non STOP phase
 	}
 
-	private void appendRandomPhase(String newProjectHref, Optional<LocalDate> plannedStartDate, LocalDate plannedEndDate) throws Exception {
+	@Test
+	public void doneAndDeleteProjectWithNoPhase() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+		String newProjectHref = performCreateProject(newProject);
+		mockMvc.perform(post(newProjectHref + "/actions/start"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+
+		mockMvc.perform(post(newProjectHref + "/actions/done"))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
+				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
+				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+		mockMvc.perform(delete(newProjectHref))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void doneAndDeleteProjectWithPhases() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+		String newProjectHref = performCreateProject(newProject);
+
+		// add a phase
+		String newPhaseHref = appendRandomPhase(newProjectHref, Optional.of(LocalDate.now()), LocalDate.now().plusDays(10));
+
+		// start project, and first phase will be sets Running automatically
+		mockMvc.perform(post(newProjectHref + "/actions/start"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+
+		mockMvc.perform(post(newPhaseHref + "/actions/done"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+
+		mockMvc.perform(post(newProjectHref + "/actions/done"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
+				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
+				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
+
+		reloadSession();
+		mockMvc.perform(delete(newProjectHref))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(get(newPhaseHref))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void cancelAndRemoveProjectWithNoPhase() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+		String newProjectHref = performCreateProject(newProject);
+		mockMvc.perform(post(newProjectHref + "/actions/start"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+
+		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
+				.andExpect(status().isOk());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
+				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
+				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+		mockMvc.perform(delete(newProjectHref))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void cancelAndDeleteProjectWithPhases() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+		String newProjectHref = performCreateProject(newProject);
+
+		// add a phase
+		String newPhaseHref = appendRandomPhase(newProjectHref, Optional.of(LocalDate.now()), LocalDate.now().plusDays(10));
+
+		// start project, and first phase will be sets Running automatically
+		mockMvc.perform(post(newProjectHref + "/actions/start"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+
+
+		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
+				.andExpect(status().isOk());
+
+		reloadSession();
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.cancelled", equalTo(true)))
+				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
+				.andExpect(jsonPath("$.canBeRemoved", equalTo(true)))
+				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
+				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
+
+		mockMvc.perform(get(newPhaseHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+		reloadSession();
+
+		mockMvc.perform(delete(newProjectHref))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(get(newPhaseHref))
+				.andExpect(status().isNotFound());
+	}
+
+	private String appendRandomPhase(String newProjectHref, Optional<LocalDate> plannedStartDate, LocalDate plannedEndDate) throws Exception {
 		Phase.PhaseBuilder phaseBuilder = new Phase().toBuilder()
 				.name(RandomStringUtils.randomAlphanumeric(6))
 				.plannedEndDate(plannedEndDate);
 		plannedStartDate.ifPresent(phaseBuilder::plannedStartDate);
 		Phase phase = phaseBuilder.build();
 
-		mockMvc.perform(post(newProjectHref + "/phases/actions/append")
+		String newPhaseHref = mockMvc.perform(post(newProjectHref + "/phases/actions/append")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(phase)))
-				.andExpect(status().isCreated());
+				.andExpect(status().isCreated())
+				.andReturn()
+				.getResponse()
+				.getHeader(LOCATION);
 		reloadSession();
+		return newPhaseHref;
 	}
 
 	private String performCreateProject(Project newProject) throws Exception {
@@ -106,9 +254,9 @@ class ProjectApiTests extends ApiTest {
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(objectMapper.writeValueAsString(newProject)))
 					.andExpect(status().isCreated())
-					.andExpect(header().exists("location"))
+					.andExpect(header().exists(LOCATION))
 					.andReturn()
 					.getResponse()
-					.getHeader("location");
+					.getHeader(LOCATION);
 	}
 }
