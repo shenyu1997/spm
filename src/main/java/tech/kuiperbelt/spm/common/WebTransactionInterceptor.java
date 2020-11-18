@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class WebTransactionInterceptor implements WebRequestInterceptor {
 
+    public static final String SPM_DATA_REST_TX = "SPM-DATA-REST-TX";
     @Autowired
     private PlatformTransactionManager platformTransactionManager;
 
@@ -41,14 +42,14 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
     public void preHandle(WebRequest webRequest) throws Exception {
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
             if(log.isDebugEnabled()) {
-                log.debug("SPM-DATA-REST-TX continue");
+                log.debug(SPM_DATA_REST_TX + " continue");
             }
         } else {
             DefaultTransactionDefinition definition = getDefaultTransactionDefinition();
             TransactionStatus status = platformTransactionManager.getTransaction(definition);
             TransactionSynchronizationManager.bindResource(this, status);
             if(log.isDebugEnabled()) {
-                log.debug("SPM-DATA-REST-TX start");
+                log.debug(SPM_DATA_REST_TX + " start");
             }
         }
         applicationEventPublisher.publishEvent(Event.BULK_BEGIN);
@@ -56,7 +57,7 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
 
     private DefaultTransactionDefinition getDefaultTransactionDefinition() {
         DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
-        definition.setName("SPM-DATA-REST-TX");
+        definition.setName(SPM_DATA_REST_TX);
         definition.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
         definition.setTimeout(3000);
         return definition;
@@ -80,7 +81,7 @@ public class WebTransactionInterceptor implements WebRequestInterceptor {
                 platformTransactionManager.commit(status);
             }
             if (log.isDebugEnabled()) {
-                log.debug("SPM-DATA-REST-TX {}", needRollback? "rollback": "commit");
+                log.debug(SPM_DATA_REST_TX + " {}", needRollback? "rollback": "commit");
             }
         } catch (Exception e) {
             // We need handle exception in case it is thrown by "Commit" phase.
