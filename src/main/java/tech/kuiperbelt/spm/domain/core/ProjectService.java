@@ -180,7 +180,6 @@ public class ProjectService {
         Assert.isTrue(current.isCanBeDeleted(),
                 "Only Cancelled Project can be deleted");
         current.getPhases().stream()
-                .filter(Phase::isCanBeDeleted)
                 .forEach(phase ->
                 phaseService.deletePhase(phase));
     }

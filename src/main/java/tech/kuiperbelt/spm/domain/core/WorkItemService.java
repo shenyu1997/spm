@@ -146,6 +146,8 @@ public class WorkItemService {
 
     public void cancelWorkItems(Phase phase) {
         phase.getWorkItems()
+                .stream()
+                .filter(WorkItem::isCanBeCancelled)
                 .forEach(this::cancelWorkItem);
     }
 
@@ -165,6 +167,7 @@ public class WorkItemService {
 
     public void deleteWorkItems(Phase phase) {
         phase.getWorkItems()
+                .stream()
                 .forEach(this::deleteWorkItem);
     }
 
