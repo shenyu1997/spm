@@ -1,8 +1,10 @@
 package tech.kuiperbelt.spm.common;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.UUID;
 
@@ -14,7 +16,9 @@ public class UserContextHolder {
 
     public UserContext getUserContext() {
         if(!userContext.isInit()) {
-            userContext.setUpn(SecurityContextHolder.getContext().getAuthentication().getName());
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Assert.state(authentication != null, "authentication can not be null");
+            userContext.setUpn(authentication.getName());
             userContext.setCorrelationId(UUID.randomUUID().toString());
             userContext.setInit(true);
         }
