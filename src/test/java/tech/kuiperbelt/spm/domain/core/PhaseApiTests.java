@@ -91,7 +91,15 @@ public class PhaseApiTests extends ApiTest {
 
     @Test
     public void startPhaseAutomaticallyAfterFirstInsertRunningProject() throws Exception {
-        //TODO
+        String projectHref = testUtils.createRandomProject();
+        mockMvc.perform(post(projectHref + "/actions/start"))
+                .andExpect(status().isNoContent());
+
+        reloadSession();
+
+        String firstPhasesHref = testUtils.appendRandomPhase(projectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+        mockMvc.perform(get(firstPhasesHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
     }
 
     @Test

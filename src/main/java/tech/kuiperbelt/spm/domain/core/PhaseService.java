@@ -103,11 +103,6 @@ public class PhaseService {
         phase.setProject(project);
         phase.setStatus(RunningStatus.INIT);
 
-        // start phase if Project is start and there is running phase
-        if(project.getStatus() == RunningStatus.RUNNING && !firstRunningPhase.isPresent()) {
-            startPhase(phase);
-        }
-
         if(phase.getSeq() != FIRST) {
             phase.setPlannedStartDate(allPhases.get(phase.getSeq() - 1)
                     .getPlannedEndDate().plusDays(1));
@@ -127,6 +122,11 @@ public class PhaseService {
                         createPhase.getPlannedStartDate().toString(),
                         createPhase.getPlannedEndDate().toString())
                 .build());
+
+        // start phase if Project is start and there is running phase
+        if(project.getStatus() == RunningStatus.RUNNING && !firstRunningPhase.isPresent()) {
+            startPhase(createPhase);
+        }
         return createPhase;
     }
 
