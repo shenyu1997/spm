@@ -77,7 +77,7 @@ public class EventService {
 
     public void emit(Event event) {
         Assert.notNull(event.getKey(), "Key must not null");
-        Assert.notNull(event.getSource(), "Source must not null");
+        Assert.notNull(event.getSource(), "Source must not null, event key:" + event.getKey());
 
         UserContext userContext = userContextHolder.getUserContext();
         event.setCorrelationId(userContext.getCorrelationId());
