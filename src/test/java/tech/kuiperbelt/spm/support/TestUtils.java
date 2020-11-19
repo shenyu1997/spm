@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tech.kuiperbelt.spm.domain.core.Phase;
 import tech.kuiperbelt.spm.domain.core.Project;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDate;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,7 +28,7 @@ public class TestUtils {
                 .name(RandomStringUtils.randomAlphanumeric(10))
                 .build();
 
-        String href = mockMvc.perform(post("/projects")
+        return mockMvc.perform(post("/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(newProject)))
                 .andExpect(status().isCreated())
@@ -35,7 +36,6 @@ public class TestUtils {
                 .andReturn()
                 .getResponse()
                 .getHeader(LOCATION);
-        return href;
     }
 
     public String appendRandomPhase(String newProjectHref,	 LocalDate plannedEndDate) throws Exception {
@@ -51,13 +51,32 @@ public class TestUtils {
                 .plannedStartDate(plannedStartDate)
                 .build();
 
-        String newPhaseHref = mockMvc.perform(post(newProjectHref + "/phases/actions/append")
+        return mockMvc.perform(post(newProjectHref + "/phases/actions/append")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(phase)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getHeader(LOCATION);
-        return newPhaseHref;
+    }
+
+    public void start(String href) throws Exception {
+        mockMvc.perform(post(href + "/actions/start"))
+                .andExpect(status().isNoContent());
+    }
+
+    public void cancel(String href) throws Exception {
+        mockMvc.perform(post(href + "/actions/cancel"))
+                .andExpect(status().isNoContent());
+    }
+
+    public void done(String href) throws Exception {
+        mockMvc.perform(post(href + "/actions/done"))
+                .andExpect(status().isNoContent());
+    }
+
+    public void delete(String href) throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete(href))
+                .andExpect(status().isNoContent());
     }
 }

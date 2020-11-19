@@ -45,8 +45,7 @@ public class PhaseApiTests extends ApiTest {
         String secondPhaseHref = testUtils.appendRandomPhase(projectHref, LocalDate.now().plusDays(20));
 
         // 1. Start project
-        mockMvc.perform(post(projectHref + "/actions/start"))
-                .andExpect(status().isNoContent());
+        testUtils.start(projectHref);
 
         // Verify project and phase status
         mockMvc.perform(get(projectHref))
@@ -59,8 +58,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
 
         // 2. Done first phase
-        mockMvc.perform(post(firstPhasesHref + "/actions/done"))
-                .andExpect(status().isNoContent());
+        testUtils.done(firstPhasesHref);
 
         // Verify project and phase status
         mockMvc.perform(get(projectHref))
@@ -73,8 +71,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
 
         // 3. Done second phase
-        mockMvc.perform(post(secondPhaseHref + "/actions/done"))
-                .andExpect(status().isNoContent());
+        testUtils.done(secondPhaseHref);
 
         // Verify project and phase status
         mockMvc.perform(get(projectHref))
@@ -84,8 +81,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
 
         // 4. Done project
-        mockMvc.perform(post(projectHref + "/actions/done"))
-                .andExpect(status().isNoContent());
+        testUtils.done(projectHref);
 
         mockMvc.perform(get(projectHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
@@ -95,8 +91,7 @@ public class PhaseApiTests extends ApiTest {
     @Test
     public void startPhaseAutomaticallyAfterFirstInsertRunningProject() throws Exception {
         String projectHref = testUtils.createRandomProject();
-        mockMvc.perform(post(projectHref + "/actions/start"))
-                .andExpect(status().isNoContent());
+        testUtils.start(projectHref);
 
         String firstPhasesHref = testUtils.appendRandomPhase(projectHref, LocalDate.now(), LocalDate.now().plusDays(10));
         mockMvc.perform(get(firstPhasesHref))
@@ -106,13 +101,11 @@ public class PhaseApiTests extends ApiTest {
     @Test
     public void stopPhaseCanNotBeUpdate() throws Exception {
         String projectHref = testUtils.createRandomProject();
-        mockMvc.perform(post(projectHref + "/actions/start"))
-                .andExpect(status().isNoContent());
+        testUtils.start(projectHref);
         String firstPhasesHref = testUtils.appendRandomPhase(projectHref, LocalDate.now(), LocalDate.now().plusDays(10));
 
         // done the phase
-        mockMvc.perform(post(firstPhasesHref + "/actions/done"))
-                .andExpect(status().isNoContent());
+        testUtils.done(firstPhasesHref);
 
         Phase phase = new Phase().toBuilder()
                 .name(RandomStringUtils.randomAlphanumeric(10))
