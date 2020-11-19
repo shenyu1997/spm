@@ -132,6 +132,7 @@ public class PhaseService {
 
     @HandleBeforeSave
     public void preHandlePhaseSave(Phase phase) {
+        Assert.isTrue(phase.getStatus() != RunningStatus.STOP, "Stopped phase can not be update");
         Phase previousVersion = auditService.getPreviousVersion(phase)
                 .orElseThrow(() -> new IllegalStateException("Previous version of phase does not exist."));
         Assert.isTrue(!PropertyChanged.isChange(previousVersion, phase, Phase.Fields.seq),

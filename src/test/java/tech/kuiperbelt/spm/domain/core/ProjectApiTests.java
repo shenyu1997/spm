@@ -4,6 +4,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ class ProjectApiTests extends ApiTest {
 	public static final String MOCK_UERR = "sjdfs.ldjfds";
 	public static final String LOCATION = "location";
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void getProjects() throws Exception {
 		mockMvc.perform(get("/projects"))
@@ -25,6 +27,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.page.number", equalTo(0)));
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void createProject() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -46,11 +49,13 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$._links['self'].href", equalTo(newProjectHref)));
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void getMyProjects() {
 		//TODO
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void cancelInitProjectWithNoPhase() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -67,6 +72,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.cancelled", equalTo(true)));
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void cancelInitProjectWithPhases() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -97,6 +103,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.cancelled", equalTo(true)));
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void deleteInitProjectWithNoPhase() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -112,6 +119,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void deleteInitProjectWithPhases() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -138,7 +146,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
-
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void startProjectWithNoPhase() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -156,6 +164,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.canBeDone", equalTo(true)));
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void startProjectWithPhases() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -183,6 +192,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void doneAndDeleteProjectWithNoPhase() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -191,8 +201,6 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
 				.andExpect(status().isNoContent());
-
-		reloadSession();
 
 		mockMvc.perform(post(newProjectHref + "/actions/done"))
 				.andExpect(status().isNoContent());
@@ -211,6 +219,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void doneAndDeleteProjectWithPhases() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -225,17 +234,12 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
 				.andExpect(status().isNoContent());
 
-		reloadSession();
-
 		mockMvc.perform(post(newPhaseHref + "/actions/done"))
 				.andExpect(status().isNoContent());
-
-		reloadSession();
 
 		mockMvc.perform(post(newProjectHref + "/actions/done"))
 				.andExpect(status().isNoContent());
 
-		reloadSession();
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
@@ -243,7 +247,6 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
 
-		reloadSession();
 		mockMvc.perform(delete(newProjectHref))
 				.andExpect(status().isNoContent());
 
@@ -254,6 +257,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void cancelAndRemoveProjectWithNoPhase() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -262,8 +266,6 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
 				.andExpect(status().isNoContent());
-
-		reloadSession();
 
 		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
 				.andExpect(status().isNoContent());
@@ -282,6 +284,7 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
+	@Sql({"/cleanup.sql"})
 	@Test
 	public void cancelAndDeleteProjectWithPhases() throws Exception {
 		Project newProject = new Project().toBuilder()
@@ -296,13 +299,10 @@ class ProjectApiTests extends ApiTest {
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
 				.andExpect(status().isNoContent());
 
-		reloadSession();
-
 
 		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
 				.andExpect(status().isNoContent());
 
-		reloadSession();
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.cancelled", equalTo(true)))
@@ -315,7 +315,6 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
 				.andExpect(jsonPath("$.cancelled", equalTo(true)));
 
-		reloadSession();
 
 		mockMvc.perform(delete(newProjectHref))
 				.andExpect(status().isNoContent());

@@ -21,7 +21,6 @@ public class TestUtils {
 
     private final  MockMvc mockMvc;
     private final ObjectMapper objectMapper;
-    private final Runnable reloadSessionRunnable;
 
     public String createRandomProject() throws Exception {
         Project newProject = new Project().toBuilder()
@@ -36,7 +35,6 @@ public class TestUtils {
                 .andReturn()
                 .getResponse()
                 .getHeader(LOCATION);
-        reloadSessionRunnable.run();
         return href;
     }
 
@@ -60,7 +58,6 @@ public class TestUtils {
                 .andReturn()
                 .getResponse()
                 .getHeader(LOCATION);
-        reloadSessionRunnable.run();
         return newPhaseHref;
     }
 }

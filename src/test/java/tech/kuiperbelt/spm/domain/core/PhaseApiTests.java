@@ -1,28 +1,31 @@
 package tech.kuiperbelt.spm.domain.core;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WithMockUser(username = PhaseApiTests.MOCK_UERR)
 public class PhaseApiTests extends ApiTest {
     public static final String MOCK_UERR = "sjdfs.ldjfds";
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void getPhases() throws Exception {
         mockMvc.perform(get("/phases"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.number", equalTo(0)));
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void getProjectPhases() throws Exception {
         String projectHref = testUtils.createRandomProject();
@@ -34,7 +37,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$._embedded.phases..self.href",
                         hasItems(firstPhasesHref, secondPhaseHref)));
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void starProjectToDoneProject() throws Exception {
         String projectHref = testUtils.createRandomProject();
@@ -88,55 +91,68 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
 
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void startPhaseAutomaticallyAfterFirstInsertRunningProject() throws Exception {
         String projectHref = testUtils.createRandomProject();
         mockMvc.perform(post(projectHref + "/actions/start"))
                 .andExpect(status().isNoContent());
 
-        reloadSession();
-
         String firstPhasesHref = testUtils.appendRandomPhase(projectHref, LocalDate.now(), LocalDate.now().plusDays(10));
         mockMvc.perform(get(firstPhasesHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void stopPhaseCanNotBeUpdate() throws Exception {
-        //TODO
-    }
+        String projectHref = testUtils.createRandomProject();
+        mockMvc.perform(post(projectHref + "/actions/start"))
+                .andExpect(status().isNoContent());
+        String firstPhasesHref = testUtils.appendRandomPhase(projectHref, LocalDate.now(), LocalDate.now().plusDays(10));
 
+        // done the phase
+        mockMvc.perform(post(firstPhasesHref + "/actions/done"))
+                .andExpect(status().isNoContent());
+
+        Phase phase = new Phase().toBuilder()
+                .name(RandomStringUtils.randomAlphanumeric(10))
+                .build();
+        mockMvc.perform(patch(firstPhasesHref)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(phase)))
+                .andExpect(status().isBadRequest());
+    }
+    @Sql({"/cleanup.sql"})
     @Test
     public void insertPhaseBeforeProjectStart() throws Exception {
         //TODO
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void insertPhaseAfterProjectStart() throws Exception {
         //TODO
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void changePhaseTimeFrame() throws Exception {
         //TODO
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void insertPhaseWithWorkItems() throws Exception {
         //TODO
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void donePhaseAfterAllWorkItemsStop() throws Exception {
         //TODO
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void cancelPhaseCascadeCancelAllWorkItemsNonStop() throws Exception {
         //TODO
     }
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void deletePhaseCascadeDeleteAllWorkItems() throws Exception {
         //TODO
