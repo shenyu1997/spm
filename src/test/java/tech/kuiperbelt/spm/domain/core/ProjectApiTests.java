@@ -4,7 +4,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
-import tech.kuiperbelt.spm.ApiTest;
+import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
 
@@ -47,7 +47,7 @@ class ProjectApiTests extends ApiTest {
 	}
 
 	@Test
-	public void getMyProjects() throws Exception {
+	public void getMyProjects() {
 		//TODO
 	}
 
@@ -75,8 +75,8 @@ class ProjectApiTests extends ApiTest {
 
 		String newProjectHref = performCreateProject(newProject);
 		// add two phase
-		String fistPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
-		String secondPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
+		String fistPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String secondPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
 
 		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
 				.andExpect(status().isNoContent());
@@ -121,8 +121,8 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add two phase
-		String fistPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
-		String secondPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
+		String fistPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String secondPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
 
 		mockMvc.perform(delete(newProjectHref))
 				.andExpect(status().isNoContent());
@@ -164,8 +164,8 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add two phase
-		String fistPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
-		String secondPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
+		String fistPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String secondPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
 
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
 				.andExpect(status().isNoContent());
@@ -219,7 +219,7 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add a phase
-		String newPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String newPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
 
 		// start project, and first phase will be sets Running automatically
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
@@ -290,7 +290,7 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add a phase
-		String newPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String newPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
 
 		// start project, and first phase will be sets Running automatically
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
@@ -327,29 +327,6 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
-	private String appendRandomPhase(String newProjectHref,	 LocalDate plannedEndDate) throws Exception {
-		return appendRandomPhase(newProjectHref, null, plannedEndDate);
-	}
-
-	private String appendRandomPhase(String newProjectHref,
-									 LocalDate plannedStartDate,
-									 LocalDate plannedEndDate) throws Exception {
-		Phase phase = new Phase().toBuilder()
-				.name(RandomStringUtils.randomAlphanumeric(6))
-				.plannedEndDate(plannedEndDate)
-				.plannedStartDate(plannedStartDate)
-				.build();
-
-		String newPhaseHref = mockMvc.perform(post(newProjectHref + "/phases/actions/append")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(phase)))
-				.andExpect(status().isCreated())
-				.andReturn()
-				.getResponse()
-				.getHeader(LOCATION);
-		reloadSession();
-		return newPhaseHref;
-	}
 
 	private String performCreateProject(Project newProject) throws Exception {
 		return mockMvc.perform(post("/projects")

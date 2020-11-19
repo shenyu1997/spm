@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm;
+package tech.kuiperbelt.spm.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,9 +22,11 @@ public abstract class ApiTest {
     protected ObjectMapper objectMapper;
 
     @Autowired
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
-    protected void reloadSession() {
+    protected TestUtils testUtils;
+
+    public void reloadSession() {
         entityManager.flush();
         entityManager.clear();
     }
@@ -32,5 +34,6 @@ public abstract class ApiTest {
     @BeforeEach
     public void setup(WebApplicationContext webApplicationContext) {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        testUtils = new TestUtils(this.mockMvc, this.objectMapper, this::reloadSession);
     }
 }
