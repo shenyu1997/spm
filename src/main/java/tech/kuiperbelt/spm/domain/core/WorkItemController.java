@@ -23,22 +23,25 @@ public class WorkItemController {
     private WorkItemService workItemService;
 
     @PostMapping("/{id}/actions/start")
-    public void createWorkItem(@PathVariable("id") long id) {
+    public ResponseEntity<?> startWorkItem(@PathVariable("id") long id) {
         workItemService.startWorkItem(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/actions/done")
-    public void donePhase(@PathVariable("id") long id) {
+    public ResponseEntity<?> donePhase(@PathVariable("id") long id) {
         workItemService.doneWorkItem(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/actions/cancel")
-    public void cancelWorkItem(@PathVariable("id") long id) {
+    public ResponseEntity<?> cancelWorkItem(@PathVariable("id") long id) {
         workItemService.cancelWorkItem(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/notes/actions/take-note")
-    public ResponseEntity<Object> takeNote(@PathVariable("id") long id, @Valid @RequestBody Note note) {
+    public ResponseEntity<?> takeNote(@PathVariable("id") long id, @Valid @RequestBody Note note) {
         Note createdNote = workItemService.takeNote(id, note);
         URI uri = entityLinks.linkToItemResource(Note.class, createdNote.getId()).toUri();
         return ResponseEntity.created(uri).build();

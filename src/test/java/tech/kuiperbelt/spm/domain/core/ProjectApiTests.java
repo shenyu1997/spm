@@ -7,7 +7,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import tech.kuiperbelt.spm.ApiTest;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -47,6 +46,93 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$._links['self'].href", equalTo(newProjectHref)));
 	}
 
+	@Test
+	public void cancelInitProjectWithNoPhase() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+
+		String newProjectHref = performCreateProject(newProject);
+		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.cancelled", equalTo(true)));
+	}
+
+	@Test
+	public void cancelInitProjectWithPhases() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+
+		String newProjectHref = performCreateProject(newProject);
+		// add two phase
+		String fistPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String secondPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
+
+		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+		mockMvc.perform(get(fistPhaseHref))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+		mockMvc.perform(get(secondPhaseHref))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+				.andExpect(jsonPath("$.cancelled", equalTo(true)));
+	}
+
+	@Test
+	public void deleteInitProjectWithNoPhase() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+
+		String newProjectHref = performCreateProject(newProject);
+		mockMvc.perform(delete(newProjectHref))
+				.andExpect(status().isNoContent());
+
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void deleteInitProjectWithPhases() throws Exception {
+		Project newProject = new Project().toBuilder()
+				.name(RandomStringUtils.randomAlphanumeric(10))
+				.build();
+
+		String newProjectHref = performCreateProject(newProject);
+
+		// add two phase
+		String fistPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String secondPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
+
+		mockMvc.perform(delete(newProjectHref))
+				.andExpect(status().isNoContent());
+
+
+		mockMvc.perform(get(newProjectHref))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(get(fistPhaseHref))
+				.andExpect(status().isNotFound());
+
+		mockMvc.perform(get(secondPhaseHref))
+				.andExpect(status().isNotFound());
+	}
+
 
 	@Test
 	public void startProjectWithNoPhase() throws Exception {
@@ -55,7 +141,7 @@ class ProjectApiTests extends ApiTest {
 				.build();
 		String newProjectHref = performCreateProject(newProject);
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
@@ -73,11 +159,11 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add two phase
-		appendRandomPhase(newProjectHref, Optional.of(LocalDate.now()), LocalDate.now().plusDays(10));
-		appendRandomPhase(newProjectHref, Optional.empty(), LocalDate.now().plusDays(20));
+		String fistPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
+		String secondPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
 
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
@@ -85,6 +171,11 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.canBeDeleted", equalTo(false)))
 				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
 				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because there are Non STOP phase
+
+		mockMvc.perform(get(fistPhaseHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
+		mockMvc.perform(get(secondPhaseHref))
+				.andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
 	}
 
 	@Test
@@ -94,12 +185,12 @@ class ProjectApiTests extends ApiTest {
 				.build();
 		String newProjectHref = performCreateProject(newProject);
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 
 		mockMvc.perform(post(newProjectHref + "/actions/done"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
@@ -123,21 +214,21 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add a phase
-		String newPhaseHref = appendRandomPhase(newProjectHref, Optional.of(LocalDate.now()), LocalDate.now().plusDays(10));
+		String newPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
 
 		// start project, and first phase will be sets Running automatically
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 
 		mockMvc.perform(post(newPhaseHref + "/actions/done"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 
 		mockMvc.perform(post(newProjectHref + "/actions/done"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 		mockMvc.perform(get(newProjectHref))
@@ -165,12 +256,12 @@ class ProjectApiTests extends ApiTest {
 				.build();
 		String newProjectHref = performCreateProject(newProject);
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 
 		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		mockMvc.perform(get(newProjectHref))
 				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
@@ -194,17 +285,17 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = performCreateProject(newProject);
 
 		// add a phase
-		String newPhaseHref = appendRandomPhase(newProjectHref, Optional.of(LocalDate.now()), LocalDate.now().plusDays(10));
+		String newPhaseHref = appendRandomPhase(newProjectHref, LocalDate.now(), LocalDate.now().plusDays(10));
 
 		// start project, and first phase will be sets Running automatically
 		mockMvc.perform(post(newProjectHref + "/actions/start"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 
 
 		mockMvc.perform(post(newProjectHref + "/actions/cancel"))
-				.andExpect(status().isOk());
+				.andExpect(status().isNoContent());
 
 		reloadSession();
 		mockMvc.perform(get(newProjectHref))
@@ -231,12 +322,18 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(status().isNotFound());
 	}
 
-	private String appendRandomPhase(String newProjectHref, Optional<LocalDate> plannedStartDate, LocalDate plannedEndDate) throws Exception {
-		Phase.PhaseBuilder phaseBuilder = new Phase().toBuilder()
+	private String appendRandomPhase(String newProjectHref,	 LocalDate plannedEndDate) throws Exception {
+		return appendRandomPhase(newProjectHref, null, plannedEndDate);
+	}
+
+	private String appendRandomPhase(String newProjectHref,
+									 LocalDate plannedStartDate,
+									 LocalDate plannedEndDate) throws Exception {
+		Phase phase = new Phase().toBuilder()
 				.name(RandomStringUtils.randomAlphanumeric(6))
-				.plannedEndDate(plannedEndDate);
-		plannedStartDate.ifPresent(phaseBuilder::plannedStartDate);
-		Phase phase = phaseBuilder.build();
+				.plannedEndDate(plannedEndDate)
+				.plannedStartDate(plannedStartDate)
+				.build();
 
 		String newPhaseHref = mockMvc.perform(post(newProjectHref + "/phases/actions/append")
 				.contentType(MediaType.APPLICATION_JSON)

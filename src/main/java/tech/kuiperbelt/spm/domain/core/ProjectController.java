@@ -26,29 +26,32 @@ public class ProjectController {
     private RepositoryEntityLinks entityLinks;
 
     @PostMapping("/{id}/actions/cancel")
-    public void cancel(@PathVariable("id") long id) {
+    public ResponseEntity<?> cancel(@PathVariable("id") long id) {
         projectService.cancelProject(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/actions/start")
-    public void start(@PathVariable("id") long id) {
+    public ResponseEntity<?> start(@PathVariable("id") long id) {
         projectService.startProject(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/actions/done")
-    public void done(@PathVariable("id") long id) {
+    public ResponseEntity<?> done(@PathVariable("id") long id) {
         projectService.doneProject(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/phases/actions/append")
-    public ResponseEntity appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
+    public ResponseEntity<?> appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
         Phase createdPhase = projectService.appendPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
     @PostMapping("/{id}/phases/actions/insert")
-    public ResponseEntity insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
+    public ResponseEntity<?> insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
         Phase createdPhase = projectService.insertPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
         return ResponseEntity.created(uri).build();

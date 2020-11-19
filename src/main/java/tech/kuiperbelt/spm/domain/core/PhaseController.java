@@ -23,12 +23,13 @@ public class PhaseController {
     private PhaseService phaseService;
 
     @PostMapping("/{id}/actions/done")
-    public void donePhase(@PathVariable("id") long id) {
+    public ResponseEntity<?> donePhase(@PathVariable("id") long id) {
         phaseService.donePhase(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/work-items/actions/create")
-    public ResponseEntity createWorkItem(@PathVariable("id") long id, @Valid @RequestBody WorkItem workItem) {
+    public ResponseEntity<?> createWorkItem(@PathVariable("id") long id, @Valid @RequestBody WorkItem workItem) {
         WorkItem createdWorkItem = phaseService.createWorkItem(id, workItem);
         URI uri = entityLinks.linkToItemResource(WorkItem.class, createdWorkItem.getId()).toUri();
         return ResponseEntity.created(uri).build();
