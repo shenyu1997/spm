@@ -18,11 +18,72 @@ public class PhaseApiTests extends ApiTest {
 
 
     @Test
-    public void getProjects() throws Exception {
+    public void getPhases() throws Exception {
         mockMvc.perform(get("/phases"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.number", equalTo(0)));
     }
+
+    @Test
+    public void getProjectPhases() throws Exception {
+        // Todo
+    }
+
+    @Test
+    public void startPhaseByStartProject() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void startPhaseAutomaticallyAfterFirstInsertRunningProject() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void donePhaseAutomaticallyStartNextPhaseAndImpactProjectIsCanBeDone() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void stopPhaseCanNotBeUpdate() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void insertPhaseBeforeProjectStart() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void insertPhaseAfterProjectStart() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void changePhaseTimeFrame() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void insertPhaseWithWorkItems() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void donePhaseAfterAllWorkItemsStop() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void cancelPhaseCascadeCancelAllWorkItemsNonStop() throws Exception {
+        //TODO
+    }
+
+    @Test
+    public void deletePhaseCascadeDeleteAllWorkItems() throws Exception {
+        //TODO
+    }
+
 
     private String createRandomProject() throws Exception {
         Project newProject = new Project().toBuilder()

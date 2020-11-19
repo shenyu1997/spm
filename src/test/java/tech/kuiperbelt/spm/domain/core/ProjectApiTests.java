@@ -47,6 +47,11 @@ class ProjectApiTests extends ApiTest {
 	}
 
 	@Test
+	public void getMyProjects() throws Exception {
+		//TODO
+	}
+
+	@Test
 	public void cancelInitProjectWithNoPhase() throws Exception {
 		Project newProject = new Project().toBuilder()
 				.name(RandomStringUtils.randomAlphanumeric(10))
