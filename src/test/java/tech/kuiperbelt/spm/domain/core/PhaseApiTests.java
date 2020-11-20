@@ -334,6 +334,7 @@ public class PhaseApiTests extends ApiTest {
 
     }
 
+    @Test
     public void changePhaseEndDayToRight() throws Exception {
         LocalDate currentDay = LocalDate.now();
         String projectHref = testUtils.createRandomProject();
@@ -390,17 +391,17 @@ public class PhaseApiTests extends ApiTest {
 
         // Verify workItems in phase B
         mockMvc.perform(get(workItemEHref))
-                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(16).toString())))
-                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(19).toString())))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(15).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(22).toString())))
                 .andExpect(jsonPath("$.overflow", equalTo(false)));
 
         mockMvc.perform(get(workItemFHref))
                 .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(15).toString())))
-                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(20).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(19).toString())))
                 .andExpect(jsonPath("$.overflow", equalTo(false)));
 
         mockMvc.perform(get(workItemGHref))
-                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(19).toString())))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(18).toString())))
                 .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(24).toString())))
                 .andExpect(jsonPath("$.overflow", equalTo(false)));
 
@@ -411,15 +412,15 @@ public class PhaseApiTests extends ApiTest {
 
         // Verify workItems in phase C
         mockMvc.perform(get(workItemXHref))
-                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(26).toString())))
-                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(33).toString())));
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(25).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(32).toString())));
 
         mockMvc.perform(get(workItemYHref))
-                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(26).toString())))
-                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(30).toString())));
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(25).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(29).toString())));
 
         mockMvc.perform(get(workItemZHref))
-                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(29).toString())))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(28).toString())))
                 .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(34).toString())));
 
     }
@@ -518,7 +519,6 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(30).toString())));
 
     }
-
 
     @Sql({"/cleanup.sql"})
     @Test
