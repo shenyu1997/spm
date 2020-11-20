@@ -109,10 +109,15 @@ public class PhaseService {
         }
         validateBeforeSave(phase);
         List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq(), allPhases.size()));
-
         allPhases.add(phase.getSeq(), phase);
         resetSeq(allPhases);
-        movePhases(phase.getPeriod().plusDays(1), laterImpactedPhases);
+        if(!laterImpactedPhases.isEmpty()) {
+            Period offset = phase.getSeq() == FIRST?
+                    Period.between(laterImpactedPhases.get(FIRST).getPlannedStartDate(), phase.getPlannedEndDate().plusDays(1)):
+                    phase.getPeriod().plusDays(1);
+            movePhases(offset, laterImpactedPhases);
+        }
+
         Phase createPhase = phaseRepository.save(phase);
         eventService.emit(Event.builder()
                 .key(PROJECT_SCHEDULE_PHASE_ADDED)

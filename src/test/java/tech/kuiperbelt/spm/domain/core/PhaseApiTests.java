@@ -202,11 +202,46 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(24).toString())))
                 .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(30).toString())));
 
+        // Insert into at first
+        String phaseDHref = testUtils.insertRandomPhase(projectHref, 0, currentDay.plusDays(10), currentDay.plusDays(20));
+
+        // Verify phase count
+        mockMvc.perform(get(projectHref + "/phases"))
+                .andExpect(jsonPath("$._embedded.phases.length()", equalTo(4)));
+
+        // Verify phase D
+        mockMvc.perform(get(phaseDHref))
+                .andExpect(jsonPath("$.seq", equalTo(0)))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(10).toString())))
+                .andExpect(jsonPath("$.plannedEndDate", equalTo(currentDay.plusDays(20).toString())));
+
+
+        // Verify phase A move left
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(21).toString())))
+                .andExpect(jsonPath("$.plannedEndDate", equalTo(currentDay.plusDays(31).toString())))
+                .andExpect(jsonPath("$.seq", equalTo(1)));
+
     }
     @Sql({"/cleanup.sql"})
     @Test
-    public void insertPhaseAfterProjectStart() throws Exception {
-        //TODO
+    public void insertPhaseBeforeAStartedPhase() throws Exception {
+        String projectHref = testUtils.createRandomProject();
+        LocalDate current = LocalDate.now();
+        testUtils.appendRandomPhase(projectHref, current, current.plusDays(10));
+        testUtils.start(projectHref);
+
+        Phase phase = new Phase().toBuilder()
+                .name(RandomStringUtils.randomAlphanumeric(6))
+                .plannedEndDate(current.plusDays(10))
+                .seq(0)
+                .build();
+
+        mockMvc.perform(post(projectHref + "/phases/actions/insert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(phase)))
+                .andExpect(status().isBadRequest());
+
     }
     @Sql({"/cleanup.sql"})
     @Test

@@ -39,8 +39,13 @@ public class TestUtils {
     }
 
     public String insertRandomPhase(String newProjectHref, int sequence, LocalDate plannedEndDate) throws Exception {
+        return insertRandomPhase(newProjectHref, sequence, null, plannedEndDate);
+    }
+
+    public String insertRandomPhase(String newProjectHref, int sequence, LocalDate plannedStartDate, LocalDate plannedEndDate) throws Exception {
         Phase phase = new Phase().toBuilder()
                 .name(RandomStringUtils.randomAlphanumeric(6))
+                .plannedStartDate(plannedStartDate)
                 .plannedEndDate(plannedEndDate)
                 .seq(sequence)
                 .build();
