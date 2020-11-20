@@ -8,10 +8,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tech.kuiperbelt.spm.domain.core.Phase;
 import tech.kuiperbelt.spm.domain.core.Project;
+import tech.kuiperbelt.spm.domain.core.WorkItem;
 
 import java.time.LocalDate;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,6 +33,22 @@ public class TestUtils {
                 .content(objectMapper.writeValueAsString(newProject)))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists(LOCATION))
+                .andReturn()
+                .getResponse()
+                .getHeader(LOCATION);
+    }
+
+    public String insertRandomPhase(String newProjectHref, int sequence, LocalDate plannedEndDate) throws Exception {
+        Phase phase = new Phase().toBuilder()
+                .name(RandomStringUtils.randomAlphanumeric(6))
+                .plannedEndDate(plannedEndDate)
+                .seq(sequence)
+                .build();
+
+        return mockMvc.perform(post(newProjectHref + "/phases/actions/insert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(phase)))
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getHeader(LOCATION);
@@ -79,4 +95,20 @@ public class TestUtils {
         mockMvc.perform(MockMvcRequestBuilders.delete(href))
                 .andExpect(status().isNoContent());
     }
+
+    public String createRandomWorkItem(String phaseAHref, LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
+        WorkItem workItem = new WorkItem().toBuilder()
+                .name(RandomStringUtils.randomAlphanumeric(10))
+                .plannedStartDate(plannedStartDate)
+                .deadLine(deadLine)
+                .build();
+        return mockMvc.perform(post(phaseAHref + "/work-items/actions/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader(LOCATION);
+    }
+
 }
