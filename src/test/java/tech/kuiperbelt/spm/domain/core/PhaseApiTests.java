@@ -615,11 +615,7 @@ public class PhaseApiTests extends ApiTest {
 
     }
 
-    @Sql({"/cleanup.sql"})
-    @Test
-    public void insertPhaseWithWorkItems() throws Exception {
-        //TODO
-    }
+
     @Sql({"/cleanup.sql"})
     @Test
     public void donePhaseAfterAllWorkItemsStop() throws Exception {
