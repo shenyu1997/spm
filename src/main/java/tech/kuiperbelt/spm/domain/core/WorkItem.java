@@ -23,13 +23,14 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "work_items")
 public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableEntity {
 
+    @ToString.Include
     @NotNull
     private String name;
 

@@ -15,6 +15,7 @@ import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
 import tech.kuiperbelt.spm.domain.event.PropertyChanged;
 
 import java.time.Period;
+import java.util.List;
 import java.util.Optional;
 
 @Setter
@@ -167,7 +168,6 @@ public class WorkItemService {
 
     public void deleteWorkItems(Phase phase) {
         phase.getWorkItems()
-                .stream()
                 .forEach(this::deleteWorkItem);
     }
 
@@ -196,6 +196,10 @@ public class WorkItemService {
     public void moveWorkItems(Phase phase, Period offSet) {
         phase.getWorkItems()
                 .forEach(item -> this.moveWorkItem(item, offSet));
+    }
+
+    public List<WorkItem> findByPhase(Phase phase) {
+        return workItemRepository.findByPhase(phase);
     }
 
     private void moveWorkItem(WorkItem workItem, Period offset) {

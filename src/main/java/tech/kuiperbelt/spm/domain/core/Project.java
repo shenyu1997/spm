@@ -23,13 +23,14 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @Entity
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "projects")
 public class Project extends BaseEntity implements AuditableEntity, ExecutableEntity {
 
+    @ToString.Include
     @NotNull
     private String name;
 

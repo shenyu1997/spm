@@ -95,10 +95,8 @@ public class PhaseService {
         Optional<Phase> firstRunningPhase = allPhases.stream()
                 .filter(p -> p.getStatus() == RunningStatus.RUNNING).findFirst();
 
-        if(firstRunningPhase.isPresent()) {
-            Assert.isTrue(firstRunningPhase.get().getSeq() < phase.getSeq(),
-                    "Only can insert before an INIT phase");
-        }
+        firstRunningPhase.ifPresent(value -> Assert.isTrue(value.getSeq() < phase.getSeq(),
+                "Only can insert before an INIT phase"));
 
         phase.setProject(project);
         phase.setStatus(RunningStatus.INIT);
@@ -144,6 +142,9 @@ public class PhaseService {
                 "Seq can not be change.");
 
         validateBeforeSave(phase);
+        // Fetch workItem manually, because phase not load workItems cascade by spring data rest
+        phase.setWorkItems(workItemService.findByPhase(phase));
+
         List<Phase> allPhases = phase.getProject().getPhases();
 
         // Change plannedStartDate
@@ -324,8 +325,8 @@ public class PhaseService {
 
     /**
      * Move time frame of all workItems in phase
-     * @param phase
-     * @param offSet
+     * @param phase phase
+     * @param offSet offSet
      */
     private void moveWorkItemsInPhase(Phase phase, Period offSet) {
         workItemService.moveWorkItems(phase, offSet);

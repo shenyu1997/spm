@@ -25,12 +25,13 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "phases", uniqueConstraints={@UniqueConstraint(columnNames={"id","seq"})})
 public class Phase extends BaseEntity implements AuditableEntity, ExecutableEntity {
+    @ToString.Include
     @NotNull
     private String name;
 
@@ -62,7 +63,7 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     public Period getPeriod() {
-        if(plannedStartDate != null) {
+        if(plannedStartDate != null && plannedEndDate != null) {
             return Period.between(plannedStartDate, plannedEndDate);
         } else {
             return null;

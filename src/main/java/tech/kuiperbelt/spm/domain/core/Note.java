@@ -20,10 +20,12 @@ import java.time.LocalDate;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
 @Builder(toBuilder = true)
 @Table(name = "notes")
 public class Note extends BaseEntity implements AuditableEntity{
 
+    @ToString.Include
     private String content;
 
     private LocalDate createDate;
