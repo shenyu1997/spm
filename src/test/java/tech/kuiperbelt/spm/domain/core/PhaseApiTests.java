@@ -522,6 +522,101 @@ public class PhaseApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
+    public void changePhaseEndDayToLeft() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+
+
+        // Prepared phase B
+        String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
+        String workItemEHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
+        String workItemFHref = testUtils.createRandomWorkItem(phaseBHref, null, currentDay.plusDays(15));
+        String workItemGHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(14), null);
+
+        // Prepared phase C
+        String phaseCHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(30));
+        String workItemXHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
+        String workItemYHref = testUtils.createRandomWorkItem(phaseCHref, null, currentDay.plusDays(25));
+        String workItemZHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(24), null);
+
+        // Move end of phase A to left
+        Phase changedPhase = new Phase().toBuilder()
+                .plannedEndDate(currentDay.plusDays(5))
+                .build();
+        mockMvc.perform(patch(phaseAHref)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(changedPhase)))
+                .andExpect(status().isNoContent());
+
+        // Verify phase A
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.toString())))
+                .andExpect(jsonPath("$.plannedEndDate", equalTo(currentDay.plusDays(5).toString())));
+
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(5).toString())))
+                .andExpect(jsonPath("$.overflow", equalTo(false)));
+
+        mockMvc.perform(get(workItemBHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(6).toString())))
+                .andExpect(jsonPath("$.overflow", equalTo(true)));
+
+        mockMvc.perform(get(workItemCHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(4).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(5).toString())))
+                .andExpect(jsonPath("$.overflow", equalTo(false)));
+
+        // Verify phase B
+        mockMvc.perform(get(phaseBHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(6).toString())))
+                .andExpect(jsonPath("$.plannedEndDate", equalTo(currentDay.plusDays(15).toString())));
+
+
+        // Verify workItems in phase B
+        mockMvc.perform(get(workItemEHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(6).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(13).toString())))
+                .andExpect(jsonPath("$.overflow", equalTo(false)));
+
+        mockMvc.perform(get(workItemFHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(6).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(10).toString())))
+                .andExpect(jsonPath("$.overflow", equalTo(false)));
+
+        mockMvc.perform(get(workItemGHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(9).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(15).toString())))
+                .andExpect(jsonPath("$.overflow", equalTo(false)));
+
+        // Verify phase C
+        mockMvc.perform(get(phaseCHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(16).toString())))
+                .andExpect(jsonPath("$.plannedEndDate", equalTo(currentDay.plusDays(25).toString())));
+
+        // Verify workItems in phase C
+        mockMvc.perform(get(workItemXHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(16).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(23).toString())));
+
+        mockMvc.perform(get(workItemYHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(16).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(20).toString())));
+
+        mockMvc.perform(get(workItemZHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.plusDays(19).toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(25).toString())));
+
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
     public void insertPhaseWithWorkItems() throws Exception {
         //TODO
     }
