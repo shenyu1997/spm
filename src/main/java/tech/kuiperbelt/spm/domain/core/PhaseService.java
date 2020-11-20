@@ -112,7 +112,7 @@ public class PhaseService {
 
         allPhases.add(phase.getSeq(), phase);
         resetSeq(allPhases);
-        movePhases(phase.getPeriod(), laterImpactedPhases);
+        movePhases(phase.getPeriod().plusDays(1), laterImpactedPhases);
         Phase createPhase = phaseRepository.save(phase);
         eventService.emit(Event.builder()
                 .key(PROJECT_SCHEDULE_PHASE_ADDED)
