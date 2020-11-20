@@ -75,9 +75,29 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
         LOW, MEDIUM, HIGH, TOP
     }
 
+    public LocalDate getPlannedStartDate() {
+        if(plannedStartDate == null && phase != null) {
+            return phase.getPlannedStartDate();
+        } else {
+            return plannedStartDate;
+        }
+    }
+
+    public LocalDate getDeadLine() {
+        if(deadLine == null && phase != null) {
+            return phase.getPlannedEndDate();
+        } else {
+            return deadLine;
+        }
+    }
+
     public boolean isOverflow() {
-        return getPhase().isOverflowBy(getPlannedStartDate()) ||
-                getPhase().isOverflowBy(getDeadLine());
+        if(phase != null) {
+            return phase.isOverflowBy(getPlannedStartDate()) ||
+                    phase.isOverflowBy(getDeadLine());
+        } else {
+            return false;
+        }
     }
 
     public boolean move(Period offset) {
