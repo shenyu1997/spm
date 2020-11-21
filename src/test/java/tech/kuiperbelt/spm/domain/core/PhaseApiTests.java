@@ -619,7 +619,42 @@ public class PhaseApiTests extends ApiTest {
     @Sql({"/cleanup.sql"})
     @Test
     public void donePhaseAfterAllWorkItemsStop() throws Exception {
-        //TODO
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A with workItems
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        testUtils.start(projectHref);
+
+        // Verify status and isCanBeDone of phase
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // start and done/cancel all of workItems
+        testUtils.start(workItemAHref);
+        testUtils.start(workItemBHref);
+        testUtils.start(workItemCHref);
+
+        testUtils.done(workItemAHref);
+        testUtils.cancel(workItemBHref);
+        testUtils.done(workItemCHref);
+
+        // Verify the phase can be done
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // Done the phase
+        testUtils.done(phaseAHref);
+
+        // Verify the phase status and can not be done again
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
     }
     @Sql({"/cleanup.sql"})
     @Test
