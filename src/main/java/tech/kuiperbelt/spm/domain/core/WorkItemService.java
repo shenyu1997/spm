@@ -113,7 +113,6 @@ public class WorkItemService {
 
     public void startWorkItem(long workItemId) {
         WorkItem workItem = workItemRepository.getOne(workItemId);
-        Assert.isTrue(workItem.isReady(), "WorkItem can not be ready");
         workItem.start();
 
         // send start event
