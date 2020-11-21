@@ -658,14 +658,64 @@ public class PhaseApiTests extends ApiTest {
     }
     @Sql({"/cleanup.sql"})
     @Test
-    public void cancelPhaseCascadeCancelAllWorkItemsNonStop() throws Exception {
-        //TODO
-    }
-    @Sql({"/cleanup.sql"})
-    @Test
-    public void deletePhaseCascadeDeleteAllWorkItems() throws Exception {
-        //TODO
-    }
+    public void cancelPhaseCascadeCancelAllWorkItemsNonStopThenDeleteProjectCascade() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A with workItems
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        testUtils.start(projectHref);
 
+        // Verify status and isCanBeDone of phase
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
 
+        // start some of workItems
+        testUtils.start(workItemAHref);
+        testUtils.start(workItemBHref);
+
+        testUtils.done(workItemAHref);
+
+        // Now, cancel project
+        testUtils.cancel(projectHref);
+
+        // Verify project stats
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+        // verify phase
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+        // verify workItems
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(false)));
+
+        // verify workItems
+        mockMvc.perform(get(workItemBHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+        // verify workItems
+        mockMvc.perform(get(workItemCHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+        // Delete project
+        testUtils.delete(projectHref);
+
+        // Verify cascade delete all
+        mockMvc.perform(get(projectHref)).andExpect(status().isNotFound());
+        mockMvc.perform(get(phaseAHref)).andExpect(status().isNotFound());
+        mockMvc.perform(get(workItemAHref)).andExpect(status().isNotFound());
+        mockMvc.perform(get(workItemBHref)).andExpect(status().isNotFound());
+        mockMvc.perform(get(workItemCHref)).andExpect(status().isNotFound());
+
+    }
 }
