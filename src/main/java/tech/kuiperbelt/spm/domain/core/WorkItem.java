@@ -105,7 +105,7 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
         if(ready != null) {
             return ready;
         } else if(phase != null) {
-            return phase.getStatus() == RunningStatus.RUNNING;
+            return phase.getStatus() != RunningStatus.INIT;
         }
         return null;
     }
