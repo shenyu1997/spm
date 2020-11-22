@@ -22,9 +22,14 @@ public class BaseEntity {
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BaseEntity that = (BaseEntity) o;
-        return Objects.equals(id, that.id);
+        if (o == null ) return false;
+        // 'equals' is final method, so we using logic as below
+        if(o instanceof BaseEntity) {
+            BaseEntity that = (BaseEntity) o;
+            return Objects.equals(this.getId(), that.getId());
+        } else {
+            return false;
+        }
     }
 
 
@@ -35,10 +40,10 @@ public class BaseEntity {
     @Override
     public final int hashCode() {
         if(this.hash == null) {
-            if(this.id == null) {
+            if(this.getId() == null) {
                 hash = System.identityHashCode(this);
             } else {
-                hash = Objects.hash(id);
+                hash = Objects.hash(this.getId());
             }
         }
         return hash;
