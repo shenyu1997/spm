@@ -7,7 +7,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -159,17 +162,56 @@ public class WorkItemApiTests extends ApiTest {
 
     }
 
-    public void deleteWorkItemImpactPhaseCanBeDone() {
-        //verify phase can be done
+    @Test
+    public void deleteWorkItemImpactPhaseCanBeDone() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+
+        testUtils.start(projectHref);
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        testUtils.delete(workItemAHref);
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
     }
 
-    @Test
-    public void deleteCascadeToNotes() {
 
-    }
+    //@Test
+    public void movePhase() throws Exception {
 
-    @Test
-    public void movePhase() {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+
+        // Prepared phase B
+        String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
+        String workItemBHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(15), currentDay.plusDays(16));
+
+        // Test init override status
+        mockMvc.perform(get(workItemBHref))
+                .andExpect(jsonPath("$.overflow", equalTo(false)));
+
+        // start project and start phase A
+        testUtils.start(projectHref);
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        Map<String, String> patchedWorkItem = Collections.singletonMap("phase", phaseAHref);
+        testUtils.patchUpdate(workItemBHref, patchedWorkItem);
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        mockMvc.perform(get(phaseAHref + "/work-items"))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(workItemBHref)));
+
+
+        mockMvc.perform(get(workItemBHref))
+                .andExpect(jsonPath("$.overflow", equalTo(true)));
 
         // verify canBeDone after move both fromPhase and toPhase
     }
@@ -181,6 +223,11 @@ public class WorkItemApiTests extends ApiTest {
 
     @Test
     public void noPhaseWorkItemUpdate() {
+
+    }
+
+    @Test
+    public void deleteCascadeToNotes() {
 
     }
 

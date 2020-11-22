@@ -81,7 +81,12 @@ public class WorkItemService {
         Assert.isTrue(workItem.getStatus() != RunningStatus.STOP, "STOP work item can not be updated");
         auditService.getPreviousVersion(workItem).ifPresent(previous -> {
             if(PropertyChanged.isChange(previous, workItem, WorkItem.Fields.phase)) {
-                movePhase(workItem);
+                if(previous.getPhase() != null) {
+                    moveFromPhase(workItem, previous.getPhase());
+                }
+                if(workItem.getPhase() != null) {
+                    moveToPhase(workItem);
+                }
             }
         });
     }
@@ -206,11 +211,18 @@ public class WorkItemService {
         }
     }
 
-    private void movePhase(WorkItem workItem) {
+    private void moveFromPhase(WorkItem workItem, Phase previous) {
+        Assert.notNull(workItem.getPhase(), "Phase can not be null");
+        Assert.isTrue(previous.getStatus() != RunningStatus.STOP,
+                "STOP phase can not move workItem in");
+    }
+
+    private void moveToPhase(WorkItem workItem) {
         Assert.notNull(workItem.getPhase(), "Phase can not be null");
         Assert.isTrue(workItem.getPhase().getStatus() != RunningStatus.STOP,
                 "STOP phase can not move workItem in");
 
+        workItem.getPhase().checkAllPhaseStop();
         sentReadyEventIfWorkItemReady(workItem);
         sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem);
     }

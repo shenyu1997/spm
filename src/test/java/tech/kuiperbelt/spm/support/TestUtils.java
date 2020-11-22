@@ -118,7 +118,7 @@ public class TestUtils {
                 .getHeader(LOCATION);
     }
 
-    public void patchUpdate(String workItemAHref, WorkItem workItem) throws Exception {
+    public void patchUpdate(String workItemAHref, Object workItem) throws Exception {
         mockMvc.perform(patch(workItemAHref)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
