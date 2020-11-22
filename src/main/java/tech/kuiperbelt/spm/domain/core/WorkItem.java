@@ -34,7 +34,7 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @NotNull
     private String name;
 
-    private boolean ready;
+    private Boolean ready;
 
     @Enumerated(EnumType.STRING)
     private Priority priority;
@@ -99,6 +99,15 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
         } else {
             return false;
         }
+    }
+
+    public Boolean getReady() {
+        if(ready != null) {
+            return ready;
+        } else if(phase != null) {
+            return phase.getStatus() == RunningStatus.RUNNING;
+        }
+        return null;
     }
 
     public boolean move(Period offset) {

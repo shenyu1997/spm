@@ -72,8 +72,8 @@ public class WorkItemService {
         }
 
         // send is ready event (assignee not empty)
-        if(workItem.isReady()) {
-            setWorkItemReady(workItem);
+        if(workItem.getReady()) {
+            sentReadyEventIfWorkItemReady(workItem);
         }
     }
 
@@ -134,12 +134,11 @@ public class WorkItemService {
 
     public void setWorkItemsReady(Phase phase) {
         phase.getWorkItems()
-                .forEach(this::setWorkItemReady);
+                .forEach(this::sentReadyEventIfWorkItemReady);
     }
 
-    private void setWorkItemReady(WorkItem workItem) {
-        workItem.setReady(true);
-        if(workItem.getAssignee() != null) {
+    private void sentReadyEventIfWorkItemReady(WorkItem workItem) {
+        if(workItem.getReady() && workItem.getAssignee() != null) {
             sendEvent(Event.ITEM_SCHEDULE_IS_READY, workItem);
         }
     }
@@ -213,15 +212,8 @@ public class WorkItemService {
         Assert.isTrue(workItem.getPhase().getStatus() != RunningStatus.STOP,
                 "STOP phase can not move workItem in");
         workItem.setProject(workItem.getPhase().getProject());
-        boolean already = workItem.isReady();
-        if(workItem.getPhase().getStatus() == RunningStatus.INIT) {
-            workItem.setReady(false);
-        } else {
-            workItem.setReady(true);
-            if(!already) { //means if ready changed
-                setWorkItemReady(workItem);
-            }
-        }
+
+        sentReadyEventIfWorkItemReady(workItem);
         sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem);
     }
 
