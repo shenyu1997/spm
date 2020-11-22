@@ -40,7 +40,6 @@ public class WorkItemService {
 
     public WorkItem createWorkItem(Phase phase, WorkItem workItem) {
         workItem.setPhase(phase);
-        workItem.setProject(phase.getProject());
         preHandleCreate(workItem);
         WorkItem savedWorkItem = workItemRepository.save(workItem);
         postHandleCreate(workItem);
@@ -211,7 +210,6 @@ public class WorkItemService {
         Assert.notNull(workItem.getPhase(), "Phase can not be null");
         Assert.isTrue(workItem.getPhase().getStatus() != RunningStatus.STOP,
                 "STOP phase can not move workItem in");
-        workItem.setProject(workItem.getPhase().getProject());
 
         sentReadyEventIfWorkItemReady(workItem);
         sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem);
