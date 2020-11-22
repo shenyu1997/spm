@@ -27,6 +27,7 @@ public class PropertyChanged {
     public static <T>  Optional<PropertyChanged> of(T oldBean, T newBean, String property) {
         if(isChange(oldBean, newBean, property)) {
             return Optional.of(PropertyChanged.builder()
+                    .property(property)
                     .oldValue(PropertyUtils.getSimpleProperty(oldBean, property))
                     .newValue(PropertyUtils.getSimpleProperty(newBean, property))
                     .build());

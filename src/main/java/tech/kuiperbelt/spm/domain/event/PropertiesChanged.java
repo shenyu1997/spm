@@ -10,7 +10,8 @@ public class PropertiesChanged extends LinkedList<PropertyChanged> {
 
     public PropertyChanged getPropertyChanged(String propertyName) {
         Assert.hasText(propertyName, "Property name can not be empty");
-        return this.stream().filter(propertyChanged -> propertyName.equals(propertyName))
+        return this.stream().filter(propertyChanged ->
+                propertyName.equals(propertyChanged.getProperty()))
                 .findFirst()
                 .orElseThrow(() ->
                         new IllegalArgumentException(propertyName + " is not fund in properties change list"));
@@ -49,10 +50,11 @@ public class PropertiesChanged extends LinkedList<PropertyChanged> {
         return propertiesChanged;
     }
 
-    public static Optional<PropertiesChanged> of(Object oldValue, Object newValue, String ... properties) {
+    public static Optional<PropertiesChanged> of(Object oldBean, Object newBean, String ... properties) {
         PropertiesChangedBuilder builder = PropertiesChanged.builder();
         Stream.of(properties)
-                .forEach(property -> builder.append(property, oldValue, newValue));
+                .forEach(property ->
+                        PropertyChanged.of(oldBean, newBean, property).ifPresent(builder::append));
         PropertiesChanged propertiesChanged = builder.build();
         return propertiesChanged.isEmpty()?
                 Optional.empty():
