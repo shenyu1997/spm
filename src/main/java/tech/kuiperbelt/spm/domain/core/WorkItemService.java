@@ -21,6 +21,7 @@ import java.util.Optional;
 @Setter
 @Transactional
 @Service
+@RepositoryEventHandler
 public class WorkItemService {
     @Autowired
     private WorkItemRepository workItemRepository;

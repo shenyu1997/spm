@@ -9,8 +9,7 @@ import tech.kuiperbelt.spm.support.ApiTest;
 import java.time.LocalDate;
 
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -124,10 +123,40 @@ public class WorkItemApiTests extends ApiTest {
     }
 
     @Test
-    public void updateWorkItem() {
+    public void updateWorkItem() throws Exception {
         // update before done
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
-        // update after done
+        // Start workItem
+        testUtils.start(workItemAHref);
+
+        // Patch update workItem
+        WorkItem workItem = new WorkItem().toBuilder()
+                .deadLine(currentDay.plusDays(6))
+                .name(RandomStringUtils.randomAlphanumeric(10))
+                .build();
+
+        testUtils.patchUpdate(workItemAHref, workItem);
+
+        // Verify
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(currentDay.toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(currentDay.plusDays(6).toString())))
+                .andExpect(jsonPath("$.name", equalTo(workItem.getName())));
+
+        // Update after done
+        testUtils.done(workItemAHref);
+
+        // Verify can not update any more
+        mockMvc.perform(patch(workItemAHref)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isBadRequest());
+
     }
 
     public void deleteWorkItemImpactPhaseCanBeDone() {

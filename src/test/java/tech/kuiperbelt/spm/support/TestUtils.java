@@ -1,5 +1,6 @@
 package tech.kuiperbelt.spm.support;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -12,6 +13,7 @@ import tech.kuiperbelt.spm.domain.core.WorkItem;
 
 import java.time.LocalDate;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -116,4 +118,10 @@ public class TestUtils {
                 .getHeader(LOCATION);
     }
 
+    public void patchUpdate(String workItemAHref, WorkItem workItem) throws Exception {
+        mockMvc.perform(patch(workItemAHref)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isNoContent());
+    }
 }
