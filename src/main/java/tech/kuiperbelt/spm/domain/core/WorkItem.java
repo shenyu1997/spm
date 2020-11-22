@@ -34,6 +34,8 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @NotNull
     private String name;
 
+    private String detail;
+
     private Boolean ready;
 
     @Enumerated(EnumType.STRING)
