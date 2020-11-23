@@ -32,21 +32,21 @@ public class NoteService {
 
         Note createNote = noteRepository.save(note);
 
-        sendEvent(Event.ITEM_EXECUTION_NOTE_TAKE, note);
+        sendEvent(Event.ITEM_EXECUTION_NOTE_TAKEN, note);
 
         return createNote;
     }
 
     public void deleteNote(Note note) {
         noteRepository.delete(note);
-        sendEvent(Event.ITEM_EXECUTION_NOTE_DELETE, note);
+        sendEvent(Event.ITEM_EXECUTION_NOTE_DELETED, note);
     }
 
     private void sendEvent(String key, Note note) {
         Event.EventBuilder eventBuilder = Event.builder().key(key).source(note);
         switch (key) {
-            case Event.ITEM_EXECUTION_NOTE_TAKE:
-            case  Event.ITEM_EXECUTION_NOTE_DELETE:
+            case Event.ITEM_EXECUTION_NOTE_TAKEN:
+            case  Event.ITEM_EXECUTION_NOTE_DELETED:
                 eventBuilder.args(note.getWorkItem().getName());
                 break;
             default:

@@ -97,7 +97,7 @@ public class WorkItemService {
 
         // check overflow
         if(workItem.isOverflow()) {
-            sendEvent(Event.ITEM_SCHEDULE_OVERFLOW, workItem);
+            sendEvent(Event.ITEM_SCHEDULE_IS_OVERFLOW, workItem);
         }
 
         Optional<WorkItem> previousVersion = auditService.getPreviousVersion(workItem);
@@ -112,7 +112,7 @@ public class WorkItemService {
                     WorkItem.Fields.milestone,
                     WorkItem.Fields.name)
                     .ifPresent(propertiesChanged ->
-                            sendEvent(Event.ITEM_PROPERTIES_CHANGE, workItem, propertiesChanged));
+                            sendEvent(Event.ITEM_PROPERTIES_CHANGED, workItem, propertiesChanged));
         });
 
     }
@@ -123,7 +123,7 @@ public class WorkItemService {
         workItem.start();
 
         // send start event
-        sendEvent(Event.ITEM_EXECUTION_START, workItem);
+        sendEvent(Event.ITEM_EXECUTION_STARTED, workItem);
     }
 
     public void doneWorkItem(long workItemId) {
@@ -164,7 +164,7 @@ public class WorkItemService {
 
     private void cancelWorkItem(WorkItem workItem) {
         workItem.cancel();
-        sendEvent(Event.ITEM_EXECUTION_CANCEL, workItem);
+        sendEvent(Event.ITEM_EXECUTION_CANCELED, workItem);
 
         if(workItem.getPhase() != null) {
             workItem.getPhase().checkAllItemsStop();
@@ -195,7 +195,7 @@ public class WorkItemService {
             workItem.getPhase().getWorkItems().remove(workItem);
             workItem.getPhase().checkAllItemsStop();
         }
-        sendEvent(Event.ITEM_REMOVE, workItem);
+        sendEvent(Event.ITEM_DELETED, workItem);
     }
 
     public void moveWorkItems(Phase phase, Period offSet) {
@@ -230,7 +230,7 @@ public class WorkItemService {
         });
 
         sentReadyEventIfWorkItemReady(workItem);
-        sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
+        sendEvent(Event.ITEM_SCHEDULE_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }
 
     private void sendEvent(String key, WorkItem workItem) {
@@ -253,12 +253,12 @@ public class WorkItemService {
                         Optional.of(workItem).map(WorkItem::getProject).map(Project::getName).orElse(""));
                 break;
             case Event.DETACH_ITEM_ADDED:
-            case Event.ITEM_REMOVE:
-            case Event.ITEM_EXECUTION_START:
+            case Event.ITEM_DELETED:
+            case Event.ITEM_EXECUTION_STARTED:
             case Event.ITEM_EXECUTION_DONE:
-            case Event.ITEM_EXECUTION_CANCEL:
+            case Event.ITEM_EXECUTION_CANCELED:
             case Event.ITEM_SCHEDULE_IS_READY:
-            case Event.ITEM_SCHEDULE_OVERFLOW:
+            case Event.ITEM_SCHEDULE_IS_OVERFLOW:
                 builder.args(workItem.getName());
                 break;
             case Event.ITEM_OWNER_CHANGED:
@@ -268,7 +268,7 @@ public class WorkItemService {
                 builder.args(workItem.getName(), workItem.getAssignee());
                 break;
 
-            case Event.ITEM_PROPERTIES_CHANGE:
+            case Event.ITEM_PROPERTIES_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged);
                 break;
             case Event.ITEM_SCHEDULE_START_CHANGED:
@@ -276,7 +276,7 @@ public class WorkItemService {
                 break;
             case Event.ITEM_SCHEDULE_END_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
-            case Event.ITEM_SCHEDULE_MOVE_PHASE:
+            case Event.ITEM_SCHEDULE_MOVED_PHASE:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
                 break;
             default:
@@ -289,9 +289,9 @@ public class WorkItemService {
         Assert.notNull(workItem, "WorkItem can not be null");
         Event.EventBuilder builder = Event.builder().source(workItem);
         if(offset.isNegative()) {
-            builder.key(Event.ITEM_SCHEDULE_MOVE_LEFT);
+            builder.key(Event.ITEM_SCHEDULE_MOVED_LEFT);
         } else {
-            builder.key(Event.ITEM_SCHEDULE_MOVE_RIGHT);
+            builder.key(Event.ITEM_SCHEDULE_MOVED_RIGHT);
         }
         eventService.emit(builder.args(workItem.getName(), offset.getDays()).build());
     }

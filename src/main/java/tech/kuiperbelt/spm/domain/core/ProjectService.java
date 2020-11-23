@@ -116,7 +116,7 @@ public class ProjectService {
 
             // if 'name' is changed
             PropertiesChanged.of(previous, current, Project.Fields.name).ifPresent(propertiesChanged ->
-                    sendEvent(PROJECT_PROPERTIES_CHANGE, current, propertiesChanged));
+                    sendEvent(PROJECT_PROPERTIES_CHANGED, current, propertiesChanged));
 
             // if 'manager' is changed
             PropertyChanged.of(previous, current, Project.Fields.manager).ifPresent(propertyChanged ->
@@ -153,7 +153,7 @@ public class ProjectService {
 
     @HandleAfterDelete
     public void postHandleProjectDelete(Project tobeRemoved) {
-        sendEvent(PROJECT_REMOVED, tobeRemoved);
+        sendEvent(PROJECT_DELETED, tobeRemoved);
     }
 
     public void cancelProject(long id) {
@@ -184,7 +184,7 @@ public class ProjectService {
     public void startProject(long id) {
         Project project = projectRepository.getOne(id);
         project.start();
-        sendEvent(PROJECT_EXECUTION_PROJECT_START, project);
+        sendEvent(PROJECT_EXECUTION_PROJECT_STARTED, project);
         project.getPhases().stream().findFirst().ifPresent(phase ->
                 phaseService.startPhase(phase));
     }
@@ -226,9 +226,9 @@ public class ProjectService {
 
         switch (key) {
             case Event.PROJECT_CREATED:
-            case Event.PROJECT_REMOVED:
+            case Event.PROJECT_DELETED:
             case Event.PROJECT_EXECUTION_PROJECT_CANCELED:
-            case Event.PROJECT_EXECUTION_PROJECT_START:
+            case Event.PROJECT_EXECUTION_PROJECT_STARTED:
             case Event.PROJECT_EXECUTION_PROJECT_DONE:
                 builder.args(project.getName());
                 break;
@@ -240,7 +240,7 @@ public class ProjectService {
                 builder.args(project.getName(),
                         propertiesChanged.getPropertyChanged(Project.Fields.manager));
                 break;
-            case Event.PROJECT_PROPERTIES_CHANGE:
+            case Event.PROJECT_PROPERTIES_CHANGED:
                 builder.args(project.getName(),propertiesChanged);
                 break;
 
@@ -260,7 +260,7 @@ public class ProjectService {
 
     private void sendMemberDeleteEvent(Project previous, Set<String> previousMembers, String previousMembersUpn) {
         eventService.emit(Event.builder()
-                .key(PROJECT_MEMBER_REMOVED)
+                .key(PROJECT_MEMBER_DELETED)
                 .source(previous.getId())
                 .args(previousMembersUpn, previous.getName(), previousMembers)
                 .build());
