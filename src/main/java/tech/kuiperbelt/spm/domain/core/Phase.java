@@ -79,7 +79,7 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     @JsonIgnore
     private boolean allItemStop = true;
 
-    public void checkAllPhaseStop () {
+    public void checkAllItemsStop() {
         setAllItemStop(getWorkItems().stream()
                 .allMatch(phase -> phase.getStatus() == RunningStatus.STOP));
     }

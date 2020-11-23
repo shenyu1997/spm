@@ -323,14 +323,11 @@ public class PhaseService {
     @EventListener(condition = "#root.args[0].key == '" + ITEM_SCHEDULE_MOVE_PHASE + "'")
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
-            PropertyChanged propertyChanged = PropertyChanged.of((Map)event.getArgs()[1]);
+            PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
             String oldId = (String) propertyChanged.getOldValue();
             if(oldId != null) {
-                phaseRepository.getOne(Long.valueOf(oldId)).checkAllPhaseStop();
-            }
-            String newId = (String)propertyChanged.getNewValue();
-            if(newId != null) {
-                phaseRepository.getOne(Long.valueOf(newId)).checkAllPhaseStop();
+                // We only need check old phase's allItemsStop because new phase has already done
+                phaseRepository.getOne(Long.valueOf(oldId)).checkAllItemsStop();
             }
         });
     }

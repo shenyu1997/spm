@@ -14,7 +14,6 @@ import tech.kuiperbelt.spm.domain.event.EventService;
 import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
 import tech.kuiperbelt.spm.domain.event.PropertyChanged;
 
-import javax.persistence.EntityManager;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
@@ -93,7 +92,8 @@ public class WorkItemService {
         auditService.getPreviousVersion(workItem)
                 .ifPresent(previous ->
                     PropertyChanged.of(previous, workItem, WorkItem.Fields.phase)
-                            .ifPresent(propertyChanged -> movePhase(workItem, propertyChanged)));
+                            .ifPresent(propertyChanged ->
+                                    movePhase(workItem, propertyChanged)));
 
         // check overflow
         if(workItem.isOverflow()) {
@@ -134,7 +134,7 @@ public class WorkItemService {
         sendEvent(Event.ITEM_EXECUTION_DONE, workItem);
 
         if(workItem.getPhase() != null) {
-            workItem.getPhase().checkAllPhaseStop();
+            workItem.getPhase().checkAllItemsStop();
         }
     }
 
@@ -167,7 +167,7 @@ public class WorkItemService {
         sendEvent(Event.ITEM_EXECUTION_CANCEL, workItem);
 
         if(workItem.getPhase() != null) {
-            workItem.getPhase().checkAllPhaseStop();
+            workItem.getPhase().checkAllItemsStop();
         }
     }
 
@@ -193,7 +193,7 @@ public class WorkItemService {
     public void postHandleDelete(WorkItem workItem) {
         if(workItem.getPhase() != null && workItem.getPhase().getStatus() == RunningStatus.RUNNING) {
             workItem.getPhase().getWorkItems().remove(workItem);
-            workItem.getPhase().checkAllPhaseStop();
+            workItem.getPhase().checkAllItemsStop();
         }
         sendEvent(Event.ITEM_REMOVE, workItem);
     }
@@ -212,10 +212,9 @@ public class WorkItemService {
             sendMoveEvent(workItem, offset);
         }
     }
-    @Autowired
-    private EntityManager entityManager;
+
     private void movePhase(WorkItem workItem, PropertyChanged propertyChanged) {
-        entityManager.flush();
+
         if(propertyChanged.getOldValue() != null) {
             Phase oldPhase = (Phase) propertyChanged.getOldValue();
             Assert.isTrue(oldPhase.getStatus() != RunningStatus.STOP,
@@ -225,8 +224,12 @@ public class WorkItemService {
             Phase newPhase = (Phase) propertyChanged.getNewValue();
             Assert.isTrue(newPhase.getStatus() != RunningStatus.STOP,
                     "STOP phase can not move workItem in");
+            // Only set new phase'allItemsStop to true because we add Non STOP workItem to it;
+            // and We postpone checking of old item to async procession because the DB need update and commit first.
+            if(workItem.getStatus() != RunningStatus.STOP) {
+                newPhase.setAllItemStop(false);
+            }
         }
-
         sentReadyEventIfWorkItemReady(workItem);
         sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }

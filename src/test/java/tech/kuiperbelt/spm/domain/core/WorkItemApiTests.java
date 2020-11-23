@@ -210,8 +210,6 @@ public class WorkItemApiTests extends ApiTest {
         Map<String, String> patchedWorkItem = Collections.singletonMap("phase", phaseAHref);
         testUtils.patchUpdate(workItemBHref, patchedWorkItem);
 
-        super.yield();
-
         mockMvc.perform(get(phaseAHref))
                 .andExpect(jsonPath("$.canBeDone", equalTo(false)));
 
