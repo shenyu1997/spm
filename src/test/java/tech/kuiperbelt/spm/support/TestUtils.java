@@ -7,6 +7,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import tech.kuiperbelt.spm.domain.core.Note;
 import tech.kuiperbelt.spm.domain.core.Phase;
 import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
@@ -127,6 +128,19 @@ public class TestUtils {
         return mockMvc.perform(post("/work-items")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader(LOCATION);
+    }
+
+    public String taskRandomNote(String workItemHref) throws Exception {
+        Note note = new Note().toBuilder()
+                .content(RandomStringUtils.randomAlphanumeric(20))
+                .build();
+        return mockMvc.perform(post(workItemHref + "/notes/actions/take-note")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(note)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()

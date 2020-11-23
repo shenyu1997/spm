@@ -294,8 +294,14 @@ public class WorkItemApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
-    public void deleteCascadeToNotes() {
-
+    public void deleteCascadeToNotes() throws Exception {
+        LocalDate current = LocalDate.now();
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        String noteARef = testUtils.taskRandomNote(workItemAHref);
+        String noteBRef = testUtils.taskRandomNote(workItemAHref);
+        testUtils.delete(workItemAHref);
+        mockMvc.perform(get(noteARef)).andExpect(status().isNotFound());
+        mockMvc.perform(get(noteBRef)).andExpect(status().isNotFound());
     }
 
 }
