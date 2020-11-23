@@ -63,16 +63,16 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     public Period getPeriod() {
-        if(plannedStartDate != null && plannedEndDate != null) {
-            return Period.between(plannedStartDate, plannedEndDate);
+        if(getPlannedStartDate() != null && getPlannedEndDate() != null) {
+            return Period.between(getPlannedStartDate(), getPlannedEndDate());
         } else {
             return null;
         }
     }
 
     public void move(Period offset) {
-        this.plannedStartDate = this.plannedStartDate.plus(offset);
-        this.plannedEndDate = this.plannedEndDate.plus(offset);
+        setPlannedStartDate(getPlannedStartDate().plus(offset));
+        setPlannedEndDate(getPlannedEndDate().plus(offset));
     }
 
     @Builder.Default
@@ -80,18 +80,18 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     private boolean allItemStop = true;
 
     public void checkAllPhaseStop () {
-        allItemStop = this.workItems.stream()
-                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP);
+        setAllItemStop(getWorkItems().stream()
+                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP));
     }
 
     @Override
     public boolean isCanBeDone() {
-        return allItemStop && executableDelegate.isCanBeDone();
+        return isAllItemStop() && executableDelegate.isCanBeDone();
     }
 
     @Override
     public void done() {
-        Assert.isTrue(allItemStop, "all workItems stop");
+        Assert.isTrue(isAllItemStop(), "all workItems stop");
         executableDelegate.done();
     }
 
