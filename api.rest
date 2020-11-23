@@ -22,7 +22,7 @@ GET http://localhost:8080/projects/search/findMyProjects?me={{currentUser}}&stat
 Authorization: Basic {{currentUser}} 123456
 
 ### My Tasks
-GET http://localhost:8080/work-items/search/findByAssignee?assignee={{currentUser}}
+GET http://localhost:8080/work-items/search/findMyItems?me={{currentUser}}
 Authorization: Basic {{currentUser}} 123456
 
 ####################################################################################
