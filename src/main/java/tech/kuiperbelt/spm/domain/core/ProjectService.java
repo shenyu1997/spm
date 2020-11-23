@@ -73,36 +73,27 @@ public class ProjectService {
 
     @HandleAfterCreate
     public void postHandleProjectCreate(Project project) {
-        eventService.emit(Event.builder()
-                .key(PROJECT_CREATED)
-                .source(project.getId())
-                .args(project.getName())
-                .build());
+        sendEvent(PROJECT_CREATED, project);
 
         if(!StringUtils.isEmpty(project.getOwner())) {
-            eventService.emit(Event.builder()
-                    .key(PROJECT_OWNER_CHANGED)
-                    .source(project.getId())
-                    .args(project.getName(), project.getOwner())
+            sendEvent(PROJECT_OWNER_CHANGED, project, PropertyChanged.builder()
+                    .property(Project.Fields.owner)
+                    .newValue(project.getOwner())
                     .build());
         }
 
         // set manager if need
         if(!StringUtils.isEmpty(project.getManager())) {
-            eventService.emit(Event.builder()
-                    .key(PROJECT_MANAGER_CHANGED)
-                    .source(project.getId())
-                    .args(project.getName(), project.getManager())
+            sendEvent(PROJECT_MANAGER_CHANGED, project, PropertyChanged.builder()
+                    .property(Project.Fields.manager)
+                    .newValue(project.getManager())
                     .build());
         }
 
+        // set member changed
         if(!CollectionUtils.isEmpty(project.getMembers())) {
-            String membersUpn = project.getMembers().stream().collect(Collectors.joining(", "));
-            eventService.emit(Event.builder()
-                    .key(PROJECT_MEMBER_ADDED)
-                    .source(project.getId())
-                    .args(membersUpn, project.getName(), project.getMembers())
-                    .build());
+            String membersUpn = String.join(", ", project.getMembers());
+            sendMemberAddEvent(project, membersUpn, new HashSet<>(project.getMembers()));
         }
 
     }
@@ -125,72 +116,45 @@ public class ProjectService {
             }
 
             // if 'name' is changed
-            if(PropertyChanged.isChange(previous, current, Project.Fields.name)) {
-                eventService.emit(Event.builder()
-                        .key(PROJECT_PROPERTIES_CHANGE)
-                        .source(current.getId())
-                        .args(PropertiesChanged.builder()
-                                .append(Project.Fields.name, previous.getName(), current.getName())
-                                .build())
-                        .build());
-            }
+            PropertiesChanged.of(previous, current, Project.Fields.name).ifPresent(propertiesChanged ->
+                    sendEvent(PROJECT_PROPERTIES_CHANGE, current, propertiesChanged));
 
             // if 'manager' is changed
-            if(PropertyChanged.isChange(previous, current, Project.Fields.manager)) {
-                eventService.emit(Event.builder()
-                        .key(PROJECT_MANAGER_CHANGED)
-                        .source(current.getId())
-                        .args(current.getName(), current.getManager())
-                        .build());
-            }
+            PropertyChanged.of(previous, current, Project.Fields.manager).ifPresent(propertyChanged ->
+                    sendEvent(PROJECT_MANAGER_CHANGED, current, propertyChanged));
 
             // if 'owner' is changed
-            if(PropertyChanged.isChange(previous, current, Project.Fields.owner)) {
-                eventService.emit(Event.builder()
-                        .key(PROJECT_OWNER_CHANGED)
-                        .source(current.getId())
-                        .args(current.getName(), current.getOwner())
-                        .build());
-            }
+            PropertyChanged.of(previous, current, Project.Fields.owner).ifPresent(propertyChanged ->
+                    sendEvent(PROJECT_OWNER_CHANGED, current, propertyChanged));
 
             // if 'member' was removed
             Set<String> previousMembers = new HashSet<>(previous.getMembers());
             previousMembers.removeAll(new HashSet<>(current.getMembers()));
-            String previousMembersUpn = previousMembers.stream().collect(Collectors.joining(", "));
-            eventService.emit(Event.builder()
-                    .key(PROJECT_MEMBER_REMOVED)
-                    .source(previous.getId())
-                    .args(previousMembersUpn, previous.getName(), previousMembers)
-                    .build());
+            String previousMembersUpn = String.join(", ", previousMembers);
+            sendMemberDeleteEvent(previous, previousMembers, previousMembersUpn);
 
             // if 'member' was added
             Set<String> currentMembers = new HashSet<>(current.getMembers());
             currentMembers.removeAll(new HashSet<>(previous.getMembers()));
-            String currentMembersUpn = currentMembers.stream().collect(Collectors.joining(", "));
-            eventService.emit(Event.builder()
-                    .key(PROJECT_MEMBER_ADDED)
-                    .source(current.getId())
-                    .args(currentMembersUpn, current.getName(), currentMembers)
-                    .build());
+            String currentMembersUpn = String.join(", ", currentMembers);
+            sendMemberAddEvent(current, currentMembersUpn, currentMembers);
         });
     }
+
+
 
     @HandleBeforeDelete
     public void preHandleProjectDelete(Project current) {
         Assert.isTrue(current.isCanBeDeleted(),
                 "Only Cancelled Project can be deleted");
-        current.getPhases().stream()
+        current.getPhases()
                 .forEach(phase ->
                 phaseService.deletePhase(phase));
     }
 
     @HandleAfterDelete
     public void postHandleProjectDelete(Project tobeRemoved) {
-        eventService.emit(Event.builder()
-                .key(PROJECT_REMOVED)
-                .source(tobeRemoved.getId())
-                .args(tobeRemoved.getName())
-                .build());
+        sendEvent(PROJECT_REMOVED, tobeRemoved);
     }
 
     public void cancelProject(long id) {
@@ -211,11 +175,7 @@ public class ProjectService {
         projectRepository.save(project);
 
         // Send event to all participants
-        eventService.emit(Event.builder()
-                .key(PROJECT_EXECUTION_PROJECT_CANCELED)
-                .source(project.getId())
-                .args(project.getName())
-                .build());
+        sendEvent(PROJECT_EXECUTION_PROJECT_CANCELED, project);
     }
 
     public Project getProjectById(Long projectId) {
@@ -225,15 +185,9 @@ public class ProjectService {
     public void startProject(long id) {
         Project project = projectRepository.getOne(id);
         project.start();
-        eventService.emit(Event.builder()
-                .key(PROJECT_EXECUTION_PROJECT_START)
-                .source(project.getId())
-                .args(project.getName())
-                .build());
-
-        project.getPhases().stream().findFirst().ifPresent(phase -> {
-            phaseService.startPhase(phase);
-        });
+        sendEvent(PROJECT_EXECUTION_PROJECT_START, project);
+        project.getPhases().stream().findFirst().ifPresent(phase ->
+                phaseService.startPhase(phase));
     }
 
     public void doneProject(long id) {
@@ -241,11 +195,7 @@ public class ProjectService {
         Assert.isTrue(project.isCanBeDone(), "Project can not be done yet.");
 
         project.done();
-        eventService.emit(Event.builder()
-                .key(PROJECT_EXECUTION_PROJECT_DONE)
-                .source(id)
-                .args(project.getName())
-                .build());
+        sendEvent(PROJECT_EXECUTION_PROJECT_DONE, project);
     }
 
     public Phase appendPhase(long id, Phase phase) {
@@ -260,5 +210,60 @@ public class ProjectService {
         Phase createdPhase = phaseService.insertPhase(project, phase);
         project.setAllPhasesStop(false);
         return createdPhase;
+    }
+
+    private void sendEvent(String key, Project project) {
+        sendEvent(key, project, PropertiesChanged.builder().build());
+    }
+
+    private void sendEvent(String key, Project project, PropertyChanged propertyChanged) {
+        sendEvent(key, project, PropertiesChanged.ofSingle(propertyChanged));
+    }
+
+    private void sendEvent(String key, Project project, PropertiesChanged propertiesChanged) {
+        Event.EventBuilder builder = Event.builder()
+                .key(key)
+                .source(project);
+
+        switch (key) {
+            case Event.PROJECT_CREATED:
+            case Event.PROJECT_REMOVED:
+            case Event.PROJECT_EXECUTION_PROJECT_CANCELED:
+            case Event.PROJECT_EXECUTION_PROJECT_START:
+            case Event.PROJECT_EXECUTION_PROJECT_DONE:
+                builder.args(project.getName());
+                break;
+            case Event.PROJECT_OWNER_CHANGED:
+                builder.args(project.getName(),
+                        propertiesChanged.getPropertyChanged(Project.Fields.owner));
+                break;
+            case Event.PROJECT_MANAGER_CHANGED:
+                builder.args(project.getName(),
+                        propertiesChanged.getPropertyChanged(Project.Fields.manager));
+                break;
+            case Event.PROJECT_PROPERTIES_CHANGE:
+                builder.args(project.getName(),propertiesChanged);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported event key:" + key);
+        }
+        eventService.emit(builder.build());
+    }
+
+    private void sendMemberAddEvent(Project project, String membersUpn, Set<String> currentMembers) {
+        eventService.emit(Event.builder()
+                .key(PROJECT_MEMBER_ADDED)
+                .source(project.getId())
+                .args(membersUpn, project.getName(), currentMembers)
+                .build());
+    }
+
+    private void sendMemberDeleteEvent(Project previous, Set<String> previousMembers, String previousMembersUpn) {
+        eventService.emit(Event.builder()
+                .key(PROJECT_MEMBER_REMOVED)
+                .source(previous.getId())
+                .args(previousMembersUpn, previous.getName(), previousMembers)
+                .build());
     }
 }
