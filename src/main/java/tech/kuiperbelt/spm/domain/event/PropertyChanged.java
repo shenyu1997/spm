@@ -13,16 +13,24 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Setter
-@Getter
-@NoArgsConstructor
+
 @AllArgsConstructor
 @FieldNameConstants
 @Builder
 public class PropertyChanged {
+
+    @Getter
     private String property;
     private Object oldValue;
     private Object newValue;
+
+    public Optional<Object> getOldValue() {
+        return Optional.ofNullable(oldValue);
+    }
+
+    public Optional<Object> getNewValue() {
+        return Optional.ofNullable(newValue);
+    }
 
     @SneakyThrows
     public static <T>  boolean isChange(T oldBean, T newBean, String property) {
@@ -54,12 +62,10 @@ public class PropertyChanged {
 
     public <T, R> PropertyChanged map(Class<T> clazz, Function<T,R> mapFunction) {
         PropertyChangedBuilder mapBuilder = PropertyChanged.builder().property(getProperty());
-        if(getOldValue() != null) {
-            mapBuilder.oldValue(mapFunction.apply(clazz.cast(getOldValue())));
-        }
-        if(getNewValue() != null) {
-            mapBuilder.newValue(mapFunction.apply(clazz.cast(getNewValue())));
-        }
+        getOldValue().ifPresent(oldValue ->
+                mapBuilder.oldValue(mapFunction.apply(clazz.cast(oldValue))));
+        getNewValue().ifPresent(newValue ->
+                mapBuilder.newValue(mapFunction.apply(clazz.cast(newValue))));
         return mapBuilder.build();
     }
 
@@ -69,13 +75,12 @@ public class PropertyChanged {
         public JsonElement serialize(PropertyChanged propertyChanged, Type type, JsonSerializationContext jsonSerializationContext) {
             JsonObject jObject = new JsonObject();
             jObject.addProperty(Fields.property, propertyChanged.getProperty());
-            if(propertyChanged.getOldValue() != null) {
-                jObject.addProperty(Fields.oldValue, propertyChanged.getOldValue().toString());
-            }
+            propertyChanged.getOldValue().ifPresent(oldValue ->
+                    jObject.addProperty(Fields.oldValue, oldValue.toString()));
 
-            if(propertyChanged.getNewValue() != null) {
-                jObject.addProperty(Fields.newValue, propertyChanged.getNewValue().toString());
-            }
+            propertyChanged.getNewValue().ifPresent(newValue ->
+                    jObject.addProperty(Fields.newValue, newValue.toString()));
+
             return jObject;
         }
     }

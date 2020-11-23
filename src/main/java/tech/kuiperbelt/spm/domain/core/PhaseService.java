@@ -324,11 +324,9 @@ public class PhaseService {
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
             PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
-            String oldId = (String) propertyChanged.getOldValue();
-            if(oldId != null) {
-                // We only need check old phase's allItemsStop because new phase has already done
-                phaseRepository.getOne(Long.valueOf(oldId)).checkAllItemsStop();
-            }
+            // We only need check old phase's allItemsStop because new phase has already done
+            propertyChanged.getOldValue().ifPresent(oldId ->
+                    phaseRepository.getOne(Long.valueOf((String)oldId)).checkAllItemsStop());
         });
     }
 

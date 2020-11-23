@@ -214,14 +214,12 @@ public class WorkItemService {
     }
 
     private void movePhase(WorkItem workItem, PropertyChanged propertyChanged) {
+        propertyChanged.getOldValue().ifPresent(oldValue ->
+                Assert.isTrue(((Phase)oldValue).getStatus() != RunningStatus.STOP,
+                "STOP phase can not move workItem out"));
 
-        if(propertyChanged.getOldValue() != null) {
-            Phase oldPhase = (Phase) propertyChanged.getOldValue();
-            Assert.isTrue(oldPhase.getStatus() != RunningStatus.STOP,
-                    "STOP phase can not move workItem out");
-        }
-        if(propertyChanged.getNewValue() != null) {
-            Phase newPhase = (Phase) propertyChanged.getNewValue();
+        propertyChanged.getNewValue().ifPresent(newVale -> {
+            Phase newPhase = (Phase) newVale;
             Assert.isTrue(newPhase.getStatus() != RunningStatus.STOP,
                     "STOP phase can not move workItem in");
             // Only set new phase'allItemsStop to true because we add Non STOP workItem to it;
@@ -229,7 +227,8 @@ public class WorkItemService {
             if(workItem.getStatus() != RunningStatus.STOP) {
                 newPhase.setAllItemStop(false);
             }
-        }
+        });
+
         sentReadyEventIfWorkItemReady(workItem);
         sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }
