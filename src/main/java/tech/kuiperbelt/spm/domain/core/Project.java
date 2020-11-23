@@ -94,7 +94,7 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
     @Override
     public boolean isCanBeDone() {
-        return allPhasesStop && executableDelegate.isCanBeDone();
+        return isAllPhasesStop() && executableDelegate.isCanBeDone();
     }
 
     @Override
