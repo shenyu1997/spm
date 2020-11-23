@@ -1,9 +1,9 @@
-package tech.kuiperbelt.spm.domain.idmapping;
+package tech.kuiperbelt.spm.domain.core.idmapping;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import tech.kuiperbelt.spm.common.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 
 import javax.persistence.PostPersist;
 import javax.persistence.PostRemove;

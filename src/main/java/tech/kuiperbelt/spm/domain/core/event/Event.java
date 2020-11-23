@@ -1,11 +1,11 @@
-package tech.kuiperbelt.spm.domain.event;
+package tech.kuiperbelt.spm.domain.core.event;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.*;
 import org.springframework.util.Assert;
-import tech.kuiperbelt.spm.common.BaseEntity;
-import tech.kuiperbelt.spm.common.UserContext;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.UserContext;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

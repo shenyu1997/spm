@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.common;
+package tech.kuiperbelt.spm.domain.core.support;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +16,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
-import tech.kuiperbelt.spm.domain.event.Event;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 
 import javax.servlet.http.HttpServletResponse;
 

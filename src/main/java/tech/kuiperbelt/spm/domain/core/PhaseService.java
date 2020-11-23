@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import tech.kuiperbelt.spm.common.AuditService;
-import tech.kuiperbelt.spm.common.UserContextHolder;
-import tech.kuiperbelt.spm.domain.event.Event;
-import tech.kuiperbelt.spm.domain.event.EventService;
-import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
-import tech.kuiperbelt.spm.domain.event.PropertyChanged;
+import tech.kuiperbelt.spm.domain.core.support.AuditService;
+import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
+import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.event.EventService;
+import tech.kuiperbelt.spm.domain.core.event.PropertiesChanged;
+import tech.kuiperbelt.spm.domain.core.event.PropertyChanged;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static tech.kuiperbelt.spm.domain.event.Event.*;
+import static tech.kuiperbelt.spm.domain.core.event.Event.*;
 
 @Transactional
 @Setter

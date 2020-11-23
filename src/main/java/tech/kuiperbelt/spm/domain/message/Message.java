@@ -1,7 +1,7 @@
 package tech.kuiperbelt.spm.domain.message;
 
-import tech.kuiperbelt.spm.common.BaseEntity;
-import tech.kuiperbelt.spm.domain.event.Event;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 import lombok.*;
 
 import javax.persistence.Entity;

@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.idmapping;
+package tech.kuiperbelt.spm.domain.core.idmapping;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -7,17 +7,17 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.kuiperbelt.spm.common.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.PhaseRepository;
 import tech.kuiperbelt.spm.domain.core.ProjectRepository;
-import tech.kuiperbelt.spm.domain.event.EventRepository;
+import tech.kuiperbelt.spm.domain.core.event.EventRepository;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static tech.kuiperbelt.spm.domain.idmapping.IdMapping.ID_MAPPINGS;
+import static tech.kuiperbelt.spm.domain.core.idmapping.IdMapping.ID_MAPPINGS;
 
 @Transactional
 @Service

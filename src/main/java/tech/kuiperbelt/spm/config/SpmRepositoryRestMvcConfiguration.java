@@ -9,7 +9,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.web.context.request.WebRequestInterceptor;
-import tech.kuiperbelt.spm.common.WebTransactionInterceptor;
+import tech.kuiperbelt.spm.domain.core.support.WebTransactionInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;

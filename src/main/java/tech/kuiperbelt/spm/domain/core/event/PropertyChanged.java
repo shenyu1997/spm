@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.event;
+package tech.kuiperbelt.spm.domain.core.event;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.event;
+package tech.kuiperbelt.spm.domain.core.event;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +12,8 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import tech.kuiperbelt.spm.common.UserContext;
-import tech.kuiperbelt.spm.common.UserContextHolder;
+import tech.kuiperbelt.spm.domain.core.support.UserContext;
+import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.Locale;

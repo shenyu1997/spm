@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.idmapping;
+package tech.kuiperbelt.spm.domain.core.idmapping;
 
 import lombok.*;
 import lombok.experimental.FieldNameConstants;

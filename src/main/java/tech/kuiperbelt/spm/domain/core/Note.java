@@ -6,10 +6,10 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.springframework.data.rest.core.annotation.RestResource;
-import tech.kuiperbelt.spm.common.AuditDelegate;
-import tech.kuiperbelt.spm.common.AuditListener;
-import tech.kuiperbelt.spm.common.AuditableEntity;
-import tech.kuiperbelt.spm.common.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.AuditDelegate;
+import tech.kuiperbelt.spm.domain.core.support.AuditListener;
+import tech.kuiperbelt.spm.domain.core.support.AuditableEntity;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 
 import javax.persistence.*;
 import java.time.LocalDate;

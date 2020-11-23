@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.event;
+package tech.kuiperbelt.spm.domain.core.event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;

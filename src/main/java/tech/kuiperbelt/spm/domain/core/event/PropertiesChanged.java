@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.event;
+package tech.kuiperbelt.spm.domain.core.event;
 
 import org.springframework.util.Assert;
 

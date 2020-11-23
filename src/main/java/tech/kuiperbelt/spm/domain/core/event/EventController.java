@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.domain.event;
+package tech.kuiperbelt.spm.domain.core.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -32,7 +32,7 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    public Event buildEventResource(tech.kuiperbelt.spm.domain.event.Event event) {
+    public Event buildEventResource(tech.kuiperbelt.spm.domain.core.event.Event event) {
         Event eventResource = new Event(event);
         eventResource.add(linkTo(methodOn(EventController.class).getEvent(event.getId())).withSelfRel());
         return eventResource;
@@ -46,7 +46,7 @@ public class EventController {
 
         @JsonIgnore
         @Delegate
-        private tech.kuiperbelt.spm.domain.event.Event event;
+        private tech.kuiperbelt.spm.domain.core.event.Event event;
     }
 
 }

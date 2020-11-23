@@ -1,4 +1,4 @@
-package tech.kuiperbelt.spm.common;
+package tech.kuiperbelt.spm.domain.core.support;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;

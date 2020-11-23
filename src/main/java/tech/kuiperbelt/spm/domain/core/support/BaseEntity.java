@@ -1,10 +1,10 @@
-package tech.kuiperbelt.spm.common;
+package tech.kuiperbelt.spm.domain.core.support;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-import tech.kuiperbelt.spm.domain.idmapping.IdMappingListener;
+import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingListener;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -16,7 +16,7 @@ public class BaseEntity {
     @Setter
     @Id
     @GeneratedValue(generator = "uuidLong")
-    @GenericGenerator(name = "uuidLong", strategy = "tech.kuiperbelt.spm.common.MockGenerator")
+    @GenericGenerator(name = "uuidLong", strategy = "tech.kuiperbelt.spm.domain.core.support.MockGenerator")
     private Long id;
 
     @Override

@@ -5,12 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import tech.kuiperbelt.spm.common.UserContextHolder;
-import tech.kuiperbelt.spm.domain.event.Event;
-import tech.kuiperbelt.spm.domain.event.EventService;
+import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
+import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.event.EventService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Transactional
 @Setter

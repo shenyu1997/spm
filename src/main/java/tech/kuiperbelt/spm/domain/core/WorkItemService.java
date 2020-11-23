@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import tech.kuiperbelt.spm.common.AuditService;
-import tech.kuiperbelt.spm.common.UserContextHolder;
-import tech.kuiperbelt.spm.domain.event.Event;
-import tech.kuiperbelt.spm.domain.event.EventService;
-import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
-import tech.kuiperbelt.spm.domain.event.PropertyChanged;
+import tech.kuiperbelt.spm.domain.core.support.AuditService;
+import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
+import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.event.EventService;
+import tech.kuiperbelt.spm.domain.core.event.PropertiesChanged;
+import tech.kuiperbelt.spm.domain.core.event.PropertyChanged;
 
 import java.time.Period;
 import java.util.List;

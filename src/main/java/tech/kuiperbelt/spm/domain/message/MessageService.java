@@ -7,10 +7,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import tech.kuiperbelt.spm.common.BaseEntity;
-import tech.kuiperbelt.spm.domain.event.Event;
-import tech.kuiperbelt.spm.domain.event.EventService;
-import tech.kuiperbelt.spm.domain.idmapping.IdMappingService;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.event.EventService;
+import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingService;
 import tech.kuiperbelt.spm.domain.message.rule.ProjectEventReceiveRule;
 
 import java.util.*;
