@@ -14,6 +14,7 @@ import tech.kuiperbelt.spm.domain.event.EventService;
 import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
 import tech.kuiperbelt.spm.domain.event.PropertyChanged;
 
+import javax.persistence.EntityManager;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
@@ -79,20 +80,17 @@ public class WorkItemService {
     @HandleBeforeSave
     public void preHandleSave(WorkItem workItem) {
         Assert.isTrue(workItem.getStatus() != RunningStatus.STOP, "STOP work item can not be updated");
-        auditService.getPreviousVersion(workItem).ifPresent(previous -> {
-            if(PropertyChanged.isChange(previous, workItem, WorkItem.Fields.phase)) {
-                if(previous.getPhase() != null) {
-                    moveFromPhase(workItem, previous.getPhase());
-                }
-                if(workItem.getPhase() != null) {
-                    moveToPhase(workItem);
-                }
-            }
-        });
     }
 
     @HandleAfterSave
     public void postHandleSave(WorkItem workItem) {
+        // Check move phase
+        auditService.getPreviousVersion(workItem).ifPresent(previous -> {
+            PropertyChanged.of(previous, workItem, WorkItem.Fields.phase).ifPresent(propertyChanged -> {
+                movePhase(workItem, propertyChanged);
+            });
+        });
+
         // check overflow
         if(workItem.isOverflow()) {
             sendEvent(Event.ITEM_SCHEDULE_OVERFLOW, workItem);
@@ -210,21 +208,23 @@ public class WorkItemService {
             sendMoveEvent(workItem, offset);
         }
     }
+    @Autowired
+    private EntityManager entityManager;
+    private void movePhase(WorkItem workItem, PropertyChanged propertyChanged) {
+        entityManager.flush();
+        if(propertyChanged.getOldValue() != null) {
+            Phase oldPhase = (Phase) propertyChanged.getOldValue();
+            Assert.isTrue(oldPhase.getStatus() != RunningStatus.STOP,
+                    "STOP phase can not move workItem out");
+        }
+        if(propertyChanged.getNewValue() != null) {
+            Phase newPhase = (Phase) propertyChanged.getNewValue();
+            Assert.isTrue(newPhase.getStatus() != RunningStatus.STOP,
+                    "STOP phase can not move workItem in");
+        }
 
-    private void moveFromPhase(WorkItem workItem, Phase previous) {
-        Assert.notNull(workItem.getPhase(), "Phase can not be null");
-        Assert.isTrue(previous.getStatus() != RunningStatus.STOP,
-                "STOP phase can not move workItem in");
-    }
-
-    private void moveToPhase(WorkItem workItem) {
-        Assert.notNull(workItem.getPhase(), "Phase can not be null");
-        Assert.isTrue(workItem.getPhase().getStatus() != RunningStatus.STOP,
-                "STOP phase can not move workItem in");
-
-        workItem.getPhase().checkAllPhaseStop();
         sentReadyEventIfWorkItemReady(workItem);
-        sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem);
+        sendEvent(Event.ITEM_SCHEDULE_MOVE_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }
 
     private void sendEvent(String key, WorkItem workItem) {
@@ -269,7 +269,7 @@ public class WorkItemService {
             case Event.ITEM_SCHEDULE_END_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
             case Event.ITEM_SCHEDULE_MOVE_PHASE:
-                builder.args(workItem.getName(), workItem.getPhase().getName());
+                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported event key:" + key);

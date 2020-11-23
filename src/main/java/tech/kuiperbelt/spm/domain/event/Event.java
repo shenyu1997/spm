@@ -1,9 +1,11 @@
 package tech.kuiperbelt.spm.domain.event;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.*;
 import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.common.BaseEntity;
+import tech.kuiperbelt.spm.common.UserContext;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -78,6 +80,9 @@ public class Event extends BaseEntity {
 
     private String correlationId;
 
+    @Transient
+    private UserContext userContext;
+
     @ToString.Include
     private String key;
 
@@ -109,7 +114,9 @@ public class Event extends BaseEntity {
         private Long source;
 
         public EventBuilder args(Object... args) {
-            this.args = new Gson().toJson(args);
+            GsonBuilder gsonBuildr = new GsonBuilder();
+            gsonBuildr.registerTypeAdapter(PropertyChanged.class, new PropertyChanged.JsonSerializer());
+            this.args = gsonBuildr.create().toJson(args);
             return this;
         }
 

@@ -2,12 +2,15 @@ package tech.kuiperbelt.spm.domain.core;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.rest.core.annotation.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.common.AuditService;
+import tech.kuiperbelt.spm.common.UserContextHolder;
 import tech.kuiperbelt.spm.domain.event.Event;
 import tech.kuiperbelt.spm.domain.event.EventService;
 import tech.kuiperbelt.spm.domain.event.PropertiesChanged;
@@ -17,6 +20,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static tech.kuiperbelt.spm.domain.event.Event.*;
@@ -39,6 +43,9 @@ public class PhaseService {
 
     @Autowired
     private AuditService auditService;
+
+    @Autowired
+    private UserContextHolder userContextHolder;
 
     /**
      * It will be trigger by project delete so just delete workItems cascade
@@ -310,6 +317,22 @@ public class PhaseService {
         // check can be done with project
         phase.setAllItemStop(false);
         return createdWorkItem;
+    }
+
+    @Async
+    @EventListener(condition = "#root.args[0].key == '" + ITEM_SCHEDULE_MOVE_PHASE + "'")
+    public void handleWorkItemMovedEvent(Event event) {
+        userContextHolder.runAs(event.getUserContext(), () -> {
+            PropertyChanged propertyChanged = PropertyChanged.of((Map)event.getArgs()[1]);
+            String oldId = (String) propertyChanged.getOldValue();
+            if(oldId != null) {
+                phaseRepository.getOne(Long.valueOf(oldId)).checkAllPhaseStop();
+            }
+            String newId = (String)propertyChanged.getNewValue();
+            if(newId != null) {
+                phaseRepository.getOne(Long.valueOf(newId)).checkAllPhaseStop();
+            }
+        });
     }
 
     private void cancelWorkItems(Phase phase) {

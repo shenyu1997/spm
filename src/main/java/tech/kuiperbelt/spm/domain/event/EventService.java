@@ -83,6 +83,7 @@ public class EventService {
         event.setCorrelationId(userContext.getCorrelationId());
         event.setTriggeredMan(userContext.getUpn());
         event.setTimestamp(LocalDateTime.now());
+        event.setUserContext(UserContext.of(userContext));
         eventQueue.get().add(event);
     }
 

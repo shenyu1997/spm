@@ -180,7 +180,7 @@ public class WorkItemApiTests extends ApiTest {
     }
 
 
-    //@Test
+    @Test
     public void movePhase() throws Exception {
 
         LocalDate currentDay = LocalDate.now();
@@ -203,6 +203,9 @@ public class WorkItemApiTests extends ApiTest {
 
         Map<String, String> patchedWorkItem = Collections.singletonMap("phase", phaseAHref);
         testUtils.patchUpdate(workItemBHref, patchedWorkItem);
+
+        yield();
+
         mockMvc.perform(get(phaseAHref))
                 .andExpect(jsonPath("$.canBeDone", equalTo(false)));
 
