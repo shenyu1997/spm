@@ -263,8 +263,33 @@ public class WorkItemApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
-    public void noPhaseWorkItemUpdate() {
+    public void noPhaseWorkItemUpdate() throws Exception {
+        LocalDate current = LocalDate.now();
+        // from init -> done -> delete
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
 
+        WorkItem workItem = new WorkItem().toBuilder()
+                .detail(RandomStringUtils.randomAlphanumeric(10))
+                .assignee(RandomStringUtils.randomAlphanumeric(6))
+                .priority(WorkItem.Priority.HIGH)
+                .plannedStartDate(current.plusDays(1))
+                .deadLine(current.plusDays(5))
+                .ready(true)
+                .build();
+        mockMvc.perform(patch(workItemAHref)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.detail", equalTo(workItem.getDetail())))
+                .andExpect(jsonPath("$.assignee", equalTo(workItem.getAssignee())))
+                .andExpect(jsonPath("$.priority", equalTo(workItem.getPriority().name())))
+                .andExpect(jsonPath("$.plannedStartDate", equalTo(workItem.getPlannedStartDate().toString())))
+                .andExpect(jsonPath("$.deadLine", equalTo(workItem.getDeadLine().toString())))
+                .andExpect(jsonPath("$.ready", equalTo(workItem.getReady())));
     }
 
     @Sql({"/cleanup.sql"})
