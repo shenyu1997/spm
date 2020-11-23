@@ -30,7 +30,7 @@ public abstract class ApiTest {
     @SneakyThrows
     public void yield() {
         Thread.yield();
-        Thread.sleep(100);
+        Thread.sleep(10);
         Thread.yield();
     }
 
