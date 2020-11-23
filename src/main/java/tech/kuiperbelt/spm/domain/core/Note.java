@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
+import org.springframework.data.rest.core.annotation.RestResource;
 import tech.kuiperbelt.spm.common.AuditDelegate;
 import tech.kuiperbelt.spm.common.AuditListener;
 import tech.kuiperbelt.spm.common.AuditableEntity;
@@ -30,6 +31,7 @@ public class Note extends BaseEntity implements AuditableEntity{
 
     private LocalDate createDate;
 
+    @RestResource(path = "work-item")
     @ManyToOne
     private WorkItem workItem;
 
