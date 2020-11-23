@@ -27,6 +27,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.number", equalTo(0)));
     }
+
     @Sql({"/cleanup.sql"})
     @Test
     public void getProjectPhases() throws Exception {
@@ -39,6 +40,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$._embedded.phases..self.href",
                         hasItems(firstPhasesHref, secondPhaseHref)));
     }
+
     @Sql({"/cleanup.sql"})
     @Test
     public void starProjectToDoneProject() throws Exception {
@@ -89,6 +91,7 @@ public class PhaseApiTests extends ApiTest {
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
 
     }
+
     @Sql({"/cleanup.sql"})
     @Test
     public void startPhaseAutomaticallyAfterFirstInsertRunningProject() throws Exception {
@@ -99,6 +102,7 @@ public class PhaseApiTests extends ApiTest {
         mockMvc.perform(get(firstPhasesHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
     }
+
     @Sql({"/cleanup.sql"})
     @Test
     public void stopPhaseCanNotBeUpdate() throws Exception {
@@ -334,6 +338,7 @@ public class PhaseApiTests extends ApiTest {
 
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void changePhaseEndDayToRight() throws Exception {
         LocalDate currentDay = LocalDate.now();

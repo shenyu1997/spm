@@ -4,13 +4,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class WorkItemApiTests extends ApiTest {
     public static final String MOCK_UERR = "sjdfs.ldjfds";
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void workItemLiftCycle() throws Exception {
         LocalDate currentDay = LocalDate.now();
@@ -85,6 +87,7 @@ public class WorkItemApiTests extends ApiTest {
 
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void workItemIsReady() throws Exception {
         LocalDate currentDay = LocalDate.now();
@@ -125,6 +128,7 @@ public class WorkItemApiTests extends ApiTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void updateWorkItem() throws Exception {
         // update before done
@@ -162,6 +166,7 @@ public class WorkItemApiTests extends ApiTest {
 
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void deleteWorkItemImpactPhaseCanBeDone() throws Exception {
         LocalDate currentDay = LocalDate.now();
@@ -179,7 +184,7 @@ public class WorkItemApiTests extends ApiTest {
                 .andExpect(jsonPath("$.canBeDone", equalTo(true)));
     }
 
-
+    @Sql({"/cleanup.sql"})
     @Test
     public void movePhase() throws Exception {
 
@@ -201,10 +206,11 @@ public class WorkItemApiTests extends ApiTest {
         mockMvc.perform(get(phaseAHref))
                 .andExpect(jsonPath("$.canBeDone", equalTo(true)));
 
+        // verify canBeDone after move both fromPhase and toPhase
         Map<String, String> patchedWorkItem = Collections.singletonMap("phase", phaseAHref);
         testUtils.patchUpdate(workItemBHref, patchedWorkItem);
 
-        yield();
+        super.yield();
 
         mockMvc.perform(get(phaseAHref))
                 .andExpect(jsonPath("$.canBeDone", equalTo(false)));
@@ -215,20 +221,53 @@ public class WorkItemApiTests extends ApiTest {
 
         mockMvc.perform(get(workItemBHref))
                 .andExpect(jsonPath("$.overflow", equalTo(true)));
-
-        // verify canBeDone after move both fromPhase and toPhase
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
-    public void noPhaseWorkItemLiftCycle() {
+    public void noPhaseWorkItemLiftCycle() throws Exception {
+        LocalDate current = LocalDate.now();
+        // from init -> done -> delete
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
+
+        testUtils.start(workItemAHref);
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
+                .andExpect(jsonPath("$.actualStartDate", notNullValue()));
+
+        testUtils.done(workItemAHref);
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.actualStartDate", notNullValue()))
+                .andExpect(jsonPath("$.actualEndDate", notNullValue()));
+
+        testUtils.delete(workItemAHref);
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(status().isNotFound());
+
+        // from init -> cancel -> delete
+        String workItemBHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        testUtils.start(workItemBHref);
+        testUtils.cancel(workItemBHref);
+        mockMvc.perform(get(workItemBHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+        testUtils.delete(workItemBHref);
+        mockMvc.perform(get(workItemBHref))
+                .andExpect(status().isNotFound());
 
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void noPhaseWorkItemUpdate() {
 
     }
 
+    @Sql({"/cleanup.sql"})
     @Test
     public void deleteCascadeToNotes() {
 

@@ -53,9 +53,14 @@ public class WorkItemService {
             Assert.isTrue(workItem.getPhase().getStatus() != RunningStatus.STOP, "Phase can not be STOP");
         }
 
-        // set owner
+        // Set owner
         String currentUpn = userContextHolder.getUserContext().getUpn();
         workItem.setOperator(currentUpn);
+
+        // Set default assignee if workItem has no phase
+        if(workItem.getPhase() == null && StringUtils.isEmpty(workItem.getAssignee())) {
+            workItem.setAssignee(currentUpn);
+        }
     }
 
     @HandleAfterCreate
@@ -72,7 +77,7 @@ public class WorkItemService {
         }
 
         // send is ready event (assignee not empty)
-        if(workItem.getReady()) {
+        if(workItem.getReady() != null && workItem.getReady()) {
             sentReadyEventIfWorkItemReady(workItem);
         }
     }
@@ -85,11 +90,10 @@ public class WorkItemService {
     @HandleAfterSave
     public void postHandleSave(WorkItem workItem) {
         // Check move phase
-        auditService.getPreviousVersion(workItem).ifPresent(previous -> {
-            PropertyChanged.of(previous, workItem, WorkItem.Fields.phase).ifPresent(propertyChanged -> {
-                movePhase(workItem, propertyChanged);
-            });
-        });
+        auditService.getPreviousVersion(workItem)
+                .ifPresent(previous ->
+                    PropertyChanged.of(previous, workItem, WorkItem.Fields.phase)
+                            .ifPresent(propertyChanged -> movePhase(workItem, propertyChanged)));
 
         // check overflow
         if(workItem.isOverflow()) {
@@ -242,7 +246,9 @@ public class WorkItemService {
 
         switch (key) {
             case Event.ITEM_ADDED:
-                builder.args(workItem.getName(),workItem.getPhase().getName(), workItem.getProject().getName());
+                builder.args(workItem.getName(),
+                        Optional.of(workItem).map(WorkItem::getPhase).map(Phase::getName).orElse(""),
+                        Optional.of(workItem).map(WorkItem::getProject).map(Project::getName).orElse(""));
                 break;
             case Event.DETACH_ITEM_ADDED:
             case Event.ITEM_REMOVE:

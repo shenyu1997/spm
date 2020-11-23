@@ -118,6 +118,21 @@ public class TestUtils {
                 .getHeader(LOCATION);
     }
 
+    public String createRandomWorkItem(LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
+        WorkItem workItem = new WorkItem().toBuilder()
+                .name(RandomStringUtils.randomAlphanumeric(10))
+                .plannedStartDate(plannedStartDate)
+                .deadLine(deadLine)
+                .build();
+        return mockMvc.perform(post("/work-items")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader(LOCATION);
+    }
+
     public void patchUpdate(String workItemAHref, Object workItem) throws Exception {
         mockMvc.perform(patch(workItemAHref)
                 .contentType(MediaType.APPLICATION_JSON)
