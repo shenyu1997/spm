@@ -65,15 +65,15 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
     public Set<String> getParticipants() {
         Set<String> result = new HashSet<>();
-        if(!CollectionUtils.isEmpty(members)) {
-            result.addAll(members);
+        if(!CollectionUtils.isEmpty(getMembers())) {
+            result.addAll(getMembers());
         }
-        result.add(owner);
+        result.add(getOwner());
         return result;
     }
 
     public List<Phase> getPhases() {
-        if(this.phases == null) {
+        if(phases == null) {
             return new LinkedList<>();
         }
 
@@ -88,8 +88,8 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
 
     public void checkAllPhaseStop () {
-        allPhasesStop = this.getPhases().stream()
-                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP);
+        setAllPhasesStop(this.getPhases().stream()
+                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP));
     }
 
     @Override
