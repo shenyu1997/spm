@@ -79,25 +79,25 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     }
 
     public LocalDate getPlannedStartDate() {
-        if(plannedStartDate == null && phase != null) {
-            return phase.getPlannedStartDate();
+        if(plannedStartDate == null && getPhase() != null) {
+            return getPhase().getPlannedStartDate();
         } else {
             return plannedStartDate;
         }
     }
 
     public LocalDate getDeadLine() {
-        if(deadLine == null && phase != null) {
-            return phase.getPlannedEndDate();
+        if(deadLine == null && getPhase() != null) {
+            return getPhase().getPlannedEndDate();
         } else {
             return deadLine;
         }
     }
 
     public boolean isOverflow() {
-        if(phase != null) {
-            return phase.isOverflowBy(getPlannedStartDate()) ||
-                    phase.isOverflowBy(getDeadLine());
+        if(getPhase() != null) {
+            return getPhase().isOverflowBy(getPlannedStartDate()) ||
+                    getPhase().isOverflowBy(getDeadLine());
         } else {
             return false;
         }
@@ -106,8 +106,8 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     public Boolean getReady() {
         if(ready != null) {
             return ready;
-        } else if(phase != null) {
-            return phase.getStatus() != RunningStatus.INIT;
+        } else if(getPhase() != null) {
+            return getPhase().getStatus() != RunningStatus.INIT;
         }
         return null;
     }
