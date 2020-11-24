@@ -108,8 +108,11 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
             return ready;
         } else if(getPhase() != null) {
             return getPhase().getStatus() != RunningStatus.INIT;
+        } else if(getId() != null) {
+            return true;
+        } else {
+            return null;
         }
-        return null;
     }
 
     public boolean move(Period offset) {
