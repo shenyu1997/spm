@@ -75,6 +75,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("yu.shen")
                     .name("Write Design doc (HLD)")
+                    .detail("Write Design doc (HLD), include data model, use cases...")
                     .priority(WorkItem.Priority.HIGH)
                     .plannedStartDate(LocalDate.now().plusDays(1))
                     .deadLine(LocalDate.now().plusDays(30))
@@ -85,6 +86,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("yu.shen")
                     .name("Review Design doc (HLD)")
+                    .detail("Modify HLD after Server Poc finished.")
                     .priority(WorkItem.Priority.LOW)
                     .plannedStartDate(LocalDate.now().plusDays(30))
                     .deadLine(LocalDate.now().plusDays(35))
@@ -95,6 +97,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("huanhuan.dong")
                     .name("Collect UI Design Idea")
+                    .detail("Find system/software in market, to find hot idea of project mangement")
                     .plannedStartDate(LocalDate.now().plusDays(1))
                     .deadLine(LocalDate.now().plusDays(30))
                     .build()).getId();
@@ -104,6 +107,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("yu.shen")
                     .name("Service POC")
+                    .detail("Draft implement MVP of HLD, for server side, to choose basic tech framework and tech stack")
                     .plannedStartDate(LocalDate.now().plusDays(15))
                     .deadLine(LocalDate.now().plusDays(35))
                     .build()).getId();
@@ -113,6 +117,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("huanhuan.dong")
                     .name("Client UI POC")
+                    .detail("Draft implement MVP of HLD, for client side, to choose basic tech framework and tech stack")
                     .plannedStartDate(LocalDate.now().plusDays(45))
                     .build()).getId();
         });
@@ -121,6 +126,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("yongjian.sha")
                     .name("Collect requirement from real customer")
+                    .detail("Touch real customer, collect requirement")
                     .priority(WorkItem.Priority.HIGH)
                     .plannedStartDate(LocalDate.now().plusDays(1))
                     .deadLine(LocalDate.now().plusDays(40))
@@ -131,6 +137,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("yu.shen")
                     .name("Discuss MVP, confirm minimal scope")
+                    .detail("Discuss MVP, talk about it within team members")
                     .milestone(true)
                     .plannedStartDate(LocalDate.now().plusDays(40))
                     .deadLine(LocalDate.now().plusDays(45))
@@ -141,6 +148,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             return phaseService.createWorkItem(phaseFourId, new WorkItem().toBuilder()
                     .assignee("yu.shen")
                     .name("Monitor production ENV")
+                    .detail("Now, it is real cake off, we start from here.")
                     .milestone(true)
                     .plannedStartDate(LocalDate.now().plusDays(40))
                     .deadLine(LocalDate.now().plusDays(45))
