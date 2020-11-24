@@ -54,7 +54,7 @@ public class WorkItemService {
 
         // Set owner
         String currentUpn = userContextHolder.getUserContext().getUpn();
-        workItem.setOperator(currentUpn);
+        workItem.setOwner(currentUpn);
 
         // Set default assignee if workItem has no phase
         if(workItem.getPhase() == null && StringUtils.isEmpty(workItem.getAssignee())) {
