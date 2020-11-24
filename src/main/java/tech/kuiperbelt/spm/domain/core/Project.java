@@ -7,10 +7,7 @@ import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import tech.kuiperbelt.spm.domain.core.support.AuditDelegate;
-import tech.kuiperbelt.spm.domain.core.support.AuditListener;
-import tech.kuiperbelt.spm.domain.core.support.AuditableEntity;
-import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -40,6 +37,9 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
 
     private String manager;
 
+    @Version
+    private Long version;
+
     @Builder.Default
     @ElementCollection
     private List<String> members = new ArrayList<>();
@@ -59,9 +59,6 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @Embedded
     @Delegate(excludes = ProjectExecutableExclude.class)
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
-
-    @Version
-    private long version;
 
     public Set<String> getParticipants() {
         Set<String> result = new HashSet<>();

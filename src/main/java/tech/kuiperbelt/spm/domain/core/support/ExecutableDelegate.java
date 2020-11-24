@@ -1,8 +1,9 @@
-package tech.kuiperbelt.spm.domain.core;
+package tech.kuiperbelt.spm.domain.core.support;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.Assert;
+import tech.kuiperbelt.spm.domain.core.RunningStatus;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;

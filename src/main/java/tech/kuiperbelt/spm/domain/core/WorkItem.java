@@ -6,10 +6,7 @@ import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
-import tech.kuiperbelt.spm.domain.core.support.AuditDelegate;
-import tech.kuiperbelt.spm.domain.core.support.AuditListener;
-import tech.kuiperbelt.spm.domain.core.support.AuditableEntity;
-import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -56,6 +53,9 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     private String owner;
 
     private String assignee;
+
+    @Version
+    private Long version;
 
     @NotAudited
     @OneToMany(mappedBy = Note.Fields.workItem)

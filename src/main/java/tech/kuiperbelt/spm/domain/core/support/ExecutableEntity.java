@@ -1,4 +1,6 @@
-package tech.kuiperbelt.spm.domain.core;
+package tech.kuiperbelt.spm.domain.core.support;
+
+import tech.kuiperbelt.spm.domain.core.RunningStatus;
 
 public interface ExecutableEntity {
     RunningStatus getStatus();

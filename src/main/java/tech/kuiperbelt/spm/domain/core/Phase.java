@@ -7,10 +7,7 @@ import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.util.Assert;
-import tech.kuiperbelt.spm.domain.core.support.AuditDelegate;
-import tech.kuiperbelt.spm.domain.core.support.AuditListener;
-import tech.kuiperbelt.spm.domain.core.support.AuditableEntity;
-import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -44,6 +41,9 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
 
     @ManyToOne
     private Project project;
+
+    @Version
+    private Long version;
 
     @Builder.Default
     @RestResource(path = "work-items")
