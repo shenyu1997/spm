@@ -19,7 +19,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder builder) throws Exception {
-        String pwd = passwordEncoder().encode("123456");
+        String pwd = passwordEncoder().encode("!Qaz2wsx3edc");
         builder.inMemoryAuthentication()
                 .withUser("yu.shen").password(pwd).authorities(ROLE_USER)
                 .and()
