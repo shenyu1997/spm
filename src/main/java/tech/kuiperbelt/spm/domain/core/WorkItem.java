@@ -6,6 +6,7 @@ import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
 import org.hibernate.envers.NotAudited;
+import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.domain.core.support.*;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.Objects;
 
 @FieldNameConstants
 @Audited
@@ -54,6 +56,9 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
 
     private String assignee;
 
+    @Enumerated(EnumType.STRING)
+    private Scope scope;
+
     @Version
     private Long version;
 
@@ -73,10 +78,30 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @Delegate
     private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
+    void determineScope() {
+        if(getPhase() != null) {
+            Assert.isTrue(getPhase().getStatus() != RunningStatus.STOP, "Phase can not be STOP");
+        }
 
-    public enum Priority {
-        LOW, MEDIUM, HIGH, TOP
+        if(getProject()!= null) {
+            Assert.isTrue(getProject().getStatus() != RunningStatus.STOP, "Project can not be STOP");
+        }
+
+        Assert.isTrue(getPhase() == null ||
+                        getProject() == null ||
+                Objects.equals(getPhase().getProject(), getProject()),
+                "Phase and Project was not match");
+
+        if(getPhase() != null) {
+            setScope(Scope.PHASE);
+            setProject(getPhase().getProject());
+        } else if(getProject() != null) {
+            setScope(Scope.PROJECT);
+        } else {
+            setScope(Scope.PERSON);
+        }
     }
+
 
     public LocalDate getPlannedStartDate() {
         if(plannedStartDate == null && getPhase() != null) {
@@ -126,5 +151,13 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
             moved = true;
         }
         return  moved;
+    }
+
+    public enum Priority {
+        LOW, MEDIUM, HIGH, TOP
+    }
+
+    public enum Scope {
+        PERSON, PHASE, PROJECT
     }
 }

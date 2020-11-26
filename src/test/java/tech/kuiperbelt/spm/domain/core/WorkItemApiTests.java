@@ -23,6 +23,81 @@ public class WorkItemApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
+    public void relation() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        // Prepared phase A
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+
+        // Verify init status of workItems
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())))
+                .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PHASE.name())));
+
+        // Verify project href and phase href
+        mockMvc.perform(get(workItemAHref + "/project"))
+                .andExpect(jsonPath("$._links.self.href", equalTo(projectHref)));
+
+
+        mockMvc.perform(get(workItemAHref + "/phase"))
+                .andExpect(jsonPath("$._links.self.href", equalTo(phaseAHref)));
+
+        // Verify project's work-items and phase's work-items
+        mockMvc.perform(get(phaseAHref + "/work-items"))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(workItemAHref)));
+
+        mockMvc.perform(get(projectHref + "/work-items"))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(workItemAHref)));
+
+        // Remove project on workItem, and failed
+        mockMvc.perform(delete(workItemAHref + "/project"))
+                .andExpect(status().isBadRequest());
+
+        // Remove phase on workItem
+        mockMvc.perform(delete(workItemAHref + "/phase"))
+                .andExpect(status().isNoContent());
+
+        // Verify scope should be changed  to PROJECT
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PROJECT.name())));
+
+        // Verify workItem's phase not found
+        mockMvc.perform(get(workItemAHref + "/phase"))
+                .andExpect(status().isNotFound());
+
+        // Verify workItems's project is still be found
+        mockMvc.perform(get(workItemAHref + "/project"))
+                .andExpect(jsonPath("$._links.self.href", equalTo(projectHref)));
+
+        // Verify project href and phase href
+        mockMvc.perform(get(phaseAHref + "/work-items"))
+                .andExpect(jsonPath("$._embedded.workItems.length()", equalTo(0)));
+
+
+        mockMvc.perform(get(projectHref + "/work-items"))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(workItemAHref)));
+
+
+        // Remove project on workItem now, and successful
+        mockMvc.perform(delete(workItemAHref + "/project"))
+                .andExpect(status().isNoContent());
+
+        // Verify scope change to PERSON
+        mockMvc.perform(get(workItemAHref))
+                .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PERSON.name())));
+
+        // Verify workItem's project not found
+        mockMvc.perform(get(workItemAHref + "/project"))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get(projectHref + "/work-items"))
+                .andExpect(jsonPath("$._embedded.workItems.length()", equalTo(0)));
+
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
     public void workItemLiftCycle() throws Exception {
         LocalDate currentDay = LocalDate.now();
         String projectHref = testUtils.createRandomProject();
@@ -41,7 +116,6 @@ public class WorkItemApiTests extends ApiTest {
 
         mockMvc.perform(get(workItemCHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
-
 
         // Start A and B
         testUtils.start(workItemAHref);
@@ -228,7 +302,8 @@ public class WorkItemApiTests extends ApiTest {
         // from init -> done -> delete
         String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
         mockMvc.perform(get(workItemAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())))
+                .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PERSON.name())));
 
         testUtils.start(workItemAHref);
         mockMvc.perform(get(workItemAHref))

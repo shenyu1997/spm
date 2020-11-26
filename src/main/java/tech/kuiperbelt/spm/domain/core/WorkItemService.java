@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import tech.kuiperbelt.spm.domain.core.support.AuditService;
-import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.event.PropertiesChanged;
 import tech.kuiperbelt.spm.domain.core.event.PropertyChanged;
+import tech.kuiperbelt.spm.domain.core.support.AuditService;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.Period;
 import java.util.List;
@@ -48,19 +49,20 @@ public class WorkItemService {
 
     @HandleBeforeCreate
     public void preHandleCreate(WorkItem workItem) {
-        if(workItem.getPhase() != null) {
-            Assert.isTrue(workItem.getPhase().getStatus() != RunningStatus.STOP, "Phase can not be STOP");
-        }
 
         // Set owner
         String currentUpn = userContextHolder.getUserContext().getUpn();
         workItem.setOwner(currentUpn);
 
         // Set default assignee if workItem has no phase
-        if(workItem.getPhase() == null && StringUtils.isEmpty(workItem.getAssignee())) {
+        if(workItem.getPhase() == null && workItem.getProject() ==null && StringUtils.isEmpty(workItem.getAssignee())) {
             workItem.setAssignee(currentUpn);
         }
+
+        // Determine the scope
+        workItem.determineScope();
     }
+
 
     @HandleAfterCreate
     public void postHandleCreate(WorkItem workItem) {
@@ -84,6 +86,8 @@ public class WorkItemService {
     @HandleBeforeSave
     public void preHandleSave(WorkItem workItem) {
         Assert.isTrue(workItem.getStatus() != RunningStatus.STOP, "STOP work item can not be updated");
+        // Determine the scope
+        workItem.determineScope();
     }
 
     @HandleAfterSave
@@ -116,6 +120,17 @@ public class WorkItemService {
         });
 
     }
+
+    @HandleBeforeLinkDelete
+    public void preHandlePhaseLinkDelete(WorkItem workItem, BaseEntity phaseOrProject) {
+        if(phaseOrProject instanceof Phase) {
+            workItem.setScope(WorkItem.Scope.PROJECT);
+        } else if(phaseOrProject instanceof Project) {
+            Assert.isTrue(workItem.getScope() == WorkItem.Scope.PROJECT ,"WorkItem must be PROJECT scope");
+            workItem.setScope(WorkItem.Scope.PERSON);
+        }
+    }
+
 
 
     public void startWorkItem(long workItemId) {
@@ -300,4 +315,5 @@ public class WorkItemService {
         WorkItem workItem = workItemRepository.getOne(workItemId);
         return noteService.takeNote(workItem, note);
     }
+
 }

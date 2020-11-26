@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
+import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.domain.core.support.*;
@@ -47,6 +48,11 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @Builder.Default
     @OneToMany(mappedBy = Phase.Fields.project)
     private List<Phase> phases = new ArrayList<>();
+
+    @Builder.Default
+    @RestResource(path = "work-items")
+    @OneToMany(mappedBy = WorkItem.Fields.project)
+    private List<WorkItem> workItems = new ArrayList<>();
 
     @Builder.Default
     @JsonIgnore
