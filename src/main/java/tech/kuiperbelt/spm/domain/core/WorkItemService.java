@@ -39,8 +39,12 @@ public class WorkItemService {
     @Autowired
     private NoteService noteService;
 
-    public WorkItem createWorkItem(Phase phase, WorkItem workItem) {
-        workItem.setPhase(phase);
+    /**
+     * Context means workItem belong to Project or Phase
+     * @param workItem
+     * @return
+     */
+    public WorkItem createWorkItemInContext(WorkItem workItem) {
         preHandleCreate(workItem);
         WorkItem savedWorkItem = workItemRepository.save(workItem);
         postHandleCreate(workItem);

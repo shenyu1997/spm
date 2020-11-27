@@ -35,6 +35,7 @@ As a project manager, I can insert phase in Project Edit view, information I pro
 
 ### Next
 - WorkItem should impact whether project can be done.
+- Calculate collection direct workItems on project (done)
 
 
 

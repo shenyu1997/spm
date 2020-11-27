@@ -253,7 +253,8 @@ public class PhaseService {
     public WorkItem createWorkItem(long phaseId, WorkItem workItem) {
         Phase phase = phaseRepository.getOne(phaseId);
         Assert.isTrue(phase.getStatus() != RunningStatus.STOP, "STOP phase can not add workItem.");
-        WorkItem createdWorkItem = workItemService.createWorkItem(phase, workItem);
+        workItem.setPhase(phase);
+        WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
 
         // check can be done with project
         phase.setAllItemStop(false);

@@ -71,6 +71,28 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
             projectService.startProject(projectId);
         });
 
+        long workItemProjectAId = step("Add workItems A belong to Project Planning Phase", () -> {
+            return projectService.createDirectWorkItem(projectId, new WorkItem().toBuilder()
+                    .assignee("yu.shen")
+                    .name("WorkItems belong to Project Planning")
+                    .detail("Just for testing")
+                    .priority(WorkItem.Priority.MEDIUM)
+                    .plannedStartDate(LocalDate.now().plusDays(1))
+                    .deadLine(LocalDate.now().plusDays(30))
+                    .build()).getId();
+        });
+
+        long workItemProjectBId = step("Add workItems B belong to Project Planning Phase", () -> {
+            return projectService.createDirectWorkItem(projectId, new WorkItem().toBuilder()
+                    .assignee("yu.shen")
+                    .name("WorkItems belong to Project Planning")
+                    .detail("Just for testing, 2")
+                    .priority(WorkItem.Priority.TOP)
+                    .plannedStartDate(LocalDate.now().plusDays(5))
+                    .deadLine(LocalDate.now().plusDays(6))
+                    .build()).getId();
+        });
+
         long workItemHLDId = step("Add workItems(Write Design doc) to Planning Phase", () -> {
             return phaseService.createWorkItem(phaseOneId, new WorkItem().toBuilder()
                     .assignee("yu.shen")

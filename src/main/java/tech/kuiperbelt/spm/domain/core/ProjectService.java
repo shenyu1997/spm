@@ -17,10 +17,7 @@ import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.event.PropertiesChanged;
 import tech.kuiperbelt.spm.domain.core.event.PropertyChanged;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static tech.kuiperbelt.spm.domain.core.event.Event.*;
 
@@ -45,6 +42,9 @@ public class ProjectService {
 
     @Autowired
     private PhaseService phaseService;
+
+    @Autowired
+    private WorkItemService workItemService;
 
     public Project createProject(Project project) {
         preHandleProjectCreate(project);
@@ -209,6 +209,18 @@ public class ProjectService {
         Phase createdPhase = phaseService.insertPhase(project, phase);
         project.setAllPhasesStop(false);
         return createdPhase;
+    }
+
+    public WorkItem createDirectWorkItem(Long id, WorkItem workItem) {
+        Project project = projectRepository.getOne(id);
+        workItem.setProject(project);
+        WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
+        return createdWorkItem;
+    }
+
+    public List<WorkItem> getDirectWorkItems(Long id) {
+        return projectRepository.getOne(id)
+                .getDirectWorkItems();
     }
 
     private void sendEvent(String key, Project project) {

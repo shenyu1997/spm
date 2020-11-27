@@ -9,6 +9,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguration;
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.web.context.request.WebRequestInterceptor;
+import tech.kuiperbelt.spm.domain.core.ProjectController;
 import tech.kuiperbelt.spm.domain.core.support.WebTransactionInterceptor;
 
 import java.util.ArrayList;
@@ -43,4 +44,10 @@ public class SpmRepositoryRestMvcConfiguration extends RepositoryRestMvcConfigur
             }
         };
     }
+
+    @Bean
+    public ProjectController.ProjectRepresentationModelProcessor projectRepresentationModelProcessor() {
+        return new ProjectController.ProjectRepresentationModelProcessor();
+    }
+
 }

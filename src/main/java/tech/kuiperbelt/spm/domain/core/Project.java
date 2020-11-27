@@ -75,6 +75,13 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
         return result;
     }
 
+    @JsonIgnore
+    public List<WorkItem> getDirectWorkItems() {
+        return getWorkItems().stream()
+                .filter(workItem -> WorkItem.Scope.PROJECT == workItem.getScope())
+                .collect(Collectors.toList());
+    }
+
     public List<Phase> getPhases() {
         if(phases == null) {
             return new LinkedList<>();
