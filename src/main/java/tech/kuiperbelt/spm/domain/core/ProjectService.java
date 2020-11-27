@@ -146,9 +146,14 @@ public class ProjectService {
     public void preHandleProjectDelete(Project current) {
         Assert.isTrue(current.isCanBeDeleted(),
                 "Only Cancelled Project can be deleted");
+
         current.getPhases()
                 .forEach(phase ->
                 phaseService.deletePhase(phase));
+
+        current.getDirectWorkItems()
+                .forEach(workItem ->
+                        workItemService.deleteWorkItem(workItem));
     }
 
     @HandleAfterDelete
@@ -168,6 +173,11 @@ public class ProjectService {
                 .filter(Phase::isCanBeCancelled)
                 .forEach(phase ->
                 phaseService.cancelPhase(phase.getId()));
+
+        project.getDirectWorkItems().stream()
+                .filter(WorkItem::isCanBeCancelled)
+                .forEach(workItem ->
+                        workItemService.cancelWorkItem(workItem.getId()));
 
         // Do action
         project.cancel();
@@ -215,6 +225,7 @@ public class ProjectService {
         Project project = projectRepository.getOne(id);
         workItem.setProject(project);
         WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
+        project.setAllDirItemsStop(false);
         return createdWorkItem;
     }
 

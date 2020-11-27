@@ -59,7 +59,7 @@ public class Event extends BaseEntity {
 
     public static final String ITEM_SCHEDULE_MOVED_LEFT = "event.item.schedule.moved.left";//TODO
     public static final String ITEM_SCHEDULE_MOVED_RIGHT = "event.item.schedule.moved.right";//TODO
-    public static final String ITEM_SCHEDULE_MOVED_PHASE = "event.item.schedule.moved.phase";//TODO
+    public static final String ITEM_MOVED_PHASE = "event.item.schedule.moved.phase";//TODO
     public static final String ITEM_SCHEDULE_START_CHANGED = "event.item.schedule.start.changed";//TODO
     public static final String ITEM_SCHEDULE_END_CHANGED = "event.item.schedule.end.changed";//TODO
 

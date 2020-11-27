@@ -262,7 +262,7 @@ public class PhaseService {
     }
 
     @Async
-    @EventListener(condition = "#root.args[0].key == '" + ITEM_SCHEDULE_MOVED_PHASE + "'")
+    @EventListener(condition = "#root.args[0].key == '" + ITEM_MOVED_PHASE + "'")
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
             PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);

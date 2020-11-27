@@ -16,6 +16,7 @@ import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +103,8 @@ public class WorkItemService {
                     PropertyChanged.of(previous, workItem, WorkItem.Fields.phase)
                             .ifPresent(propertyChanged ->
                                     movePhase(workItem, propertyChanged)));
+        // TODO move project
+        //moveProject(....);
 
         // check overflow
         if(workItem.isOverflow()) {
@@ -152,8 +155,14 @@ public class WorkItemService {
         // send done event;
         sendEvent(Event.ITEM_EXECUTION_DONE, workItem);
 
+        checkRelatedCanBeDone(workItem);
+    }
+
+    private void checkRelatedCanBeDone(WorkItem workItem) {
         if(workItem.getPhase() != null) {
             workItem.getPhase().checkAllItemsStop();
+        } else if(workItem.getProject() != null) {
+            workItem.getProject().checkAllDirItemsStop();
         }
     }
 
@@ -185,17 +194,15 @@ public class WorkItemService {
         workItem.cancel();
         sendEvent(Event.ITEM_EXECUTION_CANCELED, workItem);
 
-        if(workItem.getPhase() != null) {
-            workItem.getPhase().checkAllItemsStop();
-        }
+        checkRelatedCanBeDone(workItem);
     }
 
     public void deleteWorkItems(Phase phase) {
-        phase.getWorkItems()
-                .forEach(this::deleteWorkItem);
+        List<WorkItem> workItems = new ArrayList<>(phase.getWorkItems());
+        workItems.forEach(this::deleteWorkItem);
     }
 
-    private void deleteWorkItem(WorkItem workItem) {
+    public void deleteWorkItem(WorkItem workItem) {
         preHandleDelete(workItem);
         workItemRepository.delete(workItem);
         postHandleDelete(workItem);
@@ -210,9 +217,10 @@ public class WorkItemService {
 
     @HandleAfterDelete
     public void postHandleDelete(WorkItem workItem) {
-        if(workItem.getPhase() != null && workItem.getPhase().getStatus() == RunningStatus.RUNNING) {
-            workItem.getPhase().getWorkItems().remove(workItem);
-            workItem.getPhase().checkAllItemsStop();
+        if(workItem.getPhase() != null) {
+            workItem.getPhase().checkAllItemsStopAfterRemove(workItem);
+        } else if(workItem.getProject() != null) {
+            workItem.getProject().checkAllDirItemsStopAfterRemove(workItem);
         }
         sendEvent(Event.ITEM_DELETED, workItem);
     }
@@ -249,7 +257,27 @@ public class WorkItemService {
         });
 
         sentReadyEventIfWorkItemReady(workItem);
-        sendEvent(Event.ITEM_SCHEDULE_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
+        sendEvent(Event.ITEM_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
+    }
+    private void moveProject(WorkItem workItem, PropertyChanged propertyChanged) {
+        //TODO
+//        propertyChanged.getOldValue().ifPresent(oldValue ->
+//                Assert.isTrue(((Phase)oldValue).getStatus() != RunningStatus.STOP,
+//                        "STOP phase can not move workItem out"));
+//
+//        propertyChanged.getNewValue().ifPresent(newVale -> {
+//            Phase newPhase = (Phase) newVale;
+//            Assert.isTrue(newPhase.getStatus() != RunningStatus.STOP,
+//                    "STOP phase can not move workItem in");
+//            // Only set new phase'allItemsStop to true because we add Non STOP workItem to it;
+//            // and We postpone checking of old item to async procession because the DB need update and commit first.
+//            if(workItem.getStatus() != RunningStatus.STOP) {
+//                newPhase.setAllItemStop(false);
+//            }
+//        });
+//
+//        sentReadyEventIfWorkItemReady(workItem);
+//        sendEvent(Event.ITEM_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }
 
     private void sendEvent(String key, WorkItem workItem) {
@@ -295,7 +323,7 @@ public class WorkItemService {
                 break;
             case Event.ITEM_SCHEDULE_END_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
-            case Event.ITEM_SCHEDULE_MOVED_PHASE:
+            case Event.ITEM_MOVED_PHASE:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
                 break;
             default:

@@ -84,6 +84,13 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
                 .allMatch(phase -> phase.getStatus() == RunningStatus.STOP));
     }
 
+    public void checkAllItemsStopAfterRemove(WorkItem target) {
+        List<WorkItem> workItems = new ArrayList<>(getWorkItems());
+        workItems.remove(target);
+        setAllItemStop(workItems.stream()
+                .allMatch(phase -> phase.getStatus() == RunningStatus.STOP));
+    }
+
     @Override
     public boolean isCanBeDone() {
         return isAllItemStop() && executableDelegate.isCanBeDone();

@@ -136,9 +136,9 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
 
         // verify workItems in phase A
         mockMvc.perform(get(workItemAHref))
@@ -158,9 +158,9 @@ public class PhaseApiTests extends ApiTest {
 
         // Prepared phase B
         String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
-        String workItemEHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(13));
-        String workItemFHref = testUtils.createRandomWorkItem(phaseBHref, null, currentDay.plusDays(15));
-        String workItemGHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(14), null);
+        String workItemEHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(13));
+        String workItemFHref = testUtils.createRandomPhaseWorkItem(phaseBHref, null, currentDay.plusDays(15));
+        String workItemGHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(14), null);
 
         // verify phase B, workItems need not to verify because it is as same case as above.
         mockMvc.perform(get(phaseBHref))
@@ -254,22 +254,22 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
 
 
         // Prepared phase B
         String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
-        String workItemEHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
-        String workItemFHref = testUtils.createRandomWorkItem(phaseBHref, null, currentDay.plusDays(15));
-        String workItemGHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(14), null);
+        String workItemEHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
+        String workItemFHref = testUtils.createRandomPhaseWorkItem(phaseBHref, null, currentDay.plusDays(15));
+        String workItemGHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(14), null);
 
         // Prepared phase C
         String phaseCHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(30));
-        String workItemXHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
-        String workItemYHref = testUtils.createRandomWorkItem(phaseCHref, null, currentDay.plusDays(25));
-        String workItemZHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(24), null);
+        String workItemXHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
+        String workItemYHref = testUtils.createRandomPhaseWorkItem(phaseCHref, null, currentDay.plusDays(25));
+        String workItemZHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(24), null);
 
         // Move start of phase B to right
         Phase changedPhase = new Phase().toBuilder()
@@ -345,21 +345,21 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
 
         // Prepared phase B
         String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
-        String workItemEHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
-        String workItemFHref = testUtils.createRandomWorkItem(phaseBHref, null, currentDay.plusDays(15));
-        String workItemGHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(14), null);
+        String workItemEHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
+        String workItemFHref = testUtils.createRandomPhaseWorkItem(phaseBHref, null, currentDay.plusDays(15));
+        String workItemGHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(14), null);
 
         // Prepared phase C
         String phaseCHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(30));
-        String workItemXHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
-        String workItemYHref = testUtils.createRandomWorkItem(phaseCHref, null, currentDay.plusDays(25));
-        String workItemZHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(24), null);
+        String workItemXHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
+        String workItemYHref = testUtils.createRandomPhaseWorkItem(phaseCHref, null, currentDay.plusDays(25));
+        String workItemZHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(24), null);
 
 
         // Move end of phase A to right
@@ -437,22 +437,22 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
 
 
         // Prepared phase B
         String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
-        String workItemEHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
-        String workItemFHref = testUtils.createRandomWorkItem(phaseBHref, null, currentDay.plusDays(15));
-        String workItemGHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(14), null);
+        String workItemEHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
+        String workItemFHref = testUtils.createRandomPhaseWorkItem(phaseBHref, null, currentDay.plusDays(15));
+        String workItemGHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(14), null);
 
         // Prepared phase C
         String phaseCHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(30));
-        String workItemXHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
-        String workItemYHref = testUtils.createRandomWorkItem(phaseCHref, null, currentDay.plusDays(25));
-        String workItemZHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(24), null);
+        String workItemXHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
+        String workItemYHref = testUtils.createRandomPhaseWorkItem(phaseCHref, null, currentDay.plusDays(25));
+        String workItemZHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(24), null);
 
         // Move start of phase B to right
         Phase changedPhase = new Phase().toBuilder()
@@ -532,22 +532,22 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
 
 
         // Prepared phase B
         String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
-        String workItemEHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
-        String workItemFHref = testUtils.createRandomWorkItem(phaseBHref, null, currentDay.plusDays(15));
-        String workItemGHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(14), null);
+        String workItemEHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(11), currentDay.plusDays(18));
+        String workItemFHref = testUtils.createRandomPhaseWorkItem(phaseBHref, null, currentDay.plusDays(15));
+        String workItemGHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(14), null);
 
         // Prepared phase C
         String phaseCHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(30));
-        String workItemXHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
-        String workItemYHref = testUtils.createRandomWorkItem(phaseCHref, null, currentDay.plusDays(25));
-        String workItemZHref = testUtils.createRandomWorkItem(phaseCHref, currentDay.plusDays(24), null);
+        String workItemXHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(21), currentDay.plusDays(28));
+        String workItemYHref = testUtils.createRandomPhaseWorkItem(phaseCHref, null, currentDay.plusDays(25));
+        String workItemZHref = testUtils.createRandomPhaseWorkItem(phaseCHref, currentDay.plusDays(24), null);
 
         // Move end of phase A to left
         Phase changedPhase = new Phase().toBuilder()
@@ -628,9 +628,9 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A with workItems
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
         testUtils.start(projectHref);
 
         // Verify status and isCanBeDone of phase
@@ -668,9 +668,9 @@ public class PhaseApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A with workItems
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
         testUtils.start(projectHref);
 
         // Verify status and isCanBeDone of phase

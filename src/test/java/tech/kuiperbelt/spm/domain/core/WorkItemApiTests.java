@@ -28,7 +28,7 @@ public class WorkItemApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         // Verify init status of workItems
         mockMvc.perform(get(workItemAHref))
@@ -98,14 +98,142 @@ public class WorkItemApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
+    public void projectAndPhaseCanBeDone() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+
+        // Start project
+        testUtils.start(projectHref);
+
+        // Verify project can be done
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // Prepared phase A
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
+
+        // Verify project can be done, because of has a un-finished phase
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // Verify phase can be done, because of no item in it.
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // add workItem
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+
+        // Verify phase can be done, because of has an item in it.
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // Done workItem
+        testUtils.start(workItemAHref);
+        testUtils.done(workItemAHref);
+
+        // Verify phase canBeDone
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // add workItem
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+
+        // Verify phase can be done, because of has an item in it again.
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // Cancel workItem
+        testUtils.cancel(workItemBHref);
+
+        // Verify phase canBeDone, true again
+        mockMvc.perform(get(phaseAHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // Done phase
+        testUtils.done(phaseAHref);
+
+        // Verify project can be done
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // Add project's workItem
+        String workItemCHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
+
+        // Verify project can be done, false, because has an direct item
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // Done workItem
+        testUtils.start(workItemCHref);
+        testUtils.done(workItemCHref);
+
+        // Verify project can be done, false, because has no un-finished direct item
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // add workItem again
+        String workItemDHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
+
+        // Verify project can be done, false, because has an direct item
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        testUtils.cancel(workItemDHref);
+        // Verify project can be done, true, because has no un-finished direct item
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // add workItem again
+        String workItemEHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
+
+        // Verify project can be done, false, because has an direct item
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // Delete workItem
+        testUtils.delete(workItemEHref);
+
+        // Verify project can be done, true, because has no un-finished direct item
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void cancelAndDeleteProjectCascadeToDirectWorkItems() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+
+        String workItemEHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
+
+        // Cancel project
+        testUtils.cancel(projectHref);
+
+        // Verify workItem is also canceled
+        mockMvc.perform(get(workItemEHref))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+
+        // Delete project
+        testUtils.delete(projectHref);
+
+        // Verify workItem was deleted also
+        mockMvc.perform(get(workItemEHref))
+                .andExpect(status().isNotFound());
+
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
     public void workItemLiftCycle() throws Exception {
         LocalDate currentDay = LocalDate.now();
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
-        String workItemCHref = testUtils.createRandomWorkItem(phaseAHref, currentDay.plusDays(4), null);
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
 
         // Verify init status of workItems
         mockMvc.perform(get(workItemAHref))
@@ -168,7 +296,7 @@ public class WorkItemApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         // Verify workItem
         mockMvc.perform(get(workItemAHref))
@@ -181,7 +309,7 @@ public class WorkItemApiTests extends ApiTest {
                 .andExpect(jsonPath("$.ready", equalTo(true)));
 
         // Add workItem to Running phase
-        String workItemBHref = testUtils.createRandomWorkItem(phaseAHref, null, currentDay.plusDays(6));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, null, currentDay.plusDays(6));
         mockMvc.perform(get(workItemBHref))
                 .andExpect(jsonPath("$.ready", equalTo(true)));
 
@@ -210,7 +338,7 @@ public class WorkItemApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         // Start workItem
         testUtils.start(workItemAHref);
@@ -247,7 +375,7 @@ public class WorkItemApiTests extends ApiTest {
         String projectHref = testUtils.createRandomProject();
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
-        String workItemAHref = testUtils.createRandomWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         testUtils.start(projectHref);
         mockMvc.perform(get(phaseAHref))
@@ -269,7 +397,7 @@ public class WorkItemApiTests extends ApiTest {
 
         // Prepared phase B
         String phaseBHref = testUtils.appendRandomPhase(projectHref, currentDay.plusDays(20));
-        String workItemBHref = testUtils.createRandomWorkItem(phaseBHref, currentDay.plusDays(15), currentDay.plusDays(16));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseBHref, currentDay.plusDays(15), currentDay.plusDays(16));
 
         // Test init override status
         mockMvc.perform(get(workItemBHref))
@@ -300,7 +428,7 @@ public class WorkItemApiTests extends ApiTest {
     public void noPhaseWorkItemLiftCycle() throws Exception {
         LocalDate current = LocalDate.now();
         // from init -> done -> delete
-        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
         mockMvc.perform(get(workItemAHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())))
                 .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PERSON.name())));
@@ -321,7 +449,7 @@ public class WorkItemApiTests extends ApiTest {
                 .andExpect(status().isNotFound());
 
         // from init -> cancel -> delete
-        String workItemBHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        String workItemBHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
         testUtils.start(workItemBHref);
         testUtils.cancel(workItemBHref);
         mockMvc.perform(get(workItemBHref))
@@ -339,7 +467,7 @@ public class WorkItemApiTests extends ApiTest {
     public void noPhaseWorkItemUpdate() throws Exception {
         LocalDate current = LocalDate.now();
         // from init -> done -> delete
-        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
         mockMvc.perform(get(workItemAHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
 
@@ -369,7 +497,7 @@ public class WorkItemApiTests extends ApiTest {
     @Test
     public void deleteCascadeToNotes() throws Exception {
         LocalDate current = LocalDate.now();
-        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
         String noteARef = testUtils.taskRandomNote(workItemAHref);
         String noteBRef = testUtils.taskRandomNote(workItemAHref);
         testUtils.delete(workItemAHref);

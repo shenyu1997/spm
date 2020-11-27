@@ -96,20 +96,38 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @JsonIgnore
     private boolean allPhasesStop = true;
 
+    @Builder.Default
+    @JsonIgnore
+    private boolean allDirItemsStop = true;
+
 
     public void checkAllPhaseStop () {
         setAllPhasesStop(this.getPhases().stream()
                 .allMatch(phase -> phase.getStatus() == RunningStatus.STOP));
     }
 
+    public void checkAllDirItemsStop () {
+        setAllDirItemsStop(this.getDirectWorkItems().stream()
+                .allMatch(workItem -> workItem.getStatus() == RunningStatus.STOP));
+    }
+
+    public void checkAllDirItemsStopAfterRemove (WorkItem target) {
+        List<WorkItem> directWorkItems = new ArrayList<>(this.getDirectWorkItems());
+        directWorkItems.remove(target);
+        setAllDirItemsStop(directWorkItems.stream()
+                .allMatch(workItem -> workItem.getStatus() == RunningStatus.STOP));
+    }
+
     @Override
     public boolean isCanBeDone() {
-        return isAllPhasesStop() && executableDelegate.isCanBeDone();
+        return isAllPhasesStop() &&
+                isAllDirItemsStop() &&
+                executableDelegate.isCanBeDone();
     }
 
     @Override
     public void done() {
-        Assert.isTrue(allPhasesStop, "all phases stop");
+        Assert.isTrue(isCanBeDone(), "all phases and all item should be stop");
         executableDelegate.done();
     }
 

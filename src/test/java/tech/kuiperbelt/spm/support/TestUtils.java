@@ -104,13 +104,13 @@ public class TestUtils {
                 .andExpect(status().isNoContent());
     }
 
-    public String createRandomWorkItem(String phaseAHref, LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
+    public String createRandomPhaseWorkItem(String phaseHref, LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
         WorkItem workItem = new WorkItem().toBuilder()
                 .name(RandomStringUtils.randomAlphanumeric(10))
                 .plannedStartDate(plannedStartDate)
                 .deadLine(deadLine)
                 .build();
-        return mockMvc.perform(post(phaseAHref + "/work-items/actions/create")
+        return mockMvc.perform(post(phaseHref + "/work-items/actions/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
                 .andExpect(status().isCreated())
@@ -119,7 +119,24 @@ public class TestUtils {
                 .getHeader(LOCATION);
     }
 
-    public String createRandomWorkItem(LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
+    public String createRandomProjectWorkItem(String phaseHref, LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
+        WorkItem workItem = new WorkItem().toBuilder()
+                .name(RandomStringUtils.randomAlphanumeric(10))
+                .plannedStartDate(plannedStartDate)
+                .deadLine(deadLine)
+                .build();
+        return mockMvc.perform(post(phaseHref + "/direct-work-items/actions/create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(workItem)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getHeader(LOCATION);
+    }
+
+
+
+    public String createRandomPhaseWorkItem(LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
         WorkItem workItem = new WorkItem().toBuilder()
                 .name(RandomStringUtils.randomAlphanumeric(10))
                 .plannedStartDate(plannedStartDate)
