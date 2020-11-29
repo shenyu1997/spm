@@ -201,6 +201,44 @@ public class WorkItemApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
+    public void canBeDoneAfterWorkItemUpdatePhaseAndProject() throws Exception {
+        LocalDate currentDay = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        testUtils.start(projectHref);
+
+        // Verify project's canBeDone, suppose to be true
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+        // Add workItem in it
+        String workItemHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(10));
+
+        // Verify scope should be PROJECT
+        mockMvc.perform(get(workItemHref))
+                .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PROJECT.name())));
+
+        // verify project's canBeDone, suppose to be false, because there is an direct workItem in it.
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        // Move workItem out of project
+        mockMvc.perform(delete(workItemHref + "/project"))
+                .andExpect(status().isNoContent());
+
+        // Verify scope change from PROJECT to PERSON
+        mockMvc.perform(get(workItemHref))
+                .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PERSON.name())));
+
+        super.yield();
+
+        // Verify project's canBeDone, suppose to be true again, because not direct item in it again
+        mockMvc.perform(get(projectHref))
+                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
     public void cancelAndDeleteProjectCascadeToDirectWorkItems() throws Exception {
         LocalDate currentDay = LocalDate.now();
         String projectHref = testUtils.createRandomProject();

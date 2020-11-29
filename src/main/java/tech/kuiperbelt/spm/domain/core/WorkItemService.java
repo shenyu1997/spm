@@ -99,12 +99,14 @@ public class WorkItemService {
     public void postHandleSave(WorkItem workItem) {
         // Check move phase
         auditService.getPreviousVersion(workItem)
-                .ifPresent(previous ->
+                .ifPresent(previous -> {
                     PropertyChanged.of(previous, workItem, WorkItem.Fields.phase)
                             .ifPresent(propertyChanged ->
-                                    movePhase(workItem, propertyChanged)));
-        // TODO move project
-        //moveProject(....);
+                                    movePhase(workItem, propertyChanged));
+                    PropertyChanged.of(previous, workItem, WorkItem.Fields.project)
+                            .ifPresent(propertyChanged ->
+                                    moveProject(workItem, propertyChanged));
+                });
 
         // check overflow
         if(workItem.isOverflow()) {
@@ -129,7 +131,7 @@ public class WorkItemService {
     }
 
     @HandleBeforeLinkDelete
-    public void preHandlePhaseLinkDelete(WorkItem workItem, BaseEntity phaseOrProject) {
+    public void preHandleLinkDelete(WorkItem workItem, BaseEntity phaseOrProject) {
         if(phaseOrProject instanceof Phase) {
             workItem.setScope(WorkItem.Scope.PROJECT);
         } else if(phaseOrProject instanceof Project) {
@@ -138,7 +140,10 @@ public class WorkItemService {
         }
     }
 
-
+    @HandleAfterLinkDelete
+    public void postHandleLinkDelete(WorkItem workItem, BaseEntity phaseOrProject) {
+        postHandleSave(workItem);
+    }
 
     public void startWorkItem(long workItemId) {
         WorkItem workItem = workItemRepository.getOne(workItemId);
@@ -260,24 +265,22 @@ public class WorkItemService {
         sendEvent(Event.ITEM_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }
     private void moveProject(WorkItem workItem, PropertyChanged propertyChanged) {
-        //TODO
-//        propertyChanged.getOldValue().ifPresent(oldValue ->
-//                Assert.isTrue(((Phase)oldValue).getStatus() != RunningStatus.STOP,
-//                        "STOP phase can not move workItem out"));
-//
-//        propertyChanged.getNewValue().ifPresent(newVale -> {
-//            Phase newPhase = (Phase) newVale;
-//            Assert.isTrue(newPhase.getStatus() != RunningStatus.STOP,
-//                    "STOP phase can not move workItem in");
-//            // Only set new phase'allItemsStop to true because we add Non STOP workItem to it;
-//            // and We postpone checking of old item to async procession because the DB need update and commit first.
-//            if(workItem.getStatus() != RunningStatus.STOP) {
-//                newPhase.setAllItemStop(false);
-//            }
-//        });
-//
-//        sentReadyEventIfWorkItemReady(workItem);
-//        sendEvent(Event.ITEM_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
+        propertyChanged.getOldValue().ifPresent(oldValue ->
+                Assert.isTrue(((Project)oldValue).getStatus() != RunningStatus.STOP,
+                        "STOP project can not move workItem out"));
+
+        propertyChanged.getNewValue().ifPresent(newVale -> {
+            Project newProject = (Project) newVale;
+            Assert.isTrue(newProject.getStatus() != RunningStatus.STOP,
+                    "STOP project can not move workItem in");
+            // Only set new project'allDirItemsStop to true because we add Non STOP workItem to it;
+            // and We postpone checking of old item to async procession because the DB need update and commit first.
+            if(workItem.getStatus() != RunningStatus.STOP && workItem.getScope() == WorkItem.Scope.PROJECT) {
+                newProject.setAllDirItemsStop(false);
+            }
+        });
+
+        sendEvent(Event.ITEM_MOVED_PROJECT, workItem, propertyChanged.map(Project.class, Project::getId));
     }
 
     private void sendEvent(String key, WorkItem workItem) {
@@ -323,8 +326,12 @@ public class WorkItemService {
                 break;
             case Event.ITEM_SCHEDULE_END_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
+                break;
             case Event.ITEM_MOVED_PHASE:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
+                break;
+            case Event.ITEM_MOVED_PROJECT:
+                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.project));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported event key:" + key);

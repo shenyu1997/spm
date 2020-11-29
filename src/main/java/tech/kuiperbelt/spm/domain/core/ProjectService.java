@@ -3,7 +3,9 @@ package tech.kuiperbelt.spm.domain.core;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.rest.core.annotation.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -232,6 +234,17 @@ public class ProjectService {
     public List<WorkItem> getDirectWorkItems(Long id) {
         return projectRepository.getOne(id)
                 .getDirectWorkItems();
+    }
+
+    @Async
+    @EventListener(condition = "#root.args[0].key == '" + ITEM_MOVED_PROJECT + "'")
+    public void handleWorkItemMovedEvent(Event event) {
+        userContextHolder.runAs(event.getUserContext(), () -> {
+            PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
+            // We only need check old phase's allItemsStop because new phase has already done
+            propertyChanged.getOldValue().ifPresent(oldId ->
+                    projectRepository.getOne(Long.valueOf((String)oldId)).checkAllDirItemsStop());
+        });
     }
 
     private void sendEvent(String key, Project project) {
