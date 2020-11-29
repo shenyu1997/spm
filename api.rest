@@ -127,7 +127,7 @@ Content-Type: application/json
     "seq": 1
 }
 ###
-@phaseHref={{insertPhaseApi.response.headers.Location}}
+//@phaseHref={{insertPhaseApi.response.headers.Location}}
 
 ### View the phase
 GET {{phaseHref}}
@@ -215,7 +215,7 @@ GET http://{{host}}:{{port}}/work-items
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
-### Create a workItems without phase
+### Create a workItems without phase and project
 # @name createFreeWorkItemApi
 POST http://{{host}}:{{port}}/work-items
 Authorization: Basic {{currentUser}} {{password}}
@@ -227,6 +227,34 @@ Content-Type: application/json
 }
 ###
 @workItemHref = {{createFreeWorkItemApi.response.headers.Location}}
+
+### Change PERSON workItem to PROJECT workItem
+PATCH  {{workItemHref}}
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+{
+    "project": "{{projectHref}}"
+}
+
+### Change PROJECT workItem to PERSON workItem
+DELETE {{workItemHref}}/project
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+### Change PERSON workItem to PHASE workItem
+PATCH  {{workItemHref}}
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+{
+    "phase": "{{phaseHref}}"
+}
+
+### Change PHASE workItem to PERSON workItem
+DELETE {{workItemHref}}/phase
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
 
 ####################################################################################
 ## CRUD of Note
