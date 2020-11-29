@@ -47,6 +47,9 @@ public class PhaseService {
     @Autowired
     private UserContextHolder userContextHolder;
 
+    @Autowired
+    private NoteService noteService;
+
     /**
      * It will be trigger by project delete so just delete workItems cascade
      */
@@ -346,4 +349,9 @@ public class PhaseService {
                 .build());
     }
 
+    public Note takeNote(long phaseId, Note note) {
+        Phase phase = phaseRepository.getOne(phaseId);
+        note.setPhase(phase);
+        return noteService.takeNote(note);
+    }
 }

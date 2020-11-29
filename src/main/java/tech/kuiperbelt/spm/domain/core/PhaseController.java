@@ -35,4 +35,11 @@ public class PhaseController {
         return ResponseEntity.created(uri).build();
     }
 
+    @PostMapping("/{id}/notes/actions/take-note")
+    public ResponseEntity<?> takeNote(@PathVariable("id") long id, @Valid @RequestBody Note note) {
+        Note createdNote = phaseService.takeNote(id, note);
+        URI uri = entityLinks.linkToItemResource(Note.class, createdNote.getId()).toUri();
+        return ResponseEntity.created(uri).build();
+    }
+
 }

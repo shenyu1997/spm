@@ -88,6 +88,13 @@ public class ProjectController {
         return ResponseEntity.ok(collectionModel);
     }
 
+    @PostMapping("/{id}/notes/actions/take-note")
+    public ResponseEntity<?> takeNote(@PathVariable("id") long id, @Valid @RequestBody Note note) {
+        Note createdNote = projectService.takeNote(id, note);
+        URI uri = entityLinks.linkToItemResource(Note.class, createdNote.getId()).toUri();
+        return ResponseEntity.created(uri).build();
+    }
+
     public static class ProjectRepresentationModelProcessor implements RepresentationModelProcessor<EntityModel<Project>> {
 
         @Override

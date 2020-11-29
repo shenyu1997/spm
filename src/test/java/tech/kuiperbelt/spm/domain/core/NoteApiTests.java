@@ -10,6 +10,7 @@ import tech.kuiperbelt.spm.support.ApiTest;
 import java.time.LocalDate;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,7 +22,48 @@ public class NoteApiTests extends ApiTest {
 
     @Sql({"/cleanup.sql"})
     @Test
-    public void taskNote() throws Exception {
+    public void taskNoteForProject() throws Exception {
+        String projectHref = testUtils.createRandomProject();
+        String noteHref = testUtils.taskRandomNote(projectHref);
+
+        mockMvc.perform(get(noteHref))
+                .andExpect(jsonPath("$.parentType", equalTo(Note.ParentType.PROJECT.name())));
+
+        mockMvc.perform((get(projectHref + "/notes")))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(noteHref)));
+
+        // Delete projects
+        testUtils.delete(projectHref);
+
+        mockMvc.perform(get(noteHref))
+                .andExpect(status().isNotFound());
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void taskNoteForPhase() throws Exception {
+        LocalDate current = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        String phaseHref = testUtils.appendRandomPhase(projectHref, current, current.plusDays(10));
+        String noteHref = testUtils.taskRandomNote(phaseHref);
+
+        mockMvc.perform(get(noteHref))
+                .andExpect(jsonPath("$.parentType", equalTo(Note.ParentType.PHASE.name())));
+
+        mockMvc.perform((get(phaseHref + "/notes")))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(noteHref)));
+
+        // Delete projects
+        testUtils.delete(phaseHref);
+
+        mockMvc.perform(get(noteHref))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void taskNoteForWorkItem() throws Exception {
         LocalDate current = LocalDate.now();
         String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
         Note note = new Note().toBuilder()
@@ -36,6 +78,17 @@ public class NoteApiTests extends ApiTest {
                 .getHeader("location");
         mockMvc.perform(get(noteHref))
                 .andExpect(jsonPath("$.content", equalTo(note.getContent())));
+
+        mockMvc.perform((get(workItemAHref + "/notes")))
+                .andExpect(jsonPath("$._embedded..self.href", hasItems(noteHref)));
+
+        // Delete projects
+        testUtils.delete(workItemAHref);
+
+        mockMvc.perform(get(noteHref))
+                .andExpect(status().isNotFound());
     }
+
+
 
 }

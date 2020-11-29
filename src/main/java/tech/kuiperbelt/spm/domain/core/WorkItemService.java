@@ -352,7 +352,9 @@ public class WorkItemService {
 
     public Note takeNote(long workItemId, Note note) {
         WorkItem workItem = workItemRepository.getOne(workItemId);
-        return noteService.takeNote(workItem, note);
+        Assert.notNull(workItem, "WorkItem can not be null");
+        note.setWorkItem(workItem);
+        return noteService.takeNote(note);
     }
 
 }

@@ -35,9 +35,24 @@ public class Note extends BaseEntity implements AuditableEntity{
     @ManyToOne
     private WorkItem workItem;
 
+    @RestResource
+    @ManyToOne
+    private Phase phase;
+
+    @RestResource
+    @ManyToOne
+    private Project project;
+
+    @Enumerated(EnumType.STRING)
+    private ParentType parentType;
+
     @Builder.Default
     @JsonIgnore
     @Embedded
     @Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
+
+    public enum ParentType {
+        PROJECT, PHASE, WORK_ITEM
+    }
 }

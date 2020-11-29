@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.domain.core.support.*;
@@ -49,6 +50,11 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     @RestResource(path = "work-items")
     @OneToMany(mappedBy = WorkItem.Fields.phase)
     private List<WorkItem> workItems = new ArrayList<>();
+
+    @NotAudited
+    @Builder.Default
+    @OneToMany(mappedBy = Note.Fields.phase, cascade = CascadeType.REMOVE)
+    private List<Note> notes = new ArrayList<>();
 
     @Builder.Default
     @JsonIgnore

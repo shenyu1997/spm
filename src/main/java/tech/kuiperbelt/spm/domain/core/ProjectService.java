@@ -48,6 +48,9 @@ public class ProjectService {
     @Autowired
     private WorkItemService workItemService;
 
+    @Autowired
+    private NoteService noteService;
+
     public Project createProject(Project project) {
         preHandleProjectCreate(project);
         Project savedProject = projectRepository.save(project);
@@ -300,5 +303,11 @@ public class ProjectService {
                 .source(previous.getId())
                 .args(previousMembersUpn, previous.getName(), previousMembers)
                 .build());
+    }
+
+    public Note takeNote(long projectId, Note note) {
+        Project project = projectRepository.getOne(projectId);
+        note.setProject(project);
+        return noteService.takeNote(note);
     }
 }

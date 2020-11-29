@@ -282,6 +282,30 @@ GET {{noteHref}}
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
+### Take a note for phase
+# @name takeNoteApi
+POST {{phaseHref}}/notes/actions/take-note
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+{
+    "content": "Please update status."
+}
+###
+@noteHref = {{takeNoteApi.response.headers.Location}}
+
+### Take a note for project
+# @name takeNoteApi
+POST {{projectHref}}/notes/actions/take-note
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+{
+    "content": "Please update status."
+}
+###
+@noteHref = {{takeNoteApi.response.headers.Location}}
+
 
 ####################################################################################
 ## Others (TBD)
