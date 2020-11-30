@@ -1,5 +1,6 @@
 package tech.kuiperbelt.spm.domain.core.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.*;
@@ -91,9 +92,10 @@ public class Event extends BaseEntity {
     public static Signal BULK_BEGIN = new Signal();
     public static Signal BULK_END = new Signal();
 
-
+    @JsonIgnore
     private String correlationId;
 
+    @JsonIgnore
     @Transient
     private UserContext userContext;
 
@@ -102,16 +104,18 @@ public class Event extends BaseEntity {
 
     private String triggeredMan;
 
+    @JsonIgnore
     private Long source;
 
     @Transient
-    private String content;
+    private String detail;
 
     private LocalDateTime timestamp;
 
     @ToString.Include
     private String args;
 
+    @JsonIgnore
     public Object[] getArgs() {
         if(args == null) {
             return new Object[0];

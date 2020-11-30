@@ -5,10 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
 
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -278,5 +280,14 @@ class ProjectApiTests extends ApiTest {
 
 		mockMvc.perform(get(newPhaseHref))
 				.andExpect(status().isNotFound());
+	}
+
+	@Sql({"/cleanup.sql"})
+	@Test
+	public void testEvent() throws Exception {
+		String projectHref = testUtils.createRandomProject();
+
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_CREATED)));
 	}
 }

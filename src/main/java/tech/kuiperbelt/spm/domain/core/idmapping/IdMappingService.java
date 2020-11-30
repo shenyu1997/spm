@@ -1,12 +1,17 @@
 package tech.kuiperbelt.spm.domain.core.idmapping;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
+import org.springframework.hateoas.Link;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tech.kuiperbelt.spm.domain.core.NoteRepository;
+import tech.kuiperbelt.spm.domain.core.WorkItemRepository;
 import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.PhaseRepository;
 import tech.kuiperbelt.spm.domain.core.ProjectRepository;
@@ -25,6 +30,8 @@ public class IdMappingService {
     public final static String ENTITY_TYPE_EVENT = "Event";
     public final static String ENTITY_TYPE_PROJECT = "Project";
     public final static String ENTITY_TYPE_PHASE = "Phase";
+    public final static String ENTITY_TYPE_WORK_ITEM = "WorkItem";
+    public final static String ENTITY_TYPE_NOTE = "Note";
     public static final String DELETE_SQL = "delete from " + ID_MAPPINGS + " where id=?";
 
     @Autowired
@@ -38,6 +45,16 @@ public class IdMappingService {
 
     @Autowired
     private PhaseRepository phaseRepository;
+
+    @Autowired
+    private WorkItemRepository workItemRepository;
+
+    @Autowired
+    private NoteRepository noteRepository;
+
+    @Lazy
+    @Autowired
+    private RepositoryEntityLinks entityLinks;
 
     private NamedParameterJdbcOperations namedParameterJdbcOperations;
 
@@ -74,8 +91,19 @@ public class IdMappingService {
                 return eventRepository.findById(entityId);
             case ENTITY_TYPE_PHASE:
                 return phaseRepository.findById(entityId);
+            case ENTITY_TYPE_WORK_ITEM:
+                return workItemRepository.findById(entityId);
+            case ENTITY_TYPE_NOTE:
+                return noteRepository.findById(entityId);
             default:
                 return Optional.empty();
         }
+    }
+
+    public Optional<Link> toEntityLink(Long entityId) {
+        return findEntity(entityId)
+                .map(entity ->
+                        entityLinks.linkToItemResource(entity.getClass(), entityId));
+
     }
 }

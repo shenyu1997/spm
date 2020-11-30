@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequestInterceptor;
 import tech.kuiperbelt.spm.domain.core.ProjectController;
 import tech.kuiperbelt.spm.domain.core.event.EventController;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
+import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingService;
 import tech.kuiperbelt.spm.domain.core.support.WebTransactionInterceptor;
 
 import java.util.ArrayList;
@@ -39,8 +40,7 @@ public class SpmRepositoryRestMvcConfiguration extends RepositoryRestMvcConfigur
         return new JpaHelper() {
             @Override
             public List<WebRequestInterceptor> getInterceptors() {
-                List<WebRequestInterceptor> requestInterceptors = new ArrayList<>();
-                requestInterceptors.addAll(super.getInterceptors());
+                List<WebRequestInterceptor> requestInterceptors = new ArrayList<>(super.getInterceptors());
                 requestInterceptors.add(webTransactionInterceptor);
                 return requestInterceptors;
             }
@@ -53,8 +53,9 @@ public class SpmRepositoryRestMvcConfiguration extends RepositoryRestMvcConfigur
     }
 
     @Bean
-    public EventController.EventRepresentationModelProcessor eventRepresentationModelProcessor(EventService eventService) {
-        return new EventController.EventRepresentationModelProcessor(eventService);
+    public EventController.EventRepresentationModelProcessor eventRepresentationModelProcessor(EventService eventService,
+                                                                                               IdMappingService idMappingService) {
+        return new EventController.EventRepresentationModelProcessor(eventService, idMappingService);
     }
 
 }

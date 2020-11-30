@@ -93,10 +93,11 @@ public class EventService {
     }
 
     public Event enhance(Event event) {
+        Assert.notNull(event, "Event can not be null");
         String content = messageSource.getMessage(event.getKey(),
                 event.getArgs(),
                 FIX_LOCALE);
-        event.setContent(content);
+        event.setDetail(content);
         return event;
     }
 
