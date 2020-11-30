@@ -189,7 +189,7 @@ public class ProjectService {
         projectRepository.save(project);
 
         // Send event to all participants
-        sendEvent(PROJECT_EXECUTION_PROJECT_CANCELED, project);
+        sendEvent(PROJECT_CANCELED, project);
     }
 
     public Project getProjectById(Long projectId) {
@@ -199,7 +199,7 @@ public class ProjectService {
     public void startProject(long id) {
         Project project = projectRepository.getOne(id);
         project.start();
-        sendEvent(PROJECT_EXECUTION_PROJECT_STARTED, project);
+        sendEvent(PROJECT_STARTED, project);
         project.getPhases().stream().findFirst().ifPresent(phase ->
                 phaseService.startPhase(phase));
     }
@@ -209,7 +209,7 @@ public class ProjectService {
         Assert.isTrue(project.isCanBeDone(), "Project can not be done yet.");
 
         project.done();
-        sendEvent(PROJECT_EXECUTION_PROJECT_DONE, project);
+        sendEvent(PROJECT_DONE, project);
     }
 
     public Phase appendPhase(long id, Phase phase) {
@@ -240,7 +240,7 @@ public class ProjectService {
     }
 
     @Async
-    @EventListener(condition = "#root.args[0].key == '" + ITEM_MOVED_PROJECT + "'")
+    @EventListener(condition = "#root.args[0].key == '" + ITEM_PROJECT_CHANGED + "'")
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
             PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
@@ -266,9 +266,9 @@ public class ProjectService {
         switch (key) {
             case Event.PROJECT_CREATED:
             case Event.PROJECT_DELETED:
-            case Event.PROJECT_EXECUTION_PROJECT_CANCELED:
-            case Event.PROJECT_EXECUTION_PROJECT_STARTED:
-            case Event.PROJECT_EXECUTION_PROJECT_DONE:
+            case Event.PROJECT_CANCELED:
+            case Event.PROJECT_STARTED:
+            case Event.PROJECT_DONE:
                 builder.args(project.getName());
                 break;
             case Event.PROJECT_OWNER_CHANGED:

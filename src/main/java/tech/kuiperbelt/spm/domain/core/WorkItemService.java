@@ -73,9 +73,9 @@ public class WorkItemService {
     public void postHandleCreate(WorkItem workItem) {
         // send workItem created event
         if(workItem.getPhase() != null) {
-            sendEvent(Event.PROJECT_SCHEDULE_PHASE_ITEM_ADDED, workItem);
+            sendEvent(Event.PHASE_ITEM_ADDED, workItem);
         } else if(workItem.getProject() != null) {
-            sendEvent(Event.PROJECT_SCHEDULE_ITEM_ADDED, workItem);
+            sendEvent(Event.PROJECT_ITEM_ADDED, workItem);
         } else {
             sendEvent(Event.ITEM_ADDED, workItem);
         }
@@ -112,7 +112,7 @@ public class WorkItemService {
 
         // check overflow
         if(workItem.isOverflow()) {
-            sendEvent(Event.ITEM_SCHEDULE_IS_OVERFLOW, workItem);
+            sendEvent(Event.ITEM_OVERFLOW_TRUE, workItem);
         }
 
         Optional<WorkItem> previousVersion = auditService.getPreviousVersion(workItem);
@@ -152,7 +152,7 @@ public class WorkItemService {
         workItem.start();
 
         // send start event
-        sendEvent(Event.ITEM_EXECUTION_STARTED, workItem);
+        sendEvent(Event.ITEM_STARTED, workItem);
     }
 
     public void doneWorkItem(long workItemId) {
@@ -160,7 +160,7 @@ public class WorkItemService {
         workItem.done();
 
         // send done event;
-        sendEvent(Event.ITEM_EXECUTION_DONE, workItem);
+        sendEvent(Event.ITEM_DONE, workItem);
 
         checkRelatedCanBeDone(workItem);
     }
@@ -180,7 +180,7 @@ public class WorkItemService {
 
     private void sentReadyEventIfWorkItemReady(WorkItem workItem) {
         if(workItem.getReady() && workItem.getAssignee() != null) {
-            sendEvent(Event.ITEM_SCHEDULE_IS_READY, workItem);
+            sendEvent(Event.ITEM_READY_TRUE, workItem);
         }
     }
 
@@ -199,7 +199,7 @@ public class WorkItemService {
 
     private void cancelWorkItem(WorkItem workItem) {
         workItem.cancel();
-        sendEvent(Event.ITEM_EXECUTION_CANCELED, workItem);
+        sendEvent(Event.ITEM_CANCELED, workItem);
 
         checkRelatedCanBeDone(workItem);
     }
@@ -264,7 +264,7 @@ public class WorkItemService {
         });
 
         sentReadyEventIfWorkItemReady(workItem);
-        sendEvent(Event.ITEM_MOVED_PHASE, workItem, propertyChanged.map(Phase.class, Phase::getId));
+        sendEvent(Event.ITEM_PHASE_CHANGED, workItem, propertyChanged.map(Phase.class, Phase::getId));
     }
     private void moveProject(WorkItem workItem, PropertyChanged propertyChanged) {
         propertyChanged.getOldValue().ifPresent(oldValue ->
@@ -282,7 +282,7 @@ public class WorkItemService {
             }
         });
 
-        sendEvent(Event.ITEM_MOVED_PROJECT, workItem, propertyChanged.map(Project.class, Project::getId));
+        sendEvent(Event.ITEM_PROJECT_CHANGED, workItem, propertyChanged.map(Project.class, Project::getId));
     }
 
     private void sendEvent(String key, WorkItem workItem) {
@@ -304,14 +304,14 @@ public class WorkItemService {
                         Optional.of(workItem).map(WorkItem::getPhase).map(Phase::getName).orElse(""),
                         Optional.of(workItem).map(WorkItem::getProject).map(Project::getName).orElse(""));
                 break;
-            case Event.PROJECT_SCHEDULE_ITEM_ADDED:
-            case Event.PROJECT_SCHEDULE_PHASE_ITEM_ADDED:
+            case Event.PROJECT_ITEM_ADDED:
+            case Event.PHASE_ITEM_ADDED:
             case Event.ITEM_DELETED:
-            case Event.ITEM_EXECUTION_STARTED:
-            case Event.ITEM_EXECUTION_DONE:
-            case Event.ITEM_EXECUTION_CANCELED:
-            case Event.ITEM_SCHEDULE_IS_READY:
-            case Event.ITEM_SCHEDULE_IS_OVERFLOW:
+            case Event.ITEM_STARTED:
+            case Event.ITEM_DONE:
+            case Event.ITEM_CANCELED:
+            case Event.ITEM_READY_TRUE:
+            case Event.ITEM_OVERFLOW_TRUE:
                 builder.args(workItem.getName());
                 break;
             case Event.ITEM_OWNER_CHANGED:
@@ -324,16 +324,16 @@ public class WorkItemService {
             case Event.ITEM_PROPERTIES_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged);
                 break;
-            case Event.ITEM_SCHEDULE_START_CHANGED:
+            case Event.ITEM_START_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.plannedStartDate));
                 break;
-            case Event.ITEM_SCHEDULE_END_CHANGED:
+            case Event.ITEM_END_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
                 break;
-            case Event.ITEM_MOVED_PHASE:
+            case Event.ITEM_PHASE_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
                 break;
-            case Event.ITEM_MOVED_PROJECT:
+            case Event.ITEM_PROJECT_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.project));
                 break;
             default:
@@ -346,9 +346,9 @@ public class WorkItemService {
         Assert.notNull(workItem, "WorkItem can not be null");
         Event.EventBuilder builder = Event.builder().source(workItem);
         if(offset.isNegative()) {
-            builder.key(Event.ITEM_SCHEDULE_MOVED_LEFT);
+            builder.key(Event.ITEM_MOVED_LEFT);
         } else {
-            builder.key(Event.ITEM_SCHEDULE_MOVED_RIGHT);
+            builder.key(Event.ITEM_MOVED_RIGHT);
         }
         eventService.emit(builder.args(workItem.getName(), offset.getDays()).build());
     }
