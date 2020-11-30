@@ -55,10 +55,6 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @OneToMany(mappedBy = WorkItem.Fields.project)
     private List<WorkItem> workItems = new ArrayList<>();
 
-    @NotAudited
-    @Builder.Default
-    @OneToMany(mappedBy = Note.Fields.project, cascade = CascadeType.REMOVE)
-    private List<Note> notes = new ArrayList<>();
 
     @Builder.Default
     @JsonIgnore

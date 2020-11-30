@@ -51,11 +51,6 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     @OneToMany(mappedBy = WorkItem.Fields.phase)
     private List<WorkItem> workItems = new ArrayList<>();
 
-    @NotAudited
-    @Builder.Default
-    @OneToMany(mappedBy = Note.Fields.phase, cascade = CascadeType.REMOVE)
-    private List<Note> notes = new ArrayList<>();
-
     @Builder.Default
     @JsonIgnore
     @Embedded

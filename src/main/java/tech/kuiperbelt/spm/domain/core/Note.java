@@ -5,13 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
-import org.springframework.data.rest.core.annotation.RestResource;
 import tech.kuiperbelt.spm.domain.core.support.AuditDelegate;
 import tech.kuiperbelt.spm.domain.core.support.AuditListener;
 import tech.kuiperbelt.spm.domain.core.support.AuditableEntity;
 import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 
-import javax.persistence.*;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.Table;
 import java.time.LocalDate;
 
 @EntityListeners(AuditListener.class)
@@ -31,20 +33,7 @@ public class Note extends BaseEntity implements AuditableEntity{
 
     private LocalDate createDate;
 
-    @RestResource(path = "work-item")
-    @ManyToOne
-    private WorkItem workItem;
-
-    @RestResource
-    @ManyToOne
-    private Phase phase;
-
-    @RestResource
-    @ManyToOne
-    private Project project;
-
-    @Enumerated(EnumType.STRING)
-    private ParentType parentType;
+    private Long parent;
 
     @Builder.Default
     @JsonIgnore
@@ -52,7 +41,7 @@ public class Note extends BaseEntity implements AuditableEntity{
     @Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
 
-    public enum ParentType {
-        PROJECT, PHASE, WORK_ITEM
+    public void setParent(BaseEntity baseEntity) {
+        this.parent = baseEntity.getId();
     }
 }

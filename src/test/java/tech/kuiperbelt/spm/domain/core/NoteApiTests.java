@@ -27,7 +27,7 @@ public class NoteApiTests extends ApiTest {
         String noteHref = testUtils.taskRandomNote(projectHref);
 
         mockMvc.perform(get(noteHref))
-                .andExpect(jsonPath("$.parentType", equalTo(Note.ParentType.PROJECT.name())));
+                .andExpect(jsonPath("$._links.project.href", equalTo(projectHref)));
 
         mockMvc.perform((get(projectHref + "/notes")))
                 .andExpect(jsonPath("$._embedded..self.href", hasItems(noteHref)));
@@ -48,7 +48,7 @@ public class NoteApiTests extends ApiTest {
         String noteHref = testUtils.taskRandomNote(phaseHref);
 
         mockMvc.perform(get(noteHref))
-                .andExpect(jsonPath("$.parentType", equalTo(Note.ParentType.PHASE.name())));
+                .andExpect(jsonPath("$._links.phase.href", equalTo(phaseHref)));
 
         mockMvc.perform((get(phaseHref + "/notes")))
                 .andExpect(jsonPath("$._embedded..self.href", hasItems(noteHref)));
@@ -81,6 +81,9 @@ public class NoteApiTests extends ApiTest {
 
         mockMvc.perform((get(workItemAHref + "/notes")))
                 .andExpect(jsonPath("$._embedded..self.href", hasItems(noteHref)));
+
+        mockMvc.perform(get(noteHref))
+                .andExpect(jsonPath("$._links.workItem.href", equalTo(workItemAHref)));
 
         // Delete projects
         testUtils.delete(workItemAHref);

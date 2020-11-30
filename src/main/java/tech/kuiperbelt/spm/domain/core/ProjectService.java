@@ -152,6 +152,8 @@ public class ProjectService {
         Assert.isTrue(current.isCanBeDeleted(),
                 "Only Cancelled Project can be deleted");
 
+        noteService.deleteNoteByParent(current.getId());
+
         current.getPhases()
                 .forEach(phase ->
                 phaseService.deletePhase(phase));
@@ -269,6 +271,7 @@ public class ProjectService {
             case Event.PROJECT_CANCELED:
             case Event.PROJECT_STARTED:
             case Event.PROJECT_DONE:
+            case Event.PROJECT_NOTE_TAKEN:
                 builder.args(project.getName());
                 break;
             case Event.PROJECT_OWNER_CHANGED:
@@ -307,7 +310,13 @@ public class ProjectService {
 
     public Note takeNote(long projectId, Note note) {
         Project project = projectRepository.getOne(projectId);
-        note.setProject(project);
-        return noteService.takeNote(note);
+        note.setParent(project);
+        Note createdNote = noteService.takeNote(note);
+        sendEvent(PROJECT_NOTE_TAKEN, project);
+        return createdNote;
+    }
+
+    public List<Note> getNotes(Long id) {
+        return noteService.findByParent(id);
     }
 }

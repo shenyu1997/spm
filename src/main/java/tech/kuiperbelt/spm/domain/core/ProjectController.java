@@ -3,6 +3,7 @@ package tech.kuiperbelt.spm.domain.core;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -77,14 +78,28 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}/direct-work-items")
-    public ResponseEntity<CollectionModel<EntityModel>> getDirectWorkItems(@PathVariable("id") Long id, PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        List<EntityModel> collection = projectService.getDirectWorkItems(id)
+    public ResponseEntity<CollectionModel<PersistentEntityResource>> getDirectWorkItems(@PathVariable("id") Long id,
+                                                                           PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
+        List<PersistentEntityResource> collection = projectService.getDirectWorkItems(id)
                 .stream()
                 .map(persistentEntityResourceAssembler::toModel)
                 .collect(Collectors.toList());
-        CollectionModel<EntityModel> collectionModel = CollectionModel.of(collection);
+        CollectionModel<PersistentEntityResource> collectionModel = CollectionModel.of(collection);
         collectionModel.add(linkTo(methodOn(ProjectController.class)
                 .getDirectWorkItems(id, persistentEntityResourceAssembler)).withSelfRel());
+        return ResponseEntity.ok(collectionModel);
+    }
+
+    @GetMapping("/{id}/notes")
+    public ResponseEntity<CollectionModel<PersistentEntityResource>> getNotes(@PathVariable("id") Long id,
+                                                                 PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
+        List<PersistentEntityResource> collection = projectService.getNotes(id)
+                .stream()
+                .map(persistentEntityResourceAssembler::toModel)
+                .collect(Collectors.toList());
+        CollectionModel<PersistentEntityResource> collectionModel = CollectionModel.of(collection);
+        collectionModel.add(linkTo(methodOn(ProjectController.class)
+                .getNotes(id, persistentEntityResourceAssembler)).withSelfRel());
         return ResponseEntity.ok(collectionModel);
     }
 
@@ -102,6 +117,7 @@ public class ProjectController {
             Optional<Link> self = model.getLink("self");
             self.ifPresent(selfLink -> {
                 model.add(Link.of(selfLink.getHref() + "/direct-work-items", "directWorkItems"));
+                model.add(Link.of(selfLink.getHref() + "/notes", "notes"));
             });
             return model;
         }

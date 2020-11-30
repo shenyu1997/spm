@@ -17,6 +17,7 @@ import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -218,8 +219,7 @@ public class WorkItemService {
     @HandleBeforeDelete
     public void preHandleDelete(WorkItem workItem) {
         Assert.isTrue(workItem.isCanBeDeleted(), "WorkItem can not be delete");
-        workItem.getNotes()
-                .forEach(noteService::deleteNote);
+        noteService.deleteNoteByParent(workItem.getId());
     }
 
     @HandleAfterDelete
@@ -312,6 +312,7 @@ public class WorkItemService {
             case Event.ITEM_CANCELED:
             case Event.ITEM_READY_TRUE:
             case Event.ITEM_OVERFLOW_TRUE:
+            case Event.ITEM_NOTE_TAKEN:
                 builder.args(workItem.getName());
                 break;
             case Event.ITEM_OWNER_CHANGED:
@@ -356,8 +357,13 @@ public class WorkItemService {
     public Note takeNote(long workItemId, Note note) {
         WorkItem workItem = workItemRepository.getOne(workItemId);
         Assert.notNull(workItem, "WorkItem can not be null");
-        note.setWorkItem(workItem);
-        return noteService.takeNote(note);
+        note.setParent(workItem);
+        Note createdNote = noteService.takeNote(note);
+        sendEvent(Event.ITEM_NOTE_TAKEN, workItem);
+        return createdNote;
     }
 
+    public List<Note> getNotes(Long id) {
+        return noteService.findByParent(id);
+    }
 }

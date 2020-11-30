@@ -62,10 +62,6 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @Version
     private Long version;
 
-    @NotAudited
-    @OneToMany(mappedBy = Note.Fields.workItem)
-    private List<Note> notes;
-
     @Builder.Default
     @JsonIgnore
     @Embedded

@@ -18,10 +18,7 @@ import tech.kuiperbelt.spm.domain.core.event.PropertyChanged;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static tech.kuiperbelt.spm.domain.core.event.Event.*;
 
@@ -63,6 +60,8 @@ public class PhaseService {
     public void preHandlePhaseDelete(Phase phase) {
         // then remove
         Assert.isTrue(phase.isCanBeDeleted(), "Running phase can not be deleted");
+
+        noteService.deleteNoteByParent(phase.getId());
         deleteWorkItems(phase);
         List<Phase> allPhases = phase.getProject().getPhases();
         allPhases.remove(phase);
@@ -313,6 +312,7 @@ public class PhaseService {
             case Event.PHASE_CANCELED:
             case Event.PHASE_DONE:
             case Event.PHASE_STARTED:
+            case Event.PHASE_NOTE_TAKEN:
                 builder.args(phase.getProject().getName(),
                         phase.getName());
                 break;
@@ -351,7 +351,13 @@ public class PhaseService {
 
     public Note takeNote(long phaseId, Note note) {
         Phase phase = phaseRepository.getOne(phaseId);
-        note.setPhase(phase);
-        return noteService.takeNote(note);
+        note.setParent(phase);
+        Note createdNote = noteService.takeNote(note);
+        sendEvent(PHASE_NOTE_TAKEN, phase);
+        return createdNote;
+    }
+
+    public List<Note> getNotes(Long id) {
+        return noteService.findByParent(id);
     }
 }

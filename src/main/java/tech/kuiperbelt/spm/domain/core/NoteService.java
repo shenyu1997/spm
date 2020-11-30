@@ -4,11 +4,12 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
+import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Transactional
 @Setter
@@ -24,29 +25,13 @@ public class NoteService {
     @Autowired
     private EventService eventService;
 
+    public List<Note> findByParent(Long parentId) {
+        return noteRepository.findByParent(parentId);
+    }
+
     public Note takeNote(Note note) {
         note.setCreateDate(LocalDate.now());
-        if(note.getWorkItem() != null) {
-            note.setParentType(Note.ParentType.WORK_ITEM);
-        } else if(note.getPhase() != null) {
-            note.setParentType(Note.ParentType.PHASE);
-        } else if(note.getProject() != null) {
-            note.setParentType(Note.ParentType.PROJECT);
-        }
-        Note createNote = noteRepository.save(note);
-        switch (note.getParentType()) {
-            case PHASE:
-                sendEvent(Event.PHASE_NOTE_TAKEN, note);
-                break;
-            case PROJECT:
-                sendEvent(Event.PROJECT_NOTE_TAKEN, note);
-                break;
-            case WORK_ITEM:
-                sendEvent(Event.ITEM_NOTE_TAKEN, note);
-                break;
-        }
-
-        return createNote;
+        return noteRepository.save(note);
     }
 
     public void deleteNote(Note note) {
@@ -57,15 +42,8 @@ public class NoteService {
     private void sendEvent(String key, Note note) {
         Event.EventBuilder eventBuilder = Event.builder().key(key).source(note);
         switch (key) {
-            case Event.ITEM_NOTE_TAKEN:
             case  Event.NOTE_DELETED:
-                eventBuilder.args(note.getWorkItem().getName());
-                break;
-            case  Event.PHASE_NOTE_TAKEN:
-                eventBuilder.args(note.getPhase().getName());
-                break;
-            case  Event.PROJECT_NOTE_TAKEN:
-                eventBuilder.args(note.getProject().getName());
+                eventBuilder.args(note.getContent());
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported key");
@@ -74,4 +52,7 @@ public class NoteService {
     }
 
 
+    public void deleteNoteByParent(Long id) {
+        noteRepository.deleteByParent(id);
+    }
 }
