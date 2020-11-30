@@ -10,6 +10,8 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguratio
 import org.springframework.data.rest.webmvc.support.JpaHelper;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import tech.kuiperbelt.spm.domain.core.ProjectController;
+import tech.kuiperbelt.spm.domain.core.event.EventController;
+import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.support.WebTransactionInterceptor;
 
 import java.util.ArrayList;
@@ -48,6 +50,11 @@ public class SpmRepositoryRestMvcConfiguration extends RepositoryRestMvcConfigur
     @Bean
     public ProjectController.ProjectRepresentationModelProcessor projectRepresentationModelProcessor() {
         return new ProjectController.ProjectRepresentationModelProcessor();
+    }
+
+    @Bean
+    public EventController.EventRepresentationModelProcessor eventRepresentationModelProcessor(EventService eventService) {
+        return new EventController.EventRepresentationModelProcessor(eventService);
     }
 
 }

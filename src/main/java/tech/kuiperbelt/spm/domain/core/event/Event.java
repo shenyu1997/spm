@@ -30,52 +30,53 @@ public class Event extends BaseEntity {
     public static final String PROJECT_MEMBER_ADDED = "event.project.member.added";
     public static final String PROJECT_MEMBER_DELETED = "event.project.member.deleted";
 
-    public static final String PROJECT_PROPERTIES_CHANGED = "event.project.properties.changed"; //TODO
-    public static final String PROJECT_PHASE_PROPERTIES_CHANGED = "event.project.phase.properties.changed"; //TODO
+    public static final String PROJECT_PROPERTIES_CHANGED = "event.project.properties.changed";
+    public static final String PROJECT_PHASE_PROPERTIES_CHANGED = "event.project.phase.properties.changed";
 
     public static final String PROJECT_SCHEDULE_PHASE_ADDED = "event.project.schedule.phase.added";
     public static final String PROJECT_SCHEDULE_PHASE_DELETED = "event.project.schedule.phase.deleted";
-    public static final String PROJECT_SCHEDULE_PHASE_MOVED_LEFT = "event.project.schedule.phase.moved.left"; //TODO
-    public static final String PROJECT_SCHEDULE_PHASE_MOVED_RIGHT = "event.project.schedule.phase.moved.right"; //TODO
-    public static final String PROJECT_SCHEDULE_PHASE_START_CHANGED = "event.project.schedule.phase.start.changed"; //TODO
-    public static final String PROJECT_SCHEDULE_PHASE_END_CHANGED = "event.project.schedule.phase.end.changed";//TODO
+    public static final String PROJECT_SCHEDULE_PHASE_MOVED_LEFT = "event.project.schedule.phase.moved.left";
+    public static final String PROJECT_SCHEDULE_PHASE_MOVED_RIGHT = "event.project.schedule.phase.moved.right";
+    public static final String PROJECT_SCHEDULE_PHASE_START_CHANGED = "event.project.schedule.phase.start.changed";
+    public static final String PROJECT_SCHEDULE_PHASE_END_CHANGED = "event.project.schedule.phase.end.changed";
 
-    public static final String PROJECT_EXECUTION_PROJECT_STARTED = "event.project.execution.project.started"; //TODO
-    public static final String PROJECT_EXECUTION_PROJECT_DONE = "event.project.execution.project.done";//TODO
+    public static final String PROJECT_EXECUTION_PROJECT_STARTED = "event.project.execution.project.started";
+    public static final String PROJECT_EXECUTION_PROJECT_DONE = "event.project.execution.project.done";
     public static final String PROJECT_EXECUTION_PROJECT_CANCELED = "event.project.execution.project.canceled";
 
-    public static final String PROJECT_EXECUTION_PHASE_STARTED = "event.project.execution.phase.started"; //TODO
-    public static final String PROJECT_EXECUTION_PHASE_DONE = "event.project.execution.phase.done"; //TODO
-    public static final String PROJECT_EXECUTION_PHASE_CANCELED = "event.project.execution.phase.canceled"; //TODO
+    public static final String PROJECT_EXECUTION_PHASE_STARTED = "event.project.execution.phase.started";
+    public static final String PROJECT_EXECUTION_PHASE_DONE = "event.project.execution.phase.done";
+    public static final String PROJECT_EXECUTION_PHASE_CANCELED = "event.project.execution.phase.canceled";
 
-    public static final String DETACH_ITEM_ADDED = "event.detach.item.added";//TODO
+    public static final String PROJECT_SCHEDULE_ITEM_ADDED = "event.project.schedule.item.added";
+    public static final String PROJECT_SCHEDULE_PHASE_ITEM_ADDED = "event.project.schedule.phase.item.added";
 
-    public static final String ITEM_ADDED = "event.item.added";//TODO
-    public static final String ITEM_DELETED = "event.item.deleted";//TODO
+    public static final String ITEM_ADDED = "event.item.added";
+    public static final String ITEM_DELETED = "event.item.deleted";
 
-    public static final String ITEM_OWNER_CHANGED = "event.item.owner.changed";//TODO
-    public static final String ITEM_ASSIGNEE_CHANGED = "event.item.assignee.changed";//TODO
-    public static final String ITEM_PROPERTIES_CHANGED = "event.project.properties.changed"; //TODO
+    public static final String ITEM_OWNER_CHANGED = "event.item.owner.changed";
+    public static final String ITEM_ASSIGNEE_CHANGED = "event.item.assignee.changed";
+    public static final String ITEM_PROPERTIES_CHANGED = "event.item.properties.changed";
 
-    public static final String ITEM_SCHEDULE_MOVED_LEFT = "event.item.schedule.moved.left";//TODO
-    public static final String ITEM_SCHEDULE_MOVED_RIGHT = "event.item.schedule.moved.right";//TODO
-    public static final String ITEM_SCHEDULE_START_CHANGED = "event.item.schedule.start.changed";//TODO
-    public static final String ITEM_SCHEDULE_END_CHANGED = "event.item.schedule.end.changed";//TODO
+    public static final String ITEM_SCHEDULE_MOVED_LEFT = "event.item.schedule.moved.left";
+    public static final String ITEM_SCHEDULE_MOVED_RIGHT = "event.item.schedule.moved.right";
+    public static final String ITEM_SCHEDULE_START_CHANGED = "event.item.schedule.start.changed";
+    public static final String ITEM_SCHEDULE_END_CHANGED = "event.item.schedule.end.changed";
 
-    public static final String ITEM_MOVED_PHASE = "event.item.moved.phase";//TODO
-    public static final String ITEM_MOVED_PROJECT = "event.item.moved.project";//TODO
+    public static final String ITEM_MOVED_PHASE = "event.item.moved.phase";
+    public static final String ITEM_MOVED_PROJECT = "event.item.moved.project";
 
-    public static final String ITEM_SCHEDULE_IS_OVERFLOW = "event.item.is.overflow";//TODO
-    public static final String ITEM_SCHEDULE_IS_READY = "event.item.schedule.is.ready"; //TODO
+    public static final String ITEM_SCHEDULE_IS_OVERFLOW = "event.item.is.overflow";
+    public static final String ITEM_SCHEDULE_IS_READY = "event.item.schedule.is.ready";
 
-    public static final String ITEM_EXECUTION_STARTED = "event.item.execution.started"; //TODO
-    public static final String ITEM_EXECUTION_DONE = "event.item.execution.done"; //TODO
-    public static final String ITEM_EXECUTION_CANCELED = "event.item.execution.canceled"; //TODO
+    public static final String ITEM_EXECUTION_STARTED = "event.item.execution.started";
+    public static final String ITEM_EXECUTION_DONE = "event.item.execution.done";
+    public static final String ITEM_EXECUTION_CANCELED = "event.item.execution.canceled";
 
-    public static final String ITEM_EXECUTION_NOTE_TAKEN = "event.item.execution.note.taken"; //TODO
+    public static final String ITEM_EXECUTION_NOTE_TAKEN = "event.item.execution.note.taken";
     public static final String PHASE_EXECUTION_NOTE_TAKEN = "event.phase.execution.note.taken";
     public static final String PROJECT_EXECUTION_NOTE_TAKEN = "event.project.execution.note.taken";
-    public static final String ITEM_EXECUTION_NOTE_DELETED = "event.item.execution.note.deleted"; //TODO
+    public static final String ITEM_EXECUTION_NOTE_DELETED = "event.item.execution.note.deleted";
 
     public static Signal BULK_BEGIN = new Signal();
     public static Signal BULK_END = new Signal();

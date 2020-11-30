@@ -73,7 +73,9 @@ public class WorkItemService {
     public void postHandleCreate(WorkItem workItem) {
         // send workItem created event
         if(workItem.getPhase() != null) {
-            sendEvent(Event.DETACH_ITEM_ADDED, workItem);
+            sendEvent(Event.PROJECT_SCHEDULE_PHASE_ITEM_ADDED, workItem);
+        } else if(workItem.getProject() != null) {
+            sendEvent(Event.PROJECT_SCHEDULE_ITEM_ADDED, workItem);
         } else {
             sendEvent(Event.ITEM_ADDED, workItem);
         }
@@ -302,7 +304,8 @@ public class WorkItemService {
                         Optional.of(workItem).map(WorkItem::getPhase).map(Phase::getName).orElse(""),
                         Optional.of(workItem).map(WorkItem::getProject).map(Project::getName).orElse(""));
                 break;
-            case Event.DETACH_ITEM_ADDED:
+            case Event.PROJECT_SCHEDULE_ITEM_ADDED:
+            case Event.PROJECT_SCHEDULE_PHASE_ITEM_ADDED:
             case Event.ITEM_DELETED:
             case Event.ITEM_EXECUTION_STARTED:
             case Event.ITEM_EXECUTION_DONE:
