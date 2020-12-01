@@ -286,7 +286,7 @@ class ProjectApiTests extends ApiTest {
 
 	@Sql({"/cleanup.sql"})
 	@Test
-	public void testEvent() throws Exception {
+	public void testHappyEvent() throws Exception {
 		String projectHref = testUtils.createRandomProject();
 
 		mockMvc.perform(get("/events"))
@@ -341,5 +341,21 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_DELETED)))
 				.andExpect(jsonPath("$._embedded.events.length()", equalTo(12)));
 
+	}
+
+	@Sql({"/cleanup.sql"})
+	@Test
+	public void testCancelEvent() throws Exception {
+		String projectHref = testUtils.createRandomProject();
+		testUtils.cancel(projectHref);
+
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(
+						Event.PROJECT_CREATED,
+						Event.PROJECT_OWNER_CHANGED,
+						Event.PROJECT_MANAGER_CHANGED,
+						Event.PROJECT_CANCELED
+				)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(4)));
 	}
 }
