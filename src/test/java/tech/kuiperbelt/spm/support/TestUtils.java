@@ -1,7 +1,7 @@
 package tech.kuiperbelt.spm.support;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.MediaType;
@@ -13,6 +13,7 @@ import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -175,5 +176,16 @@ public class TestUtils {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+    }
+
+    public void cleanAll(String href) throws Exception {
+        String contentAsString = mockMvc.perform(get(href))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        List<String> links =  JsonPath.read(contentAsString, "$._embedded..self.href");
+        for(String link: links) {
+            delete(link);
+        }
     }
 }
