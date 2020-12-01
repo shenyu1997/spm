@@ -60,7 +60,7 @@ Content-Type: application/json
     "members":["huanhuan.dong","yongjian.sha"]
 }
 ###
-@projectHref = {{createProjectApi.response.headers.Location}}
+@projectHref={{createProjectApi.response.headers.Location}}
 
 ### View the Projects
 GET {{projectHref}}
@@ -235,6 +235,19 @@ Content-Type: application/json
 
 {
     "project": "{{projectHref}}"
+}
+
+### Change PERSON workItem to PROJECT workItem (Method 2, TBD)
+PUT  {{workItemHref}}/project
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+{
+    "_links": {
+        "project": {
+            "href": "{{projectHref}}"
+        }
+    }
 }
 
 ### Change PROJECT workItem to PERSON workItem
