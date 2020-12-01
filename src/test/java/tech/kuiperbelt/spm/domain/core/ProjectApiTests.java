@@ -1,5 +1,6 @@
 package tech.kuiperbelt.spm.domain.core;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -9,6 +10,7 @@ import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
+import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -288,6 +290,56 @@ class ProjectApiTests extends ApiTest {
 		String projectHref = testUtils.createRandomProject();
 
 		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_CREATED)));
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(
+						Event.PROJECT_CREATED,
+						Event.PROJECT_OWNER_CHANGED,
+						Event.PROJECT_MANAGER_CHANGED
+				)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(3)));
+
+		testUtils.start(projectHref);
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_STARTED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(4)));
+
+		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.name,RandomStringUtils.randomAlphanumeric(10)));
+
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_PROPERTIES_CHANGED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(5)));
+
+		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.owner,RandomStringUtils.randomAlphanumeric(10)));
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_OWNER_CHANGED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(6)));
+
+		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.manager,RandomStringUtils.randomAlphanumeric(10)));
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_MANAGER_CHANGED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(7)));
+
+		String memberA = RandomStringUtils.randomAlphanumeric(10);
+		String memberB = RandomStringUtils.randomAlphanumeric(10);
+		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.members, Lists.newArrayList(memberA, memberB)));
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_MEMBER_ADDED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(8)));
+
+		String memberC = RandomStringUtils.randomAlphanumeric(10);
+		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.members, Lists.newArrayList(memberA, memberC)));
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_MEMBER_ADDED,Event.PROJECT_MEMBER_DELETED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(10)));
+
+		testUtils.done(projectHref);
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_DONE)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(11)));
+
+		testUtils.delete(projectHref);
+		mockMvc.perform(get("/events"))
+				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_DELETED)))
+				.andExpect(jsonPath("$._embedded.events.length()", equalTo(12)));
+
 	}
 }

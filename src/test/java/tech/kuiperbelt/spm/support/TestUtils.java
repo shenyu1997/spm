@@ -14,8 +14,7 @@ import tech.kuiperbelt.spm.domain.core.WorkItem;
 
 import java.time.LocalDate;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -164,10 +163,17 @@ public class TestUtils {
                 .getHeader(LOCATION);
     }
 
-    public void patchUpdate(String workItemAHref, Object workItem) throws Exception {
-        mockMvc.perform(patch(workItemAHref)
+    public void patchUpdate(String href, Object workItem) throws Exception {
+        mockMvc.perform(patch(href)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
                 .andExpect(status().isNoContent());
+    }
+
+    public String getBody(String href) throws Exception {
+        return mockMvc.perform(get(href))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
     }
 }
