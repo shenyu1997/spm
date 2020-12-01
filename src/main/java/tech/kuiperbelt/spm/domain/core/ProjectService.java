@@ -155,6 +155,8 @@ public class ProjectService {
         noteService.deleteNoteByParent(current.getId());
 
         current.getPhases()
+                .stream()
+                .sorted(Comparator.comparingInt(Phase::getSeq).reversed())
                 .forEach(phase ->
                 phaseService.deletePhase(phase));
 
