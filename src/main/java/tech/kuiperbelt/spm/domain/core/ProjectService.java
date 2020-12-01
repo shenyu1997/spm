@@ -293,6 +293,9 @@ public class ProjectService {
     }
 
     private void sendMemberAddEvent(Project project, String membersUpn, Set<String> currentMembers) {
+        if(currentMembers.isEmpty()) {
+            return;
+        }
         eventService.emit(Event.builder()
                 .key(PROJECT_MEMBER_ADDED)
                 .source(project.getId())
@@ -301,6 +304,9 @@ public class ProjectService {
     }
 
     private void sendMemberDeleteEvent(Project previous, Set<String> previousMembers, String previousMembersUpn) {
+        if(previousMembers.isEmpty()) {
+            return;
+        }
         eventService.emit(Event.builder()
                 .key(PROJECT_MEMBER_DELETED)
                 .source(previous.getId())
