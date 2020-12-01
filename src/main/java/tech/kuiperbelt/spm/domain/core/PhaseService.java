@@ -65,7 +65,7 @@ public class PhaseService {
         deleteWorkItems(phase);
         List<Phase> allPhases = phase.getProject().getPhases();
         allPhases.remove(phase);
-        List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq(), allPhases.size()));
+        List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(Math.min(phase.getSeq() + 1, allPhases.size()), allPhases.size()));
         resetSeq(allPhases);
         movePhases(phase.getPeriod().negated(), laterImpactedPhases);
 
