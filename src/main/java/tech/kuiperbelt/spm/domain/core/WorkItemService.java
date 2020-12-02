@@ -105,35 +105,47 @@ public class WorkItemService {
 
     @HandleAfterSave
     public void postHandleSave(WorkItem workItem) {
-        // Check move phase
-        auditService.getPreviousVersion(workItem)
-                .ifPresent(previous -> {
-                    PropertyChanged.of(previous, workItem, WorkItem.Fields.phase)
-                            .ifPresent(propertyChanged ->
-                                    movePhase(workItem, propertyChanged));
-                    PropertyChanged.of(previous, workItem, WorkItem.Fields.project)
-                            .ifPresent(propertyChanged ->
-                                    moveProject(workItem, propertyChanged));
-                });
-
         // check overflow
         if(workItem.isOverflow()) {
             sendEvent(Event.ITEM_OVERFLOW_TRUE, workItem);
         }
 
-        Optional<WorkItem> previousVersion = auditService.getPreviousVersion(workItem);
-        previousVersion.ifPresent(previousItem -> {
-            PropertyChanged.of(previousItem, workItem, WorkItem.Fields.owner).ifPresent(propertyChanged ->
-                    sendEvent(Event.ITEM_OWNER_CHANGED,workItem, propertyChanged));
-            PropertyChanged.of(previousItem, workItem, WorkItem.Fields.owner).ifPresent(propertyChanged ->
-                    sendEvent(Event.ITEM_ASSIGNEE_CHANGED, workItem, propertyChanged));
+        // Check move phase
+        auditService.getPreviousVersion(workItem)
+            .ifPresent(previousItem -> {
+                // Check phase changed
+                PropertyChanged.of(previousItem, workItem, WorkItem.Fields.phase)
+                        .ifPresent(propertyChanged ->
+                                movePhase(workItem, propertyChanged));
 
-            PropertiesChanged.of(previousItem, workItem,
-                    WorkItem.Fields.priority,
-                    WorkItem.Fields.milestone,
-                    WorkItem.Fields.name)
-                    .ifPresent(propertiesChanged ->
-                            sendEvent(Event.ITEM_PROPERTIES_CHANGED, workItem, propertiesChanged));
+                // Check project changed
+                PropertyChanged.of(previousItem, workItem, WorkItem.Fields.project)
+                        .ifPresent(propertyChanged ->
+                                moveProject(workItem, propertyChanged));
+
+                // Check owner changed
+                PropertyChanged.of(previousItem, workItem, WorkItem.Fields.owner).ifPresent(propertyChanged ->
+                        sendEvent(Event.ITEM_OWNER_CHANGED,workItem, propertyChanged));
+
+                // Check assignee changed
+                PropertyChanged.of(previousItem, workItem, WorkItem.Fields.assignee).ifPresent(propertyChanged ->
+                        sendEvent(Event.ITEM_ASSIGNEE_CHANGED, workItem, propertyChanged));
+
+                // Check planned start date changed
+                PropertyChanged.of(previousItem, workItem, WorkItem.Fields.plannedStartDate).ifPresent(propertyChanged ->
+                        sendEvent(Event.ITEM_START_CHANGED, workItem, propertyChanged));
+
+                // Check dead line date changed
+                PropertyChanged.of(previousItem, workItem, WorkItem.Fields.deadLine).ifPresent(propertyChanged ->
+                        sendEvent(Event.ITEM_END_CHANGED, workItem, propertyChanged));
+
+                // Check other properties
+                PropertiesChanged.of(previousItem, workItem,
+                        WorkItem.Fields.priority,
+                        WorkItem.Fields.milestone,
+                        WorkItem.Fields.name)
+                        .ifPresent(propertiesChanged ->
+                                sendEvent(Event.ITEM_PROPERTIES_CHANGED, workItem, propertiesChanged));
         });
 
     }
