@@ -65,7 +65,7 @@ public class NoteApiTests extends ApiTest {
     @Test
     public void taskNoteForWorkItem() throws Exception {
         LocalDate current = LocalDate.now();
-        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
         Note note = new Note().toBuilder()
                 .content(RandomStringUtils.randomAlphanumeric(20))
                 .build();
