@@ -80,6 +80,11 @@ public class WorkItemService {
         } else {
             sendEvent(Event.ITEM_ADDED, workItem);
         }
+
+        if(!StringUtils.isEmpty(workItem.getOwner())) {
+            sendEvent(Event.ITEM_OWNER_CHANGED, workItem);
+        }
+
         // send assignee event
         if(!StringUtils.isEmpty(workItem.getAssignee())) {
             sendEvent(Event.ITEM_ASSIGNEE_CHANGED, workItem);
