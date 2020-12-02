@@ -11,13 +11,16 @@ import tech.kuiperbelt.spm.domain.core.Note;
 import tech.kuiperbelt.spm.domain.core.Phase;
 import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @AllArgsConstructor
 public class TestUtils {
@@ -136,7 +139,7 @@ public class TestUtils {
 
 
 
-    public String createRandomPhaseWorkItem(LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
+    public String createRandomWorkItem(LocalDate plannedStartDate, LocalDate deadLine) throws Exception {
         WorkItem workItem = new WorkItem().toBuilder()
                 .name(RandomStringUtils.randomAlphanumeric(10))
                 .plannedStartDate(plannedStartDate)
@@ -187,5 +190,13 @@ public class TestUtils {
         for(String link: links) {
             delete(link);
         }
+    }
+
+    public void verifyEvents(int eventTotalCount, String ... events) throws Exception {
+        String eventsHref = "/events";
+        String body = getBody(eventsHref);
+        mockMvc.perform(get(eventsHref))
+                .andExpect(jsonPath("$._embedded.events..key", hasItems(events)))
+                .andExpect(jsonPath("$._embedded.events.length()", equalTo(eventTotalCount)));
     }
 }
