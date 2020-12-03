@@ -216,17 +216,10 @@ public class ProjectService {
         sendEvent(PROJECT_DONE, project);
     }
 
-    public Phase appendPhase(long id, Phase phase) {
+    public Phase createPhase(long id, Phase phase) {
         Project project = projectRepository.getOne(id);
-        Phase createdPhase = phaseService.appendPhase(project, phase);
-        project.setAllPhasesStop(false);
-        return createdPhase;
-    }
-
-    public Phase insertPhase(Long id, Phase phase) {
-        Project project = projectRepository.getOne(id);
-        Phase createdPhase = phaseService.insertPhase(project, phase);
-        project.setAllPhasesStop(false);
+        phase.setProject(project);
+        Phase createdPhase = phaseService.createPhase(phase);
         return createdPhase;
     }
 

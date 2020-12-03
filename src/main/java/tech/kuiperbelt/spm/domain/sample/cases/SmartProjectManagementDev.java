@@ -37,7 +37,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
         );
 
         long phaseOneId = step("Add Phase 1", () -> {
-            return projectService.appendPhase(projectId, new Phase().toBuilder()
+            return projectService.createPhase(projectId, new Phase().toBuilder()
                     .name("Planning")
                     .plannedStartDate(LocalDate.now())
                     .plannedEndDate(LocalDate.now().plus(Period.ofDays(30)))
@@ -45,14 +45,14 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
         });
 
         long phaseTwoId = step("Add Phase 2", () -> {
-            return projectService.appendPhase(projectId, new Phase().toBuilder()
+            return projectService.createPhase(projectId, new Phase().toBuilder()
                     .name("GoGoGo")
                     .plannedEndDate(LocalDate.now().plus(Period.ofDays(80)))
                     .build()).getId();
         });
 
         long phaseThreeId = step("Add Phase 3", () -> {
-            return projectService.appendPhase(projectId, new Phase().toBuilder()
+            return projectService.createPhase(projectId, new Phase().toBuilder()
                     .name("Testing")
                     .plannedEndDate(LocalDate.now().plus(Period.ofDays(120)))
                     .build())
@@ -60,7 +60,7 @@ public class SmartProjectManagementDev extends ImportCaseSupport implements Impo
         });
 
         long phaseFourId = step("Add Phase 4", () -> {
-            return projectService.appendPhase(projectId, new Phase().toBuilder()
+            return projectService.createPhase(projectId, new Phase().toBuilder()
                     .name("GoProduction")
                     .plannedEndDate(LocalDate.now().plus(Period.ofDays(160)))
                     .build())

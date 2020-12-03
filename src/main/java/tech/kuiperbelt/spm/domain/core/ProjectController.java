@@ -56,16 +56,9 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/phases/actions/append")
+    @PostMapping("/{id}/phases/actions/create")
     public ResponseEntity<?> appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
-        Phase createdPhase = projectService.appendPhase(id, phase);
-        URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
-        return ResponseEntity.created(uri).build();
-    }
-
-    @PostMapping("/{id}/phases/actions/insert")
-    public ResponseEntity<?> insertPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
-        Phase createdPhase = projectService.insertPhase(id, phase);
+        Phase createdPhase = projectService.createPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }

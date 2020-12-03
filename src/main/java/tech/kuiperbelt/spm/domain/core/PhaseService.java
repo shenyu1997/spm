@@ -47,6 +47,41 @@ public class PhaseService {
     @Autowired
     private NoteService noteService;
 
+    @HandleBeforeCreate
+    public void preHandlerPhaseCreate(Phase phase) {
+        Project project = phase.getProject();
+        Assert.notNull(project, "Project can not be null");
+        if(phase.getSeq() == null) {
+            appendPhase(project, phase);
+        } else {
+            insertPhase(project, phase);
+        }
+        project.setAllPhasesStop(false);
+
+    }
+
+    @HandleAfterCreate
+    public void postHandlerPhaseCreate(Phase phase) {
+        sendEvent(PHASE_ADDED, phase);
+
+        Project project = phase.getProject();
+        Optional<Phase> firstRunningPhase = project.getPhases().stream()
+                .filter(p -> p.getStatus() == RunningStatus.RUNNING).findFirst();
+
+        // start phase if Project is start and there is running phase
+        if(project.getStatus() == RunningStatus.RUNNING && !firstRunningPhase.isPresent()) {
+            startPhase(phase);
+        }
+    }
+
+    public Phase createPhase(Phase phase) {
+        preHandlerPhaseCreate(phase);
+        Phase createdPhase = phaseRepository.save(phase);
+        postHandlerPhaseCreate(phase);
+        return createdPhase;
+    }
+
+
     /**
      * It will be trigger by project delete so just delete workItems cascade
      */
@@ -73,17 +108,18 @@ public class PhaseService {
         phase.getProject().checkAllPhaseStop();
     }
 
+
     @HandleAfterDelete
     public void postHandlePhaseDelete(Phase phase) {
         sendEvent(Event.PHASE_DELETED, phase);
     }
 
-    public Phase appendPhase(Project project, Phase phase) {
+    public void appendPhase(Project project, Phase phase) {
         phase.setSeq(project.getPhases().size());
-        return insertPhase(project, phase);
+        insertPhase(project, phase);
     }
 
-    public Phase insertPhase(Project project, Phase phase) {
+    public void insertPhase(Project project, Phase phase) {
         Assert.isTrue(project.getStatus() != RunningStatus.STOP, "STOP project can not insert phase");
 
         List<Phase> allPhases = project.getPhases();
@@ -116,15 +152,6 @@ public class PhaseService {
                     phase.getPeriod().plusDays(1);
             movePhases(offset, laterImpactedPhases);
         }
-
-        Phase createPhase = phaseRepository.save(phase);
-        sendEvent(PHASE_ADDED, createPhase);
-
-        // start phase if Project is start and there is running phase
-        if(project.getStatus() == RunningStatus.RUNNING && !firstRunningPhase.isPresent()) {
-            startPhase(createPhase);
-        }
-        return createPhase;
     }
 
     @HandleBeforeSave
