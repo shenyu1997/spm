@@ -101,33 +101,64 @@ Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
 
-### Append Phase 
-# @name appendPahseApi
-POST  {{projectHref}}/phases/actions/append
+### Create Phase
+# @name createPahseApi
+POST  http://{{host}}:{{port}}/phases
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
 {
     "name": "Planning",
     "plannedStartDate": "2020-09-01",
-    "plannedEndDate": "2020-12-01"
+    "plannedEndDate": "2020-12-10",
+    "project": "{{projectHref}}"
 }
+
+# append other
+# {
+#     "name": "Planning",
+#     "plannedEndDate": "2020-12-01"
+# }
+
+# insert other
+# {
+#     "name": "Planning",
+#     "plannedEndDate": "2020-12-01"
+#     "seq": 1
+# }
+
 ###
-@phaseHref={{appendPahseApi.response.headers.Location}}
+@phaseHref={{createPahseApi.response.headers.Location}}
+
+### Append Phase
+# @name appendPahseApi
+POST  {{projectHref}}/phases/actions/create
+Authorization: Basic {{currentUser}} {{password}}
+Content-Type: application/json
+
+{
+    "name": "Planning",
+    "plannedStartDate": "2019-08-01",
+    "plannedEndDate": "2020-12-20"
+}
+
+
+###
+@appendPhaseHref={{appendPahseApi.response.headers.Location}}
 
 ### Insert Phase (must have seq)
 # @name insertPhaseApi
-POST  {{projectHref}}/phases/actions/insert
+POST  {{projectHref}}/phases/actions/create
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
 {
     "name": "Go",
-    "plannedEndDate": "2020-11-25",
+    "plannedEndDate": "2020-12-25",
     "seq": 1
 }
 ###
-//@phaseHref={{insertPhaseApi.response.headers.Location}}
+@insertPhaseHref={{insertPhaseApi.response.headers.Location}}
 
 ### View the phase
 GET {{phaseHref}}
@@ -167,7 +198,7 @@ GET {{phaseHref}}/work-items
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
-### Add workItem 
+### Add workItem
 # @name createPhaseWorkItemApi
 POST {{phaseHref}}/work-items/actions/create
 Authorization: Basic {{currentUser}} {{password}}
@@ -324,7 +355,7 @@ Content-Type: application/json
 ## Others (TBD)
 ####################################################################################
 
-### Get Event 
+### Get Event
 http://{{host}}:{{port}}/events
 Authorization: Basic {{currentUser}} {{password}}
 
