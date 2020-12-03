@@ -259,9 +259,8 @@ public class WorkItemService {
     }
 
     private void moveWorkItem(WorkItem workItem, Period offset) {
-        if(workItem.move(offset)) {
-            sendMoveEvent(workItem, offset);
-        }
+        workItem.move(offset);
+        sendMoveEvent(workItem, offset);
     }
 
     private void movePhase(WorkItem workItem, PropertyChanged propertyChanged) {
