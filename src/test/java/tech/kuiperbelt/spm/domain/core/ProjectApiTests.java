@@ -289,58 +289,39 @@ class ProjectApiTests extends ApiTest {
 	public void testHappyEvent() throws Exception {
 		String projectHref = testUtils.createRandomProject();
 
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(
-						Event.PROJECT_CREATED,
-						Event.PROJECT_OWNER_CHANGED,
-						Event.PROJECT_MANAGER_CHANGED
-				)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(3)));
+		testUtils.verifyEvents(3,
+				Event.PROJECT_CREATED,
+				Event.PROJECT_OWNER_CHANGED,
+				Event.PROJECT_MANAGER_CHANGED);
 
 		testUtils.start(projectHref);
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_STARTED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(4)));
+		testUtils.verifyEvents(4, Event.PROJECT_STARTED);
 
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.name,RandomStringUtils.randomAlphanumeric(10)));
-
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_PROPERTIES_CHANGED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(5)));
+		testUtils.verifyEvents(5, Event.PROJECT_PROPERTIES_CHANGED);
 
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.owner,RandomStringUtils.randomAlphanumeric(10)));
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_OWNER_CHANGED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(6)));
+		testUtils.verifyEvents(6, Event.PROJECT_OWNER_CHANGED);
 
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.manager,RandomStringUtils.randomAlphanumeric(10)));
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_MANAGER_CHANGED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(7)));
+		testUtils.verifyEvents(7, Event.PROJECT_MANAGER_CHANGED);
 
 		String memberA = RandomStringUtils.randomAlphanumeric(10);
 		String memberB = RandomStringUtils.randomAlphanumeric(10);
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.members, Lists.newArrayList(memberA, memberB)));
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_MEMBER_ADDED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(8)));
+		testUtils.verifyEvents(8, Event.PROJECT_MEMBER_ADDED);
 
 		String memberC = RandomStringUtils.randomAlphanumeric(10);
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.members, Lists.newArrayList(memberA, memberC)));
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_MEMBER_ADDED,Event.PROJECT_MEMBER_DELETED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(10)));
+		testUtils.verifyEvents(10,
+				Event.PROJECT_MEMBER_ADDED,
+				Event.PROJECT_MEMBER_DELETED);
 
 		testUtils.done(projectHref);
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_DONE)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(11)));
+		testUtils.verifyEvents(11, Event.PROJECT_DONE);
 
 		testUtils.delete(projectHref);
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(Event.PROJECT_DELETED)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(12)));
-
+		testUtils.verifyEvents(12, Event.PROJECT_DELETED);
 	}
 
 	@Sql({"/cleanup.sql"})
@@ -348,14 +329,10 @@ class ProjectApiTests extends ApiTest {
 	public void testCancelEvent() throws Exception {
 		String projectHref = testUtils.createRandomProject();
 		testUtils.cancel(projectHref);
-
-		mockMvc.perform(get("/events"))
-				.andExpect(jsonPath("$._embedded.events..key", hasItems(
-						Event.PROJECT_CREATED,
-						Event.PROJECT_OWNER_CHANGED,
-						Event.PROJECT_MANAGER_CHANGED,
-						Event.PROJECT_CANCELED
-				)))
-				.andExpect(jsonPath("$._embedded.events.length()", equalTo(4)));
+		testUtils.verifyEvents(4,
+				Event.PROJECT_CREATED,
+				Event.PROJECT_OWNER_CHANGED,
+				Event.PROJECT_MANAGER_CHANGED,
+				Event.PROJECT_CANCELED);
 	}
 }

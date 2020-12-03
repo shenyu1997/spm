@@ -735,100 +735,57 @@ public class PhaseApiTests extends ApiTest {
         testUtils.cleanAll("/events");
 
         String phaseAHref = testUtils.appendRandomPhase(projectHref, current, current.plusDays(10));
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_ADDED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(1)));
+        testUtils.verifyEvents(1, Event.PHASE_ADDED);
 
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedStartDate,current.plusDays(1)));
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_START_CHANGED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(2)));
+        testUtils.verifyEvents(2, Event.PHASE_START_CHANGED);
 
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate,current.plusDays(6)));
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_END_CHANGED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(3)));
+        testUtils.verifyEvents(3, Event.PHASE_END_CHANGED);
 
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.name, RandomStringUtils.randomAlphanumeric(10)));
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_PROPERTIES_CHANGED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(4)));
+        testUtils.verifyEvents(4, Event.PHASE_PROPERTIES_CHANGED);
 
         testUtils.cleanAll("/events");
         String phaseBHref = testUtils.appendRandomPhase(projectHref, current.plusDays(10));
-
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_ADDED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(1)));
+        testUtils.verifyEvents(1, Event.PHASE_ADDED);
 
         // Update end data
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate,current.plusDays(5)));
-
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_END_CHANGED,
-                        Event.PHASE_MOVED_LEFT
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(3)));
+        testUtils.verifyEvents(3,
+                Event.PHASE_END_CHANGED,
+                Event.PHASE_MOVED_LEFT);
 
         // Update end data
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate,current.plusDays(6)));
-
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_END_CHANGED,
-                        Event.PHASE_MOVED_RIGHT
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(5)));
+        testUtils.verifyEvents(5,
+                Event.PHASE_END_CHANGED,
+                Event.PHASE_MOVED_RIGHT);
 
         testUtils.cleanAll("/events");
         testUtils.start(projectHref);
-
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PROJECT_STARTED,
-                        Event.PHASE_STARTED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(2)));
+        testUtils.verifyEvents(2,
+                Event.PROJECT_STARTED,
+                Event.PHASE_STARTED);
 
         testUtils.done(phaseAHref);
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PHASE_DONE,
-                        Event.PHASE_STARTED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(4)));
+        testUtils.verifyEvents(4,
+                Event.PHASE_DONE,
+                Event.PHASE_STARTED);
 
         testUtils.cleanAll("/events");
         testUtils.cancel(projectHref);
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PROJECT_CANCELED,
-                        Event.PHASE_CANCELED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(2)));
+        testUtils.verifyEvents(2,
+                Event.PROJECT_CANCELED,
+                Event.PHASE_CANCELED);
 
         testUtils.cleanAll("/events");
         testUtils.delete(projectHref);
 
-        String body = testUtils.getBody("/events");
-        mockMvc.perform(get("/events"))
-                .andExpect(jsonPath("$._embedded.events..key", CoreMatchers.hasItems(
-                        Event.PROJECT_DELETED,
-                        Event.PHASE_DELETED,
-                        Event.PHASE_DELETED
-                )))
-                .andExpect(jsonPath("$._embedded.events.length()", equalTo(3)));
+        testUtils.verifyEvents(3,
+                Event.PROJECT_DELETED,
+                Event.PHASE_DELETED,
+                Event.PHASE_DELETED);
 
     }
 }
