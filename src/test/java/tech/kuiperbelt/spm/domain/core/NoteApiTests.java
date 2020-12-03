@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
@@ -92,6 +93,28 @@ public class NoteApiTests extends ApiTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void testEvent() throws Exception {
+        LocalDate current = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        String phaseHref = testUtils.appendRandomPhase(projectHref, current, current.plusDays(10));
+        String workItemHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
+        testUtils.cleanAll("/events");
 
+        String noteHref = testUtils.taskRandomNote(projectHref);
 
+        testUtils.verifyEvents(1, Event.PROJECT_NOTE_TAKEN);
+        testUtils.cleanAll("/events");
+        testUtils.delete(noteHref);
+        testUtils.verifyEvents(1, Event.NOTE_DELETED);
+
+        testUtils.cleanAll("/events");
+        testUtils.taskRandomNote(phaseHref);
+        testUtils.verifyEvents(1, Event.PHASE_NOTE_TAKEN);
+
+        testUtils.cleanAll("/events");
+        testUtils.taskRandomNote(workItemHref);
+        testUtils.verifyEvents(1, Event.ITEM_NOTE_TAKEN);
+    }
 }
