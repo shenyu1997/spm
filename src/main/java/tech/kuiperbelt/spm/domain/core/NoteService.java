@@ -2,6 +2,9 @@ package tech.kuiperbelt.spm.domain.core;
 
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.core.annotation.HandleAfterDelete;
+import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.kuiperbelt.spm.domain.core.event.Event;
@@ -14,6 +17,7 @@ import java.util.List;
 @Transactional
 @Setter
 @Service
+@RepositoryEventHandler
 public class NoteService {
 
     @Autowired
@@ -35,7 +39,19 @@ public class NoteService {
     }
 
     public void deleteNote(Note note) {
+        preHandlerDelete(note);
         noteRepository.delete(note);
+        postHandlerDelete(note);
+
+    }
+
+    @HandleBeforeDelete
+    public void preHandlerDelete(Note note) {
+        //TODO should we check note parent's status before delete the note?
+    }
+
+    @HandleAfterDelete
+    public void postHandlerDelete(Note note) {
         sendEvent(Event.NOTE_DELETED, note);
     }
 
