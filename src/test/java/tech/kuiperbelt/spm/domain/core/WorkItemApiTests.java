@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
@@ -466,7 +467,7 @@ public class WorkItemApiTests extends ApiTest {
     public void noPhaseWorkItemLiftCycle() throws Exception {
         LocalDate current = LocalDate.now();
         // from init -> done -> delete
-        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
         mockMvc.perform(get(workItemAHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())))
                 .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PERSON.name())));
@@ -487,7 +488,7 @@ public class WorkItemApiTests extends ApiTest {
                 .andExpect(status().isNotFound());
 
         // from init -> cancel -> delete
-        String workItemBHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
+        String workItemBHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
         testUtils.start(workItemBHref);
         testUtils.cancel(workItemBHref);
         mockMvc.perform(get(workItemBHref))
@@ -505,7 +506,7 @@ public class WorkItemApiTests extends ApiTest {
     public void noPhaseWorkItemUpdate() throws Exception {
         LocalDate current = LocalDate.now();
         // from init -> done -> delete
-        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
         mockMvc.perform(get(workItemAHref))
                 .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
 
@@ -535,7 +536,7 @@ public class WorkItemApiTests extends ApiTest {
     @Test
     public void deleteCascadeToNotes() throws Exception {
         LocalDate current = LocalDate.now();
-        String workItemAHref = testUtils.createRandomPhaseWorkItem(current, current.plusDays(10));
+        String workItemAHref = testUtils.createRandomWorkItem(current, current.plusDays(10));
         String noteARef = testUtils.taskRandomNote(workItemAHref);
         String noteBRef = testUtils.taskRandomNote(workItemAHref);
         testUtils.delete(workItemAHref);
@@ -543,4 +544,117 @@ public class WorkItemApiTests extends ApiTest {
         mockMvc.perform(get(noteBRef)).andExpect(status().isNotFound());
     }
 
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void testPropertiesChangedEvent() throws Exception {
+        String workItemHref = testUtils.createRandomWorkItem(null, null);
+        testUtils.verifyEvents(4,
+                Event.ITEM_ADDED,
+                Event.ITEM_OWNER_CHANGED,
+                Event.ITEM_ASSIGNEE_CHANGED,
+                Event.ITEM_READY_TRUE);
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.owner,
+                RandomStringUtils.randomAlphanumeric(10)));
+        testUtils.verifyEvents(1, Event.ITEM_OWNER_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.assignee,
+                RandomStringUtils.randomAlphanumeric(10)));
+        testUtils.verifyEvents(1, Event.ITEM_ASSIGNEE_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.name,
+                RandomStringUtils.randomAlphanumeric(10)));
+        testUtils.verifyEvents(1, Event.ITEM_PROPERTIES_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.plannedStartDate,
+                LocalDate.now()));
+        testUtils.verifyEvents(1, Event.ITEM_START_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.deadLine,
+                LocalDate.now()));
+        testUtils.verifyEvents(1, Event.ITEM_END_CHANGED);
+
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void testLifecycleEvent() throws Exception {
+        String workItemHref = testUtils.createRandomWorkItem(null, null);
+
+        testUtils.cleanAll("/events");
+        testUtils.start(workItemHref);
+        testUtils.verifyEvents(1, Event.ITEM_STARTED);
+
+        testUtils.cleanAll("/events");
+        testUtils.done(workItemHref);
+        testUtils.verifyEvents(1, Event.ITEM_DONE);
+
+        testUtils.cleanAll("/events");
+        testUtils.delete(workItemHref);
+        testUtils.verifyEvents(1, Event.ITEM_DELETED);
+
+        String workItemBHref = testUtils.createRandomWorkItem(null, null);
+
+        testUtils.cleanAll("/events");
+        testUtils.cancel(workItemBHref);
+        testUtils.verifyEvents(1, Event.ITEM_CANCELED);
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void testMoveProjectEvent() throws Exception {
+        String projectHref = testUtils.createRandomProject();
+        String itemHref = testUtils.createRandomWorkItem(null, null);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(itemHref, Collections.singletonMap(WorkItem.Fields.project, projectHref));
+        testUtils.verifyEvents(1, Event.ITEM_PROJECT_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.delete(itemHref + "/project");
+        testUtils.verifyEvents(1, Event.ITEM_PROJECT_CHANGED);
+    }
+
+    @Sql({"/cleanup.sql"})
+    @Test
+    public void testMovePhaseEvent() throws Exception {
+        LocalDate current = LocalDate.now();
+        String projectHref = testUtils.createRandomProject();
+        String phaseAHref = testUtils.appendRandomPhase(projectHref, current, current.plusDays(10));
+        String phaseBHref = testUtils.appendRandomPhase(projectHref, current.plusDays(20));
+        String itemHref = testUtils.createRandomWorkItem(null, null);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(itemHref, Collections.singletonMap(WorkItem.Fields.phase, phaseAHref));
+        testUtils.verifyEvents(4,
+                Event.ITEM_PHASE_CHANGED,
+                Event.ITEM_PROJECT_CHANGED,
+                Event.ITEM_START_CHANGED,
+                Event.ITEM_END_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(itemHref, Collections.singletonMap(WorkItem.Fields.phase, phaseBHref));
+        testUtils.verifyEvents(3,
+                Event.ITEM_PHASE_CHANGED,
+                Event.ITEM_START_CHANGED,
+                Event.ITEM_END_CHANGED);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate, current.plusDays(6)));
+        testUtils.verifyEvents(3,
+                Event.PHASE_END_CHANGED,
+                Event.PHASE_MOVED_LEFT,
+                Event.ITEM_MOVED_LEFT);
+
+        testUtils.cleanAll("/events");
+        testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate, current.plusDays(10)));
+        testUtils.verifyEvents(3,
+                Event.PHASE_END_CHANGED,
+                Event.PHASE_MOVED_RIGHT,
+                Event.ITEM_MOVED_RIGHT);
+    }
 }
