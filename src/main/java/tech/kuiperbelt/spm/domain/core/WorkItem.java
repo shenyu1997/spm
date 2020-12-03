@@ -136,17 +136,13 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
         }
     }
 
-    public boolean move(Period offset) {
-        boolean moved = false;
+    public void move(Period offset) {
         if(this.plannedStartDate!= null) {
             this.plannedStartDate = this.plannedStartDate.plus(offset);
-            moved = true;
         }
         if(this.deadLine != null) {
             this.deadLine = this.deadLine.plus(offset);
-            moved = true;
         }
-        return  moved;
     }
 
     public enum Priority {
