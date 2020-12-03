@@ -132,7 +132,7 @@ Content-Type: application/json
 
 ### Append Phase
 # @name appendPahseApi
-POST  {{projectHref}}/phases/actions/create
+POST  {{projectHref}}/phases
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
@@ -148,7 +148,7 @@ Content-Type: application/json
 
 ### Insert Phase (must have seq)
 # @name insertPhaseApi
-POST  {{projectHref}}/phases/actions/create
+POST  {{projectHref}}/phases
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 

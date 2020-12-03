@@ -56,7 +56,20 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/phases/actions/create")
+    @GetMapping("/{id}/phases")
+    public ResponseEntity<CollectionModel<PersistentEntityResource>> getPhases(@PathVariable("id") Long id,
+                                                                               PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
+        List<PersistentEntityResource> collection = projectService.getAllPhases(id)
+                .stream()
+                .map(persistentEntityResourceAssembler::toModel)
+                .collect(Collectors.toList());
+        CollectionModel<PersistentEntityResource> collectionModel = CollectionModel.of(collection);
+        collectionModel.add(linkTo(methodOn(ProjectController.class)
+                .getPhases(id, persistentEntityResourceAssembler)).withSelfRel());
+        return ResponseEntity.ok(collectionModel);
+    }
+
+    @PostMapping("/{id}/phases")
     public ResponseEntity<?> appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
         Phase createdPhase = projectService.createPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();

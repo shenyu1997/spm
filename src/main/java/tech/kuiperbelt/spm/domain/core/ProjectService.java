@@ -320,4 +320,8 @@ public class ProjectService {
     public List<Note> getNotes(Long id) {
         return noteService.findByParent(id);
     }
+
+    public List<Phase> getAllPhases(Long id) {
+        return projectRepository.getOne(id).getPhases();
+    }
 }

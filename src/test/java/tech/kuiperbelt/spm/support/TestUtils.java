@@ -75,7 +75,7 @@ public class TestUtils {
                 .seq(sequence)
                 .build();
 
-        return mockMvc.perform(post(newProjectHref + "/phases/actions/create")
+        return mockMvc.perform(post(newProjectHref + "/phases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(phase)))
                 .andExpect(status().isCreated())
@@ -119,7 +119,7 @@ public class TestUtils {
                 .plannedStartDate(plannedStartDate)
                 .build();
 
-        return mockMvc.perform(post(newProjectHref + "/phases/actions/create")
+        return mockMvc.perform(post(newProjectHref + "/phases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(phase)))
                 .andExpect(status().isCreated())

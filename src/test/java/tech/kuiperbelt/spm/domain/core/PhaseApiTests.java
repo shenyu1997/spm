@@ -358,7 +358,7 @@ public class PhaseApiTests extends ApiTest {
                 .seq(0)
                 .build();
 
-        mockMvc.perform(post(projectHref + "/phases/actions/create")
+        mockMvc.perform(post(projectHref + "/phases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(phase)))
                 .andExpect(status().isBadRequest());
