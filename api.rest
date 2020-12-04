@@ -5,7 +5,7 @@
 @host=localhost
 @port=8080
 @currentUser=yu.shen
-@password=!Qaz2wsx3edc
+@password=
 
 
 ####################################################################################
