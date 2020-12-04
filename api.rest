@@ -25,7 +25,7 @@ Authorization: Basic {{currentUser}} {{password}}
 ####################################################################################
 
 ### Import sample data
-POST http://{{host}}:{{port}}/sample-data/actions/import 
+POST http://{{host}}:{{port}}/sample-data:import 
 Authorization: Basic {{currentUser}} {{password}}
 
 
@@ -76,15 +76,15 @@ Authorization: Basic {{currentUser}} {{password}}
 }
 
 ### Start the  project
-POST {{projectHref}}/actions/start
+POST {{projectHref}}:start
 Authorization: Basic {{currentUser}} {{password}}
 
 ### Done a project
-POST {{projectHref}}/actions/done
+POST {{projectHref}}:done
 Authorization: Basic {{currentUser}} {{password}}
 
 ### Cancel a project
-POST {{projectHref}}/actions/cancel
+POST {{projectHref}}:cancel
 Authorization: Basic {{currentUser}} {{password}}
 
 ### Delete a project
@@ -176,7 +176,7 @@ Content-Type: application/json
 }
 
 ### Done Phase (last , start date)
-POST {{phaseHref}}/actions/done
+POST {{phaseHref}}:done
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
@@ -218,17 +218,17 @@ Content-Type: application/json
 
 ### Start workItem
 @currentItem=4804930263034737536
-POST {{workItemHref}}/actions/start
+POST {{workItemHref}}:start
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
 ### Done workItem
-POST {{workItemHref}}/actions/done
+POST {{workItemHref}}:done
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
 ### Cancel workItem
-POST {{workItemHref}}/actions/cancel
+POST {{workItemHref}}:cancel
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 

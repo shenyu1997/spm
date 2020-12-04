@@ -129,17 +129,17 @@ public class TestUtils {
     }
 
     public void start(String href) throws Exception {
-        mockMvc.perform(post(href + "/actions/start"))
+        mockMvc.perform(post(href + ":start"))
                 .andExpect(status().isNoContent());
     }
 
     public void cancel(String href) throws Exception {
-        mockMvc.perform(post(href + "/actions/cancel"))
+        mockMvc.perform(post(href + ":cancel"))
                 .andExpect(status().isNoContent());
     }
 
     public void done(String href) throws Exception {
-        mockMvc.perform(post(href + "/actions/done"))
+        mockMvc.perform(post(href + ":done"))
                 .andExpect(status().isNoContent());
     }
 

@@ -37,19 +37,19 @@ public class ProjectController extends SpmRepositoryControllerSupport {
     @Autowired
     private RepositoryEntityLinks entityLinks;
 
-    @PostMapping("/{id}/actions/cancel")
+    @PostMapping("/{id}:cancel")
     public ResponseEntity<?> cancel(@PathVariable("id") long id) {
         projectService.cancelProject(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/actions/start")
+    @PostMapping("/{id}:start")
     public ResponseEntity<?> start(@PathVariable("id") long id) {
         projectService.startProject(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/actions/done")
+    @PostMapping("/{id}:done")
     public ResponseEntity<?> done(@PathVariable("id") long id) {
         projectService.doneProject(id);
         return ResponseEntity.noContent().build();

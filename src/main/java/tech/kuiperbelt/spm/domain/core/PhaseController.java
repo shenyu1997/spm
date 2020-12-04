@@ -34,7 +34,7 @@ public class PhaseController extends SpmRepositoryControllerSupport {
     @Autowired
     private PhaseService phaseService;
 
-    @PostMapping("/{id}/actions/done")
+    @PostMapping("/{id}:done")
     public ResponseEntity<?> donePhase(@PathVariable("id") long id) {
         phaseService.donePhase(id);
         return ResponseEntity.noContent().build();

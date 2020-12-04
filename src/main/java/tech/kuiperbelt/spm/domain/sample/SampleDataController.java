@@ -8,14 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Setter
 @RestController
-@RequestMapping("/sample-data")
 public class SampleDataController {
 
     @Autowired
     private SampleDataService sampleDataService;
 
 
-    @PostMapping("/actions/import")
+    @PostMapping("/sample-data:import")
     public void importSampleData() {
         sampleDataService.importSampleData();
     }

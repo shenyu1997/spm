@@ -35,19 +35,19 @@ public class WorkItemController extends SpmRepositoryControllerSupport {
     @Autowired
     private WorkItemService workItemService;
 
-    @PostMapping("/{id}/actions/start")
+    @PostMapping("/{id}:start")
     public ResponseEntity<?> startWorkItem(@PathVariable("id") long id) {
         workItemService.startWorkItem(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/actions/done")
+    @PostMapping("/{id}:done")
     public ResponseEntity<?> donePhase(@PathVariable("id") long id) {
         workItemService.doneWorkItem(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/actions/cancel")
+    @PostMapping("/{id}:cancel")
     public ResponseEntity<?> cancelWorkItem(@PathVariable("id") long id) {
         workItemService.cancelWorkItem(id);
         return ResponseEntity.noContent().build();
