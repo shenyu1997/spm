@@ -12,6 +12,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.domain.core.support.SpmRepositoryControllerSupport;
 
 import javax.annotation.Nonnull;
@@ -34,9 +35,19 @@ public class PhaseController extends SpmRepositoryControllerSupport {
     @Autowired
     private PhaseService phaseService;
 
-    @PostMapping("/{id}:done")
-    public ResponseEntity<?> donePhase(@PathVariable("id") long id) {
-        phaseService.donePhase(id);
+    @PostMapping("/{id}:{action}")
+    public ResponseEntity<?> doAction(@PathVariable("id") long id,
+                                      @PathVariable("action")ExecutableEntity.Action action) {
+        switch (action) {
+            case done:
+                phaseService.donePhase(id);
+                break;
+            case delete:
+                phaseService.deletePhase(id);
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
         return ResponseEntity.noContent().build();
     }
     @GetMapping("/{id}/work-items")

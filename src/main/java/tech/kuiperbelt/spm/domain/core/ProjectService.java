@@ -223,15 +223,13 @@ public class ProjectService {
     public Phase createPhase(long id, Phase phase) {
         Project project = projectRepository.getOne(id);
         phase.setProject(project);
-        Phase createdPhase = phaseService.createPhase(phase);
-        return createdPhase;
+        return phaseService.createPhase(phase);
     }
 
     public WorkItem createDirectWorkItem(Long id, WorkItem workItem) {
         Project project = projectRepository.getOne(id);
         workItem.setProject(project);
-        WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
-        return createdWorkItem;
+        return workItemService.createWorkItemInContext(workItem);
     }
 
     public List<WorkItem> getDirectWorkItems(Long id) {
@@ -243,6 +241,7 @@ public class ProjectService {
     @EventListener(condition = "#root.args[0].key == '" + ITEM_PROJECT_CHANGED + "'")
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
+            @SuppressWarnings("unchecked")
             PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
             // We only need check old phase's allItemsStop because new phase has already done
             propertyChanged.getOldValue().ifPresent(oldId ->
@@ -326,5 +325,12 @@ public class ProjectService {
 
     public List<Phase> getAllPhases(Long id) {
         return projectRepository.getOne(id).getPhases();
+    }
+
+    public void deleteProject(long id) {
+        Project project = projectRepository.getOne(id);
+        preHandleProjectDelete(project);
+        projectRepository.delete(project);
+        postHandleProjectDelete(project);
     }
 }

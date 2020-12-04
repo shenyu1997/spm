@@ -11,8 +11,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNullApi;
 import org.springframework.web.bind.annotation.*;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.domain.core.support.SpmRepositoryControllerSupport;
 
 import javax.annotation.Nonnull;
@@ -20,7 +20,6 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Optional;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Setter
@@ -35,21 +34,26 @@ public class WorkItemController extends SpmRepositoryControllerSupport {
     @Autowired
     private WorkItemService workItemService;
 
-    @PostMapping("/{id}:start")
-    public ResponseEntity<?> startWorkItem(@PathVariable("id") long id) {
-        workItemService.startWorkItem(id);
-        return ResponseEntity.noContent().build();
-    }
+    @PostMapping("/{id}:{action}")
+    public ResponseEntity<?> cancel(@PathVariable("id") long id,
+                                    @PathVariable("action") ExecutableEntity.Action action) {
+        switch (action) {
+            case start:
+                workItemService.startWorkItem(id);
+                break;
+            case cancel:
+                workItemService.cancelWorkItem(id);
+                break;
+            case done:
+                workItemService.doneWorkItem(id);
+                break;
+            case delete:
+                workItemService.deleteWorkItem(id);
+                break;
+            default:
+                throw new UnsupportedOperationException();
 
-    @PostMapping("/{id}:done")
-    public ResponseEntity<?> donePhase(@PathVariable("id") long id) {
-        workItemService.doneWorkItem(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{id}:cancel")
-    public ResponseEntity<?> cancelWorkItem(@PathVariable("id") long id) {
-        workItemService.cancelWorkItem(id);
+        }
         return ResponseEntity.noContent().build();
     }
 

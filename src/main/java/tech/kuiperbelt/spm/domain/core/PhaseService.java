@@ -93,6 +93,14 @@ public class PhaseService {
         postHandlePhaseDelete(phase);
     }
 
+    /**
+     * It will be trigger by project delete so just delete workItems cascade
+     */
+    public void deletePhase(Long phaseId) {
+        Phase phase = phaseRepository.getOne(phaseId);
+        deletePhase(phase);
+    }
+
     @HandleBeforeDelete
     public void preHandlePhaseDelete(Phase phase) {
         // then remove

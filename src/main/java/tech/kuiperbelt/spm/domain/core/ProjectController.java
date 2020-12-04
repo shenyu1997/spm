@@ -12,6 +12,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.domain.core.support.SpmRepositoryControllerSupport;
 
 import javax.annotation.Nonnull;
@@ -19,7 +20,6 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.Optional;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Setter
@@ -37,21 +37,26 @@ public class ProjectController extends SpmRepositoryControllerSupport {
     @Autowired
     private RepositoryEntityLinks entityLinks;
 
-    @PostMapping("/{id}:cancel")
-    public ResponseEntity<?> cancel(@PathVariable("id") long id) {
-        projectService.cancelProject(id);
-        return ResponseEntity.noContent().build();
-    }
+    @PostMapping("/{id}:{action}")
+    public ResponseEntity<?> cancel(@PathVariable("id") long id,
+                                    @PathVariable("action") ExecutableEntity.Action action) {
+        switch (action) {
+            case start:
+                projectService.startProject(id);
+                break;
+            case cancel:
+                projectService.cancelProject(id);
+                break;
+            case done:
+                projectService.doneProject(id);
+                break;
+            case delete:
+                projectService.deleteProject(id);
+                break;
+            default:
+                throw new UnsupportedOperationException();
 
-    @PostMapping("/{id}:start")
-    public ResponseEntity<?> start(@PathVariable("id") long id) {
-        projectService.startProject(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{id}:done")
-    public ResponseEntity<?> done(@PathVariable("id") long id) {
-        projectService.doneProject(id);
+        }
         return ResponseEntity.noContent().build();
     }
 

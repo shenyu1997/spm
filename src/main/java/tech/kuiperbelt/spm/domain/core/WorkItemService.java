@@ -41,11 +41,7 @@ public class WorkItemService {
     @Autowired
     private NoteService noteService;
 
-    /**
-     * Context means workItem belong to Project or Phase
-     * @param workItem
-     * @return
-     */
+
     public WorkItem createWorkItemInContext(WorkItem workItem) {
         preHandleCreate(workItem);
         WorkItem savedWorkItem = workItemRepository.save(workItem);
@@ -230,6 +226,10 @@ public class WorkItemService {
     public void deleteWorkItems(Phase phase) {
         List<WorkItem> workItems = new ArrayList<>(phase.getWorkItems());
         workItems.forEach(this::deleteWorkItem);
+    }
+
+    public void deleteWorkItem(Long id) {
+        deleteWorkItem(workItemRepository.getOne(id));
     }
 
     public void deleteWorkItem(WorkItem workItem) {
