@@ -13,11 +13,11 @@ import tech.kuiperbelt.spm.domain.core.event.PropertiesChanged;
 import tech.kuiperbelt.spm.domain.core.event.PropertyChanged;
 import tech.kuiperbelt.spm.domain.core.support.AuditService;
 import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +67,7 @@ public class WorkItemService {
 
         // Determine the scope
         workItem.determineScope();
+        workItem.initStatus();
     }
 
 
@@ -99,6 +100,10 @@ public class WorkItemService {
     @HandleBeforeSave
     public void preHandleSave(WorkItem workItem) {
         Assert.isTrue(workItem.getStatus() != RunningStatus.STOP, "STOP work item can not be updated");
+
+        auditService.getPreviousVersion(workItem).ifPresent(previous ->
+                Assert.isTrue(!PropertyChanged.isChange(previous, workItem, ExecutableEntity.Fields.status),
+                "Status can not be change."));
         // Determine the scope
         workItem.determineScope();
     }

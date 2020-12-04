@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import tech.kuiperbelt.spm.domain.core.support.AuditService;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.domain.core.support.UserContext;
 import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 import tech.kuiperbelt.spm.domain.core.event.Event;
@@ -71,8 +72,7 @@ public class ProjectService {
             project.setManager(currentUserName);
         }
 
-        // set status
-        project.setStatus(RunningStatus.INIT);
+        project.initStatus();
     }
 
     @HandleAfterCreate
@@ -105,6 +105,10 @@ public class ProjectService {
     @HandleBeforeSave
     public void preHandleProjectSave(Project current) {
         Assert.isTrue(RunningStatus.STOP != current.getStatus(),"Project can not be modify after STOP");
+
+        auditService.getPreviousVersion(current).ifPresent(previous ->
+                Assert.isTrue(!PropertyChanged.isChange(previous, current, ExecutableEntity.Fields.status),
+                        "Status can not be change."));
     }
 
     @HandleAfterSave

@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
@@ -55,12 +56,9 @@ class ProjectApiTests extends ApiTest {
 				.andExpect(jsonPath("$.name", equalTo(newProject.getName())))
 				.andExpect(jsonPath("$.owner", equalTo(MOCK_UERR)))
 				.andExpect(jsonPath("$.manager", equalTo(MOCK_UERR)))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(false)))
 				.andExpect(jsonPath("$._links['self'].href", equalTo(newProjectHref)));
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.INIT,
+				ExecutableEntity.Action.start, ExecutableEntity.Action.delete, ExecutableEntity.Action.cancel);
 	}
 
 	@Sql({"/cleanup.sql"})
@@ -146,12 +144,13 @@ class ProjectApiTests extends ApiTest {
 		String newProjectHref = testUtils.createRandomProject();
 		testUtils.start(newProjectHref);
 
-		mockMvc.perform(get(newProjectHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(true)));
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.RUNNING,
+				ExecutableEntity.Action.cancel,
+				ExecutableEntity.Action.done);
+		testUtils.verifyStatusWithoutActions(newProjectHref, RunningStatus.RUNNING,
+				ExecutableEntity.Action.start,
+				ExecutableEntity.Action.delete);
+
 	}
 
 	@Sql({"/cleanup.sql"})
@@ -164,18 +163,17 @@ class ProjectApiTests extends ApiTest {
 		String secondPhaseHref = testUtils.appendRandomPhase(newProjectHref, LocalDate.now().plusDays(20));
 
 		testUtils.start(newProjectHref);
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.RUNNING,
+				ExecutableEntity.Action.cancel);
+		testUtils.verifyStatusWithoutActions(newProjectHref, RunningStatus.RUNNING,
+				ExecutableEntity.Action.start,
+				ExecutableEntity.Action.delete,
+				ExecutableEntity.Action.done);
 
-		mockMvc.perform(get(newProjectHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(true)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because there are Non STOP phase
+		testUtils.verifyStatus(fistPhaseHref, RunningStatus.RUNNING);
 
-		mockMvc.perform(get(fistPhaseHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
-		mockMvc.perform(get(secondPhaseHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
+		testUtils.verifyStatus(secondPhaseHref, RunningStatus.INIT);
+
 	}
 
 	@Sql({"/cleanup.sql"})
@@ -185,12 +183,13 @@ class ProjectApiTests extends ApiTest {
 		testUtils.start(newProjectHref);
 		testUtils.done(newProjectHref);
 
-		mockMvc.perform(get(newProjectHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+//		mockMvc.perform(get(newProjectHref))
+//				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+//				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
+//				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
+//				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
+//				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
 
 		testUtils.delete(newProjectHref);
 
@@ -213,12 +212,11 @@ class ProjectApiTests extends ApiTest {
 
 		testUtils.done(newProjectHref);
 
-		mockMvc.perform(get(newProjectHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+		testUtils.verifyStatusWithoutActions(newProjectHref, RunningStatus.STOP,
+				ExecutableEntity.Action.start,
+				ExecutableEntity.Action.cancel,
+				ExecutableEntity.Action.done);
 
 		testUtils.delete(newProjectHref);
 
@@ -236,12 +234,7 @@ class ProjectApiTests extends ApiTest {
 		testUtils.start(newProjectHref);
 		testUtils.cancel(newProjectHref);
 
-		mockMvc.perform(get(newProjectHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
 
 		testUtils.delete(newProjectHref);
 
@@ -262,18 +255,11 @@ class ProjectApiTests extends ApiTest {
 
 		testUtils.cancel(newProjectHref);
 
-		mockMvc.perform(get(newProjectHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-				.andExpect(jsonPath("$.cancelled", equalTo(true)))
-				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
-				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
-				.andExpect(jsonPath("$.canBeDone", equalTo(false)));  //because it has been done
+		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+		testUtils.verifyIsCanceled(newProjectHref);
 
-		mockMvc.perform(get(newPhaseHref))
-				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-				.andExpect(jsonPath("$.cancelled", equalTo(true)));
-
+		testUtils.verifyStatusWithActions(newPhaseHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+		testUtils.verifyIsCanceled(newPhaseHref);
 
 		testUtils.delete(newProjectHref);
 

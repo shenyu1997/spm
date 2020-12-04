@@ -1,17 +1,19 @@
 package tech.kuiperbelt.spm.domain.core;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -70,43 +72,34 @@ public class PhaseApiTests extends ApiTest {
         testUtils.start(projectHref);
 
         // Verify project and phase status
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING, ExecutableEntity.Action.done);
 
-        mockMvc.perform(get(firstPhasesHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
+        testUtils.verifyStatus(firstPhasesHref, RunningStatus.RUNNING);
 
-        mockMvc.perform(get(secondPhaseHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.INIT.name())));
+        testUtils.verifyStatus(secondPhaseHref, RunningStatus.INIT);
 
         // 2. Done first phase
         testUtils.done(firstPhasesHref);
 
         // Verify project and phase status
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING, ExecutableEntity.Action.done);
 
-        mockMvc.perform(get(firstPhasesHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
+        testUtils.verifyStatus(firstPhasesHref, RunningStatus.STOP);
 
-        mockMvc.perform(get(secondPhaseHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())));
+        testUtils.verifyStatus(secondPhaseHref, RunningStatus.RUNNING);
 
         // 3. Done second phase
         testUtils.done(secondPhaseHref);
 
         // Verify project and phase status
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING, ExecutableEntity.Action.done);
 
-        mockMvc.perform(get(secondPhaseHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
+        testUtils.verifyStatus(secondPhaseHref, RunningStatus.STOP);
 
         // 4. Done project
         testUtils.done(projectHref);
 
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())));
+        testUtils.verifyStatus(projectHref, RunningStatus.STOP);
 
     }
 
@@ -131,9 +124,8 @@ public class PhaseApiTests extends ApiTest {
         // done the phase
         testUtils.done(firstPhasesHref);
 
-        Phase phase = new Phase().toBuilder()
-                .name(RandomStringUtils.randomAlphanumeric(10))
-                .build();
+        Map<String, String> phase = new HashMap();
+        phase.put(Phase.Fields.name, RandomStringUtils.randomAlphanumeric(10));
         mockMvc.perform(patch(firstPhasesHref)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(phase)))
@@ -751,9 +743,7 @@ public class PhaseApiTests extends ApiTest {
         testUtils.start(projectHref);
 
         // Verify status and isCanBeDone of phase
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(phaseAHref, RunningStatus.RUNNING, ExecutableEntity.Action.done);
 
         // start and done/cancel all of workItems
         testUtils.start(workItemAHref);
@@ -765,17 +755,14 @@ public class PhaseApiTests extends ApiTest {
         testUtils.done(workItemCHref);
 
         // Verify the phase can be done
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING, ExecutableEntity.Action.done);
 
         // Done the phase
         testUtils.done(phaseAHref);
 
         // Verify the phase status and can not be done again
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(phaseAHref, RunningStatus.STOP, ExecutableEntity.Action.done);
+
 
     }
     @Sql({"/cleanup.sql"})
@@ -790,10 +777,10 @@ public class PhaseApiTests extends ApiTest {
         String workItemCHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay.plusDays(4), null);
         testUtils.start(projectHref);
 
+
+
         // Verify status and isCanBeDone of phase
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatus(phaseAHref, RunningStatus.RUNNING);
 
         // start some of workItems
         testUtils.start(workItemAHref);
@@ -805,29 +792,24 @@ public class PhaseApiTests extends ApiTest {
         testUtils.cancel(projectHref);
 
         // Verify project stats
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+
 
         // verify phase
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+        testUtils.verifyIsCanceled(phaseAHref);
 
         // verify workItems
-        mockMvc.perform(get(workItemAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-                .andExpect(jsonPath("$.cancelled", equalTo(false)));
+        testUtils.verifyStatusWithActions(workItemAHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+
 
         // verify workItems
-        mockMvc.perform(get(workItemBHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+        testUtils.verifyStatusWithActions(workItemBHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+        testUtils.verifyIsCanceled(workItemBHref);
 
         // verify workItems
-        mockMvc.perform(get(workItemCHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-                .andExpect(jsonPath("$.cancelled", equalTo(true)));
+        testUtils.verifyStatusWithActions(workItemCHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
+        testUtils.verifyIsCanceled(workItemCHref);
 
         // Delete project
         testUtils.delete(projectHref);

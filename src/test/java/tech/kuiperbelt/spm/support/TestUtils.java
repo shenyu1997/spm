@@ -5,19 +5,20 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.AllArgsConstructor;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.hamcrest.core.IsIterableContaining;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import tech.kuiperbelt.spm.domain.core.Note;
-import tech.kuiperbelt.spm.domain.core.Phase;
-import tech.kuiperbelt.spm.domain.core.Project;
-import tech.kuiperbelt.spm.domain.core.WorkItem;
+import tech.kuiperbelt.spm.domain.core.*;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -57,6 +58,12 @@ public class TestUtils {
                 .build();
         Map<String, String> phaseStrMap = BeanUtils.describe(phase);
         phaseStrMap.put(Phase.Fields.project, newProjectHref);
+        phaseStrMap = filterByFields(phaseStrMap,
+                Phase.Fields.name,
+                Phase.Fields.plannedStartDate,
+                Phase.Fields.plannedEndDate,
+                Phase.Fields.seq,
+                Phase.Fields.project);
 
         return mockMvc.perform(post("/phases")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -97,6 +104,12 @@ public class TestUtils {
                 .plannedStartDate(plannedStartDate)
                 .build());
         phase.put(Phase.Fields.project, newProjectHref);
+        phase = filterByFields(phase,
+                Phase.Fields.name,
+                Phase.Fields.plannedStartDate,
+                Phase.Fields.plannedEndDate,
+                Phase.Fields.project);
+
         return mockMvc.perform(post("/phases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(phase)))
@@ -104,6 +117,17 @@ public class TestUtils {
                 .andReturn()
                 .getResponse()
                 .getHeader(LOCATION);
+    }
+
+    private Map<String, String> filterByFields(Map<String, String> original, String... fields) {
+        HashSet<String> filedSet = new HashSet<>(Arrays.asList(fields));
+        Map<String, String> result = new HashMap<>();
+        for(String name: original.keySet()) {
+            if(filedSet.contains(name)) {
+                result.put(name, original.get(name));
+            }
+        }
+        return result;
     }
 
     public String appendRandomPhaseFromProject(String newProjectHref,	 LocalDate plannedEndDate) throws Exception {
@@ -239,5 +263,37 @@ public class TestUtils {
         mockMvc.perform(get(eventsHref))
                 .andExpect(jsonPath("$._embedded.events..key", hasItems(events)))
                 .andExpect(jsonPath("$._embedded.events.length()", equalTo(eventTotalCount)));
+    }
+
+    public void verifyStatusWithActions(String href, RunningStatus status, ExecutableEntity.Action ... actions) throws Exception {
+        Object[] actionNames = Stream.of(actions)
+                .map(Enum::name)
+                .collect(Collectors.toList())
+                .toArray();
+        mockMvc.perform(get(href))
+                .andExpect(jsonPath("$.status", equalTo(status.name())))
+                .andExpect(jsonPath("$.actions", IsIterableContaining.hasItems(actionNames)));
+    }
+
+    public void verifyStatus(String href, RunningStatus status) throws Exception {
+        mockMvc.perform(get(href))
+                .andExpect(jsonPath("$.status", equalTo(status.name())));
+    }
+
+
+    public void verifyStatusWithoutActions(String href, RunningStatus status, ExecutableEntity.Action ... actions) throws Exception {
+        Object[] actionNames = Stream.of(actions)
+                .map(Enum::name)
+                .collect(Collectors.toList())
+                .toArray();
+        mockMvc.perform(get(href))
+                .andExpect(jsonPath("$.status", equalTo(status.name())))
+                .andExpect(jsonPath("$.actions", not(hasItems(actionNames))));
+    }
+
+    public void verifyIsCanceled(String href) throws Exception {
+        mockMvc.perform(get(href))
+                .andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
+                .andExpect(jsonPath("$.cancelled", equalTo(true)));
     }
 }

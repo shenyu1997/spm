@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.domain.core.support.*;
@@ -15,9 +14,10 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
-@FieldNameConstants
+@FieldNameConstants()
 @Audited
 @EntityListeners(AuditListener.class)
 @Getter
@@ -28,7 +28,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "phases", uniqueConstraints={@UniqueConstraint(columnNames={"id","seq"})})
-public class Phase extends BaseEntity implements AuditableEntity, ExecutableEntity {
+public class Phase extends ExecutableEntity implements AuditableEntity {
     @ToString.Include
     @NotNull
     private String name;
@@ -57,11 +57,6 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
     @Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
 
-    @Builder.Default
-    @JsonIgnore
-    @Embedded
-    @Delegate(excludes = PhaseExecutableExclude.class)
-    private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     public Period getPeriod() {
         if(getPlannedStartDate() != null && getPlannedEndDate() != null) {
@@ -94,21 +89,24 @@ public class Phase extends BaseEntity implements AuditableEntity, ExecutableEnti
 
     @Override
     public boolean isCanBeDone() {
-        return isAllItemStop() && executableDelegate.isCanBeDone();
+        return isAllItemStop() && super.isCanBeDone();
     }
 
     @Override
     public void done() {
-        Assert.isTrue(isAllItemStop(), "all workItems stop");
-        executableDelegate.done();
-    }
-
-    private interface PhaseExecutableExclude {
-        void isCanBeDone();
-        void done();
+        Assert.isTrue(isCanBeDone(), "all workItems stop");
+        super.done();
     }
 
     public boolean isOverflowBy(LocalDate timeFrame) {
         return timeFrame != null && timeFrame.isAfter(this.getPlannedEndDate());
+    }
+
+    @Override
+    public EnumSet<Action> getActions() {
+        EnumSet<Action> actions = super.getActions();
+        actions.remove(Action.start);
+        actions.remove(Action.cancel);
+        return actions;
     }
 }

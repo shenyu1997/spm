@@ -2,10 +2,8 @@ package tech.kuiperbelt.spm.domain.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.domain.core.support.*;
 
@@ -13,7 +11,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.List;
 import java.util.Objects;
 
 @FieldNameConstants
@@ -27,7 +24,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "work_items")
-public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableEntity {
+public class WorkItem extends ExecutableEntity implements AuditableEntity {
 
     @ToString.Include
     @NotNull
@@ -67,12 +64,6 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
     @Embedded
     @lombok.experimental.Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
-
-    @Builder.Default
-    @JsonIgnore
-    @Embedded
-    @Delegate
-    private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     void determineScope() {
         if(getPhase() != null) {

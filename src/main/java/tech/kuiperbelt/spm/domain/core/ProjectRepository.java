@@ -16,6 +16,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     @Query("select distinct p from Project p left join p.members pms " +
             "where (p.owner=:me or p.manager=:me or :me in pms) " +
-            "and p.executableDelegate.status in (:status) ")
+            "and p.status in (:status) ")
     Page<Project> findMyProjects(@Param("me") String me, @Param("status") EnumSet<RunningStatus> status, Pageable pageable);
 }

@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import tech.kuiperbelt.spm.domain.core.event.Event;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
@@ -107,97 +108,96 @@ public class WorkItemApiTests extends ApiTest {
         testUtils.start(projectHref);
 
         // Verify project can be done
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Prepared phase A
         String phaseAHref = testUtils.appendRandomPhase(projectHref, currentDay, currentDay.plusDays(10));
 
         // Verify project can be done, because of has a un-finished phase
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Verify phase can be done, because of no item in it.
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // add workItem
         String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         // Verify phase can be done, because of has an item in it.
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Done workItem
         testUtils.start(workItemAHref);
         testUtils.done(workItemAHref);
 
         // Verify phase canBeDone
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // add workItem
         String workItemBHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         // Verify phase can be done, because of has an item in it again.
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Cancel workItem
         testUtils.cancel(workItemBHref);
 
         // Verify phase canBeDone, true again
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Done phase
         testUtils.done(phaseAHref);
 
         // Verify project can be done
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Add project's workItem
         String workItemCHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
 
         // Verify project can be done, false, because has an direct item
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Done workItem
         testUtils.start(workItemCHref);
         testUtils.done(workItemCHref);
 
         // Verify project can be done, false, because has no un-finished direct item
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // add workItem again
         String workItemDHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
 
         // Verify project can be done, false, because has an direct item
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         testUtils.cancel(workItemDHref);
         // Verify project can be done, true, because has no un-finished direct item
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // add workItem again
         String workItemEHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(5));
 
         // Verify project can be done, false, because has an direct item
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Delete workItem
         testUtils.delete(workItemEHref);
 
         // Verify project can be done, true, because has no un-finished direct item
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
-
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
     }
 
     @Sql({"/cleanup.sql"})
@@ -208,8 +208,8 @@ public class WorkItemApiTests extends ApiTest {
         testUtils.start(projectHref);
 
         // Verify project's canBeDone, suppose to be true
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Add workItem in it
         String workItemHref = testUtils.createRandomProjectWorkItem(projectHref, currentDay, currentDay.plusDays(10));
@@ -219,8 +219,8 @@ public class WorkItemApiTests extends ApiTest {
                 .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PROJECT.name())));
 
         // verify project's canBeDone, suppose to be false, because there is an direct workItem in it.
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // Move workItem out of project
         mockMvc.perform(delete(workItemHref + "/project"))
@@ -233,8 +233,8 @@ public class WorkItemApiTests extends ApiTest {
         super.yield();
 
         // Verify project's canBeDone, suppose to be true again, because not direct item in it again
-        mockMvc.perform(get(projectHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
     }
 
@@ -322,10 +322,8 @@ public class WorkItemApiTests extends ApiTest {
         testUtils.start(projectHref);
 
         // Verify phase status and can be done
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.status", equalTo(RunningStatus.RUNNING.name())))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
-
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
     }
 
     @Sql({"/cleanup.sql"})
@@ -417,12 +415,14 @@ public class WorkItemApiTests extends ApiTest {
         String workItemAHref = testUtils.createRandomPhaseWorkItem(phaseAHref, currentDay, currentDay.plusDays(5));
 
         testUtils.start(projectHref);
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+
+        testUtils.verifyStatusWithoutActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         testUtils.delete(workItemAHref);
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
+
     }
 
     @Sql({"/cleanup.sql"})
@@ -444,15 +444,15 @@ public class WorkItemApiTests extends ApiTest {
 
         // start project and start phase A
         testUtils.start(projectHref);
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(true)));
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         // verify canBeDone after move both fromPhase and toPhase
         Map<String, String> patchedWorkItem = Collections.singletonMap("phase", phaseAHref);
         testUtils.patchUpdate(workItemBHref, patchedWorkItem);
 
-        mockMvc.perform(get(phaseAHref))
-                .andExpect(jsonPath("$.canBeDone", equalTo(false)));
+        testUtils.verifyStatusWithoutActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
 
         mockMvc.perform(get(phaseAHref + "/work-items"))
                 .andExpect(jsonPath("$._embedded..self.href", hasItems(workItemBHref)));

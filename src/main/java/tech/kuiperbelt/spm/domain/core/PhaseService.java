@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.domain.core.support.AuditService;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
@@ -56,6 +57,7 @@ public class PhaseService {
         } else {
             insertPhase(project, phase);
         }
+        phase.initStatus();
         project.setAllPhasesStop(false);
 
     }
@@ -136,7 +138,6 @@ public class PhaseService {
                 "Only can insert before an INIT phase"));
 
         phase.setProject(project);
-        phase.setStatus(RunningStatus.INIT);
 
         if(phase.getSeq() != FIRST) {
             phase.setPlannedStartDate(allPhases.get(phase.getSeq() - 1)
@@ -159,6 +160,10 @@ public class PhaseService {
         Assert.isTrue(phase.getStatus() != RunningStatus.STOP, "Stopped phase can not be update");
         Phase previousVersion = auditService.getPreviousVersion(phase)
                 .orElseThrow(() -> new IllegalStateException("Previous version of phase does not exist."));
+
+        Assert.isTrue(!PropertyChanged.isChange(previousVersion, phase, ExecutableEntity.Fields.status),
+                "Status can not be change.");
+
         Assert.isTrue(!PropertyChanged.isChange(previousVersion, phase, Phase.Fields.seq),
                 "Seq can not be change.");
 

@@ -5,11 +5,13 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldNameConstants;
 import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import tech.kuiperbelt.spm.domain.core.support.*;
+import tech.kuiperbelt.spm.domain.core.support.AuditDelegate;
+import tech.kuiperbelt.spm.domain.core.support.AuditListener;
+import tech.kuiperbelt.spm.domain.core.support.AuditableEntity;
+import tech.kuiperbelt.spm.domain.core.support.ExecutableEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -27,7 +29,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "projects")
-public class Project extends BaseEntity implements AuditableEntity, ExecutableEntity {
+public class Project extends ExecutableEntity implements AuditableEntity {
 
     @ToString.Include
     @NotNull
@@ -62,11 +64,6 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     @Delegate
     private AuditDelegate auditDelegate = new AuditDelegate();
 
-    @Builder.Default
-    @JsonIgnore
-    @Embedded
-    @Delegate(excludes = ProjectExecutableExclude.class)
-    private ExecutableDelegate executableDelegate = new ExecutableDelegate();
 
     public Set<String> getParticipants() {
         Set<String> result = new HashSet<>();
@@ -124,17 +121,12 @@ public class Project extends BaseEntity implements AuditableEntity, ExecutableEn
     public boolean isCanBeDone() {
         return isAllPhasesStop() &&
                 isAllDirItemsStop() &&
-                executableDelegate.isCanBeDone();
+                super.isCanBeDone();
     }
 
     @Override
     public void done() {
         Assert.isTrue(isCanBeDone(), "all phases and all item should be stop");
-        executableDelegate.done();
-    }
-
-    private interface ProjectExecutableExclude {
-        void isCanBeDone();
-        void done();
+        super.done();
     }
 }
