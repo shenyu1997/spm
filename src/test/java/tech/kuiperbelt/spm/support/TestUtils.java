@@ -154,7 +154,7 @@ public class TestUtils {
                 .plannedStartDate(plannedStartDate)
                 .deadLine(deadLine)
                 .build();
-        return mockMvc.perform(post(phaseHref + "/work-items/actions/create")
+        return mockMvc.perform(post(phaseHref + "/work-items")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
                 .andExpect(status().isCreated())
@@ -169,7 +169,7 @@ public class TestUtils {
                 .plannedStartDate(plannedStartDate)
                 .deadLine(deadLine)
                 .build();
-        return mockMvc.perform(post(phaseHref + "/direct-work-items/actions/create")
+        return mockMvc.perform(post(phaseHref + "/direct-work-items")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
                 .andExpect(status().isCreated())
@@ -199,7 +199,7 @@ public class TestUtils {
         Note note = new Note().toBuilder()
                 .content(RandomStringUtils.randomAlphanumeric(20))
                 .build();
-        return mockMvc.perform(post(workItemHref + "/notes/actions/take-note")
+        return mockMvc.perform(post(workItemHref + "/notes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(note)))
                 .andExpect(status().isCreated())

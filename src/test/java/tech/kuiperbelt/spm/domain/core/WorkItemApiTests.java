@@ -363,7 +363,7 @@ public class WorkItemApiTests extends ApiTest {
         WorkItem workItem = new WorkItem().toBuilder()
                 .name(RandomStringUtils.randomAlphanumeric(10))
                 .build();
-        mockMvc.perform(post(phaseAHref + "/work-items/actions/create")
+        mockMvc.perform(post(phaseAHref + "/work-items")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(workItem)))
                 .andExpect(status().isBadRequest());

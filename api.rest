@@ -5,7 +5,7 @@
 @host=localhost
 @port=8080
 @currentUser=yu.shen
-@password=
+@password=!Qaz2wsx3edc
 
 
 ####################################################################################
@@ -200,7 +200,7 @@ Content-Type: application/json
 
 ### Add workItem
 # @name createPhaseWorkItemApi
-POST {{phaseHref}}/work-items/actions/create
+POST {{phaseHref}}/work-items
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
@@ -311,7 +311,7 @@ Content-Type: application/json
 
 ### Take a note for workItem
 # @name takeNoteApi
-POST {{workItemHref}}/notes/actions/take-note
+POST {{workItemHref}}/notes
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
@@ -328,7 +328,7 @@ Content-Type: application/json
 
 ### Take a note for phase
 # @name takeNoteApi
-POST {{phaseHref}}/notes/actions/take-note
+POST {{phaseHref}}/notes
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
@@ -340,7 +340,7 @@ Content-Type: application/json
 
 ### Take a note for project
 # @name takeNoteApi
-POST {{projectHref}}/notes/actions/take-note
+POST {{projectHref}}/notes
 Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 

@@ -3,7 +3,6 @@ package tech.kuiperbelt.spm.domain.core;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.support.RepositoryEntityLinks;
@@ -13,12 +12,12 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tech.kuiperbelt.spm.domain.core.support.SpmRepositoryControllerSupport;
 
+import javax.annotation.Nonnull;
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -26,7 +25,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Setter
 @RepositoryRestController
 @RequestMapping("/projects")
-public class ProjectController {
+public class ProjectController extends SpmRepositoryControllerSupport {
 
     @Autowired
     private ProjectService projectService;
@@ -57,26 +56,21 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}/phases")
-    public ResponseEntity<CollectionModel<PersistentEntityResource>> getPhases(@PathVariable("id") Long id,
+    public ResponseEntity<CollectionModel<?>> getPhases(@PathVariable("id") Long id,
                                                                                PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        List<PersistentEntityResource> collection = projectService.getAllPhases(id)
-                .stream()
-                .map(persistentEntityResourceAssembler::toModel)
-                .collect(Collectors.toList());
-        CollectionModel<PersistentEntityResource> collectionModel = CollectionModel.of(collection);
-        collectionModel.add(linkTo(methodOn(ProjectController.class)
-                .getPhases(id, persistentEntityResourceAssembler)).withSelfRel());
-        return ResponseEntity.ok(collectionModel);
+        return assembleCollectionResource(persistentEntityResourceAssembler,
+                methodOn(ProjectController.class).getPhases(id, persistentEntityResourceAssembler),
+                () -> projectService.getAllPhases(id));
     }
 
     @PostMapping("/{id}/phases")
-    public ResponseEntity<?> appendPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
+    public ResponseEntity<?> createPhase(@PathVariable("id") Long id, @Valid @RequestBody Phase phase) {
         Phase createdPhase = projectService.createPhase(id, phase);
         URI uri = entityLinks.linkToItemResource(Phase.class, createdPhase.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
-    @PostMapping("/{id}/direct-work-items/actions/create")
+    @PostMapping("/{id}/direct-work-items")
     public ResponseEntity<?> createDirectWorkItem(@PathVariable("id") Long id, @Valid @RequestBody WorkItem workItem) {
         WorkItem createdWorkItem = projectService.createDirectWorkItem(id, workItem);
         URI uri = entityLinks.linkToItemResource(WorkItem.class, createdWorkItem.getId()).toUri();
@@ -84,32 +78,23 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}/direct-work-items")
-    public ResponseEntity<CollectionModel<PersistentEntityResource>> getDirectWorkItems(@PathVariable("id") Long id,
+    public ResponseEntity<CollectionModel<?>> getDirectWorkItems(@PathVariable("id") Long id,
                                                                            PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        List<PersistentEntityResource> collection = projectService.getDirectWorkItems(id)
-                .stream()
-                .map(persistentEntityResourceAssembler::toModel)
-                .collect(Collectors.toList());
-        CollectionModel<PersistentEntityResource> collectionModel = CollectionModel.of(collection);
-        collectionModel.add(linkTo(methodOn(ProjectController.class)
-                .getDirectWorkItems(id, persistentEntityResourceAssembler)).withSelfRel());
-        return ResponseEntity.ok(collectionModel);
+
+        return assembleCollectionResource(persistentEntityResourceAssembler,
+                methodOn(ProjectController.class).getDirectWorkItems(id, persistentEntityResourceAssembler),
+                () -> projectService.getDirectWorkItems(id));
     }
 
     @GetMapping("/{id}/notes")
-    public ResponseEntity<CollectionModel<PersistentEntityResource>> getNotes(@PathVariable("id") Long id,
+    public ResponseEntity<CollectionModel<?>> getNotes(@PathVariable("id") Long id,
                                                                  PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        List<PersistentEntityResource> collection = projectService.getNotes(id)
-                .stream()
-                .map(persistentEntityResourceAssembler::toModel)
-                .collect(Collectors.toList());
-        CollectionModel<PersistentEntityResource> collectionModel = CollectionModel.of(collection);
-        collectionModel.add(linkTo(methodOn(ProjectController.class)
-                .getNotes(id, persistentEntityResourceAssembler)).withSelfRel());
-        return ResponseEntity.ok(collectionModel);
+        return assembleCollectionResource(persistentEntityResourceAssembler,
+                methodOn(ProjectController.class).getNotes(id, persistentEntityResourceAssembler),
+                () -> projectService.getNotes(id));
     }
 
-    @PostMapping("/{id}/notes/actions/take-note")
+    @PostMapping("/{id}/notes")
     public ResponseEntity<?> takeNote(@PathVariable("id") long id, @Valid @RequestBody Note note) {
         Note createdNote = projectService.takeNote(id, note);
         URI uri = entityLinks.linkToItemResource(Note.class, createdNote.getId()).toUri();
@@ -118,6 +103,7 @@ public class ProjectController {
 
     public static class ProjectRepresentationModelProcessor implements RepresentationModelProcessor<EntityModel<Project>> {
 
+        @Nonnull
         @Override
         public EntityModel<Project> process(EntityModel<Project> model) {
             Optional<Link> self = model.getLink("self");

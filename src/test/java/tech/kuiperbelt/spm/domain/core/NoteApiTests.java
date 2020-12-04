@@ -5,13 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.util.Assert;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.support.ApiTest;
 
 import java.time.LocalDate;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -70,13 +71,14 @@ public class NoteApiTests extends ApiTest {
         Note note = new Note().toBuilder()
                 .content(RandomStringUtils.randomAlphanumeric(20))
                 .build();
-        String noteHref = mockMvc.perform(post(workItemAHref + "/notes/actions/take-note")
+        String noteHref = mockMvc.perform(post(workItemAHref + "/notes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(note)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getHeader("location");
+        assertThat(noteHref, notNullValue());
         mockMvc.perform(get(noteHref))
                 .andExpect(jsonPath("$.content", equalTo(note.getContent())));
 

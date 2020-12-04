@@ -283,15 +283,15 @@ public class PhaseService {
         Phase phase = phaseRepository.getOne(phaseId);
         Assert.isTrue(phase.getStatus() != RunningStatus.STOP, "STOP phase can not add workItem.");
         workItem.setPhase(phase);
-        WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
 
-        return createdWorkItem;
+        return workItemService.createWorkItemInContext(workItem);
     }
 
     @Async
     @EventListener(condition = "#root.args[0].key == '" + ITEM_PHASE_CHANGED + "'")
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
+            @SuppressWarnings({"unchecked"})
             PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
             // We only need check old phase's allItemsStop because new phase has already done
             propertyChanged.getOldValue().ifPresent(oldId ->
@@ -384,5 +384,9 @@ public class PhaseService {
 
     public List<Note> getNotes(Long id) {
         return noteService.findByParent(id);
+    }
+
+    public List<WorkItem> getWorkItems(long phaseId) {
+        return phaseRepository.getOne(phaseId).getWorkItems();
     }
 }
