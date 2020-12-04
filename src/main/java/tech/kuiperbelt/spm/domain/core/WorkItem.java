@@ -91,8 +91,12 @@ public class WorkItem extends BaseEntity implements AuditableEntity, ExecutableE
         if(getPhase() != null) {
             setScope(Scope.PHASE);
             setProject(getPhase().getProject());
+            // set allItem stop false
+            getPhase().setAllItemStop(false);
         } else if(getProject() != null) {
             setScope(Scope.PROJECT);
+            // set allDirItem stop false
+            getProject().setAllDirItemsStop(false);
         } else {
             setScope(Scope.PERSON);
         }

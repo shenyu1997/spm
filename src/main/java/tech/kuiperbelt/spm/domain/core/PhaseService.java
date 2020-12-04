@@ -285,8 +285,6 @@ public class PhaseService {
         workItem.setPhase(phase);
         WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
 
-        // check can be done with project
-        phase.setAllItemStop(false);
         return createdWorkItem;
     }
 

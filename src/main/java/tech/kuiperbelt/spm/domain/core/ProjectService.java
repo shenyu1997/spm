@@ -227,7 +227,6 @@ public class ProjectService {
         Project project = projectRepository.getOne(id);
         workItem.setProject(project);
         WorkItem createdWorkItem = workItemService.createWorkItemInContext(workItem);
-        project.setAllDirItemsStop(false);
         return createdWorkItem;
     }
 
