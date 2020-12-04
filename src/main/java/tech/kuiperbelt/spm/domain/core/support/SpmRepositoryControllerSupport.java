@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 public abstract class SpmRepositoryControllerSupport {
-    protected ResponseEntity<CollectionModel<?>> assembleCollectionResource(PersistentEntityResourceAssembler persistentEntityResourceAssembler,
+    protected ResponseEntity<CollectionModel<?>> assembleCollectionResource(Class<?> entityClass, PersistentEntityResourceAssembler persistentEntityResourceAssembler,
                                                                   ResponseEntity<CollectionModel<?>> selfMethod,
                                                                   Supplier<Collection<?>> collectionProvider) {
         List<PersistentEntityResource> collection = collectionProvider.get().stream()
@@ -27,7 +27,7 @@ public abstract class SpmRepositoryControllerSupport {
         CollectionModel<?> collectionModel;
         if(collection.isEmpty()) {
             EmbeddedWrappers wrappers = new EmbeddedWrappers(false);
-            EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(WorkItem.class);
+            EmbeddedWrapper wrapper = wrappers.emptyCollectionOf(entityClass);
             collectionModel = CollectionModel.of(Collections.singleton(wrapper));
         } else {
             collectionModel = CollectionModel.of(collection);

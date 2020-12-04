@@ -56,7 +56,7 @@ public class PhaseController extends SpmRepositoryControllerSupport {
         ResponseEntity<CollectionModel<?>> workItems = methodOn(PhaseController.class)
                 .getWorkItems(id, persistentEntityResourceAssembler);
 
-        return assembleCollectionResource(persistentEntityResourceAssembler,
+        return assembleCollectionResource(WorkItem.class, persistentEntityResourceAssembler,
                 methodOn(PhaseController.class).getWorkItems(id, persistentEntityResourceAssembler),
                 () -> phaseService.getWorkItems(id));
     }
@@ -79,7 +79,7 @@ public class PhaseController extends SpmRepositoryControllerSupport {
     @GetMapping("/{id}/notes")
     public ResponseEntity<CollectionModel<?>> getNotes(@PathVariable("id") Long id,
                                                                               PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        return assembleCollectionResource(persistentEntityResourceAssembler,
+        return assembleCollectionResource(Note.class, persistentEntityResourceAssembler,
                 methodOn(PhaseController.class).getNotes(id, persistentEntityResourceAssembler),
                 () -> phaseService.getNotes(id));
     }

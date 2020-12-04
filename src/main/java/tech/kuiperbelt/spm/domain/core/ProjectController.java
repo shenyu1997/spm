@@ -63,7 +63,7 @@ public class ProjectController extends SpmRepositoryControllerSupport {
     @GetMapping("/{id}/phases")
     public ResponseEntity<CollectionModel<?>> getPhases(@PathVariable("id") Long id,
                                                                                PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        return assembleCollectionResource(persistentEntityResourceAssembler,
+        return assembleCollectionResource(Phase.class, persistentEntityResourceAssembler,
                 methodOn(ProjectController.class).getPhases(id, persistentEntityResourceAssembler),
                 () -> projectService.getAllPhases(id));
     }
@@ -86,7 +86,7 @@ public class ProjectController extends SpmRepositoryControllerSupport {
     public ResponseEntity<CollectionModel<?>> getDirectWorkItems(@PathVariable("id") Long id,
                                                                            PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
 
-        return assembleCollectionResource(persistentEntityResourceAssembler,
+        return assembleCollectionResource(WorkItem.class, persistentEntityResourceAssembler,
                 methodOn(ProjectController.class).getDirectWorkItems(id, persistentEntityResourceAssembler),
                 () -> projectService.getDirectWorkItems(id));
     }
@@ -94,7 +94,7 @@ public class ProjectController extends SpmRepositoryControllerSupport {
     @GetMapping("/{id}/notes")
     public ResponseEntity<CollectionModel<?>> getNotes(@PathVariable("id") Long id,
                                                                  PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        return assembleCollectionResource(persistentEntityResourceAssembler,
+        return assembleCollectionResource(Note.class, persistentEntityResourceAssembler,
                 methodOn(ProjectController.class).getNotes(id, persistentEntityResourceAssembler),
                 () -> projectService.getNotes(id));
     }

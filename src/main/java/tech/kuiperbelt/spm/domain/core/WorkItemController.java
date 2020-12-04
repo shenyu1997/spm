@@ -67,7 +67,7 @@ public class WorkItemController extends SpmRepositoryControllerSupport {
     @GetMapping("/{id}/notes")
     public ResponseEntity<CollectionModel<?>> getNotes(@PathVariable("id") Long id,
                                                                               PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        return assembleCollectionResource(persistentEntityResourceAssembler,
+        return assembleCollectionResource(Note.class, persistentEntityResourceAssembler,
                 methodOn(WorkItemController.class).getNotes(id, persistentEntityResourceAssembler),
                 () -> workItemService.getNotes(id));
     }
