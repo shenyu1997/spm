@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,6 @@ import java.util.Queue;
 @Service
 public class EventService {
 
-    public static final Locale FIX_LOCALE = Locale.CHINA;
     @Autowired
     private UserContextHolder userContextHolder;
 
@@ -96,7 +96,7 @@ public class EventService {
         Assert.notNull(event, "Event can not be null");
         String content = messageSource.getMessage(event.getKey(),
                 event.getArgs(),
-                FIX_LOCALE);
+                LocaleContextHolder.getLocale());
         event.setDetail(content);
         return event;
     }
