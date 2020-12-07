@@ -19,7 +19,9 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -263,6 +265,23 @@ public class TestUtils {
         mockMvc.perform(get(eventsHref))
                 .andExpect(jsonPath("$._embedded.events..key", hasItems(events)))
                 .andExpect(jsonPath("$._embedded.events.length()", equalTo(eventTotalCount)));
+    }
+
+    public void verifyEventDetail(String eventKey, String sourceType, String sourceHref, String ... segments) throws Exception {
+        String eventsHref = "/events";
+        String body = mockMvc.perform(get(eventsHref).locale(Locale.US))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventPath = "$._embedded.events[?(@.key=='" + eventKey + "')]";
+        List<String> links = JsonPath.read(body, eventPath + "._links." + sourceType + ".href");
+        assertThat(links, hasItems(sourceHref));
+
+        List<String> details = JsonPath.read(body, eventPath + ".detail");
+        assertThat(details.size(), equalTo(1));
+        for(String segment: segments) {
+            assertTrue(details.get(0).contains(segment),"Should contain " + segment + ", whole detail is " + details.get(0));
+        }
     }
 
     public void verifyStatusWithActions(String href, RunningStatus status, ExecutableEntity.Action ... actions) throws Exception {
