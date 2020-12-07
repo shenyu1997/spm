@@ -184,13 +184,6 @@ class ProjectApiTests extends ApiTest {
 		testUtils.done(newProjectHref);
 
 		testUtils.verifyStatusWithActions(newProjectHref, RunningStatus.STOP, ExecutableEntity.Action.delete);
-//		mockMvc.perform(get(newProjectHref))
-//				.andExpect(jsonPath("$.status", equalTo(RunningStatus.STOP.name())))
-//				.andExpect(jsonPath("$.canBeStarted", equalTo(false)))
-//				.andExpect(jsonPath("$.canBeDeleted", equalTo(true)))
-//				.andExpect(jsonPath("$.canBeCancelled", equalTo(false)))
-//				.andExpect(jsonPath("$.canBeDone", equalTo(false)));
-
 		testUtils.delete(newProjectHref);
 
 		mockMvc.perform(get(newProjectHref))
@@ -282,6 +275,9 @@ class ProjectApiTests extends ApiTest {
 
 		testUtils.start(projectHref);
 		testUtils.verifyEvents(4, Event.PROJECT_STARTED);
+		testUtils.verifyEventDetail(Event.PROJECT_STARTED, "project", projectHref,
+				"The project",
+				"was started");
 
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.name,RandomStringUtils.randomAlphanumeric(10)));
 		testUtils.verifyEvents(5, Event.PROJECT_PROPERTIES_CHANGED);
