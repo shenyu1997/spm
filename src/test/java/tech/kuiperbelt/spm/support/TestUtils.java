@@ -280,15 +280,13 @@ public class TestUtils {
         List<String> details = JsonPath.read(body, eventPath + ".detail");
         assertThat(details.size(), equalTo(1));
         for(String segment: segments) {
-            assertTrue(details.get(0).contains(segment),"Should contain " + segment + ", whole detail is " + details.get(0));
+            assertTrue(details.get(0).contains(segment),"Should contain " + segment + ", whole detail is: " + details.get(0));
         }
     }
 
     public void verifyStatusWithActions(String href, RunningStatus status, ExecutableEntity.Action ... actions) throws Exception {
         Object[] actionNames = Stream.of(actions)
-                .map(Enum::name)
-                .collect(Collectors.toList())
-                .toArray();
+                .map(Enum::name).toArray();
         mockMvc.perform(get(href))
                 .andExpect(jsonPath("$.status", equalTo(status.name())))
                 .andExpect(jsonPath("$.actions", IsIterableContaining.hasItems(actionNames)));
@@ -303,7 +301,6 @@ public class TestUtils {
     public void verifyStatusWithoutActions(String href, RunningStatus status, ExecutableEntity.Action ... actions) throws Exception {
         Object[] actionNames = Stream.of(actions)
                 .map(Enum::name)
-                .collect(Collectors.toList())
                 .toArray();
         mockMvc.perform(get(href))
                 .andExpect(jsonPath("$.status", equalTo(status.name())))

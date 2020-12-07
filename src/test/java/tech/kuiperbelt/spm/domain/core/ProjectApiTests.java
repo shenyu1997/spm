@@ -282,6 +282,10 @@ class ProjectApiTests extends ApiTest {
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.name,RandomStringUtils.randomAlphanumeric(10)));
 		testUtils.verifyEvents(5, Event.PROJECT_PROPERTIES_CHANGED);
 
+		testUtils.verifyEventDetail(Event.PROJECT_PROPERTIES_CHANGED, "project", projectHref,
+				"properties changed",
+				"the name");
+
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.owner,RandomStringUtils.randomAlphanumeric(10)));
 		testUtils.verifyEvents(6, Event.PROJECT_OWNER_CHANGED);
 
