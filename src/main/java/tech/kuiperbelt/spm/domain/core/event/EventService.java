@@ -17,15 +17,18 @@ import tech.kuiperbelt.spm.domain.core.support.UserContext;
 import tech.kuiperbelt.spm.domain.core.support.UserContextHolder;
 
 import java.time.LocalDateTime;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Transactional
 @Service
 public class EventService {
 
+    public static final String PROPERTY_CHANGE_SET_NEW = "property.change.set.new";
+    public static final String PROPERTY_CHANGE_CLEAN_OLD = "property.change.clean.old";
+    public static final String PROPERTY_CHANGE_UPDATE = "property.change.update";
     @Autowired
     private UserContextHolder userContextHolder;
 
@@ -43,6 +46,15 @@ public class EventService {
 
 
     private ThreadLocal<Event.EventQueue> eventQueue = new ThreadLocal<>();
+
+    @SuppressWarnings("rawtypes")
+    private static Stream<?> flatArgs(Object o) {
+        if (o instanceof List) {
+            return ((List) o).stream();
+        } else {
+            return Stream.of(o);
+        }
+    }
 
     @EventListener
     public void preparedEventQueue(Event.Signal signal) {
@@ -94,11 +106,48 @@ public class EventService {
 
     public Event enhance(Event event) {
         Assert.notNull(event, "Event can not be null");
+        Object[] eventArgs = preProcessing(event.getArgs());
         String content = messageSource.getMessage(event.getKey(),
-                event.getArgs(),
+                eventArgs,
                 LocaleContextHolder.getLocale());
         event.setDetail(content);
         return event;
+    }
+
+    private Object[] preProcessing(Object[] args) {
+        List<Object> collection = Arrays.stream(args)
+                .flatMap(EventService::flatArgs)
+                .collect(Collectors.toList());
+
+        List<Object> result = new ArrayList<>();
+        List<String> propertiesChanged = new ArrayList<>();
+        for(Object arg: collection) {
+            if(PropertyChanged.compatibleWith(arg)) {
+                propertiesChanged.add(toString(PropertyChanged.from(arg)));
+            } else {
+                if(!propertiesChanged.isEmpty()) {
+                    result.add(String.join(", ", propertiesChanged));
+                    propertiesChanged.clear();
+                }
+                result.add(arg);
+            }
+        }
+        if(!propertiesChanged.isEmpty()) {
+            result.add(String.join(", ", propertiesChanged));
+            propertiesChanged.clear();
+        }
+        return result.toArray();
+    }
+
+    private String toString(PropertyChanged pc) {
+        Locale locale = LocaleContextHolder.getLocale();
+        if(!pc.getOldValue().isPresent() && pc.getNewValue().isPresent()) {
+            return messageSource.getMessage(PROPERTY_CHANGE_SET_NEW, new Object[]{ pc.getProperty(), pc.getNewValue().get()}, locale);
+        } else if(!pc.getNewValue().isPresent()) {
+            return messageSource.getMessage(PROPERTY_CHANGE_CLEAN_OLD, new Object[]{ pc.getProperty(), pc.getOldValue().get()}, locale);
+        } else {
+            return messageSource.getMessage(PROPERTY_CHANGE_UPDATE, new Object[]{ pc.getProperty(), pc.getOldValue().get(), pc.getNewValue().get()}, locale);
+        }
     }
 
     private void postProcessingEvents(final Queue<Event> events) {

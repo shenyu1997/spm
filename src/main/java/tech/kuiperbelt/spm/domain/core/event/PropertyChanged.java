@@ -24,6 +24,26 @@ public class PropertyChanged {
     private Object oldValue;
     private Object newValue;
 
+    public static boolean compatibleWith(Object arg) {
+        if(arg instanceof Map<?,?>) {
+            @SuppressWarnings("rawtypes")
+            Map mapArg = (Map) arg;
+            return mapArg.containsKey(Fields.property) &&
+                    (mapArg.containsKey(Fields.newValue) || mapArg.containsKey(Fields.oldValue));
+        }
+        return false;
+    }
+
+    public static PropertyChanged from(Object arg) {
+        @SuppressWarnings("rawtypes")
+        Map mapArg = (Map) arg;
+        return PropertyChanged.builder()
+                .property((String) mapArg.get(Fields.property))
+                .newValue(mapArg.get(Fields.newValue))
+                .oldValue(mapArg.get(Fields.oldValue))
+                .build();
+    }
+
     public Optional<Object> getOldValue() {
         return Optional.ofNullable(oldValue);
     }
