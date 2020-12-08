@@ -124,7 +124,7 @@ public class PhaseApiTests extends ApiTest {
         // done the phase
         testUtils.done(firstPhasesHref);
 
-        Map<String, String> phase = new HashMap();
+        Map<String, String> phase = new HashMap<>();
         phase.put(Phase.Fields.name, RandomStringUtils.randomAlphanumeric(10));
         mockMvc.perform(patch(firstPhasesHref)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -833,30 +833,53 @@ public class PhaseApiTests extends ApiTest {
         String phaseAHref = testUtils.appendRandomPhase(projectHref, current, current.plusDays(10));
         testUtils.verifyEvents(1, Event.PHASE_ADDED);
 
+        testUtils.verifyEventDetail(Event.PHASE_ADDED, "phase", phaseAHref,
+                "The phase", "is added to project");
+
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedStartDate,current.plusDays(1)));
         testUtils.verifyEvents(2, Event.PHASE_START_CHANGED);
+
+        testUtils.verifyEventDetail(Event.PHASE_START_CHANGED, "phase", phaseAHref,
+                "The project","phase", "planned start date changed");
 
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate,current.plusDays(6)));
         testUtils.verifyEvents(3, Event.PHASE_END_CHANGED);
 
+        testUtils.verifyEventDetail(Event.PHASE_END_CHANGED, "phase", phaseAHref,
+                "The project","phase", "planned end date changed");
+
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.name, RandomStringUtils.randomAlphanumeric(10)));
         testUtils.verifyEvents(4, Event.PHASE_PROPERTIES_CHANGED);
+
+        testUtils.verifyEventDetail(Event.PHASE_PROPERTIES_CHANGED, "phase", phaseAHref,
+                "The project","phase", "properties changed");
 
         testUtils.cleanAll("/events");
         String phaseBHref = testUtils.appendRandomPhase(projectHref, current.plusDays(10));
         testUtils.verifyEvents(1, Event.PHASE_ADDED);
 
+        testUtils.cleanAll("/events");
         // Update end data
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate,current.plusDays(5)));
-        testUtils.verifyEvents(3,
+        testUtils.verifyEvents(2,
                 Event.PHASE_END_CHANGED,
                 Event.PHASE_MOVED_LEFT);
 
+        testUtils.verifyEventDetail(Event.PHASE_END_CHANGED, "phase", phaseAHref,
+                "The project","phase", "planned end date changed");
+
+        testUtils.verifyEventDetail(Event.PHASE_MOVED_LEFT, "phase", phaseBHref,
+                "The project","phase", "move up 1 days in advance");
+
+        testUtils.cleanAll("/events");
         // Update end data
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate,current.plusDays(6)));
-        testUtils.verifyEvents(5,
+        testUtils.verifyEvents(2,
                 Event.PHASE_END_CHANGED,
                 Event.PHASE_MOVED_RIGHT);
+
+        testUtils.verifyEventDetail(Event.PHASE_MOVED_RIGHT, "phase", phaseBHref,
+                "The project","phase", "postponed by 1 days");
 
         testUtils.cleanAll("/events");
         testUtils.start(projectHref);
@@ -864,16 +887,27 @@ public class PhaseApiTests extends ApiTest {
                 Event.PROJECT_STARTED,
                 Event.PHASE_STARTED);
 
+        testUtils.verifyEventDetail(Event.PHASE_STARTED, "phase", phaseAHref,
+                "The project","phase", "is started");
+
         testUtils.done(phaseAHref);
         testUtils.verifyEvents(4,
                 Event.PHASE_DONE,
                 Event.PHASE_STARTED);
+
+        testUtils.verifyEventDetail(Event.PHASE_DONE, "phase", phaseAHref,
+                "The project","phase", "is done");
+        testUtils.verifyEventDetail(Event.PHASE_STARTED, "phase", phaseBHref,
+                "The project","phase", "is started");
 
         testUtils.cleanAll("/events");
         testUtils.cancel(projectHref);
         testUtils.verifyEvents(2,
                 Event.PROJECT_CANCELED,
                 Event.PHASE_CANCELED);
+
+        testUtils.verifyEventDetail(Event.PHASE_CANCELED, "phase", phaseBHref,
+                "The project","phase", "is canceled");
 
         testUtils.cleanAll("/events");
         testUtils.delete(projectHref);
@@ -883,5 +917,7 @@ public class PhaseApiTests extends ApiTest {
                 Event.PHASE_DELETED,
                 Event.PHASE_DELETED);
 
+        testUtils.verifyEventDetail(Event.PHASE_DELETED, "phase", null,
+                "The phase","is deleted", "from project");
     }
 }
