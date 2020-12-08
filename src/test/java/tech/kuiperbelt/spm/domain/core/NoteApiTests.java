@@ -107,16 +107,28 @@ public class NoteApiTests extends ApiTest {
         String noteHref = testUtils.taskRandomNote(projectHref);
 
         testUtils.verifyEvents(1, Event.PROJECT_NOTE_TAKEN);
+        testUtils.verifyEventDetail(Event.PROJECT_NOTE_TAKEN, "project", projectHref,
+                "The project","take note");
+
         testUtils.cleanAll("/events");
         testUtils.delete(noteHref);
         testUtils.verifyEvents(1, Event.NOTE_DELETED);
+
+        testUtils.verifyEventDetail(Event.NOTE_DELETED, "note", null,
+                "The note","is deleted");
 
         testUtils.cleanAll("/events");
         testUtils.taskRandomNote(phaseHref);
         testUtils.verifyEvents(1, Event.PHASE_NOTE_TAKEN);
 
+        testUtils.verifyEventDetail(Event.PHASE_NOTE_TAKEN, "phase", phaseHref,
+                "The project", "phase", "take note");
+
         testUtils.cleanAll("/events");
         testUtils.taskRandomNote(workItemHref);
         testUtils.verifyEvents(1, Event.ITEM_NOTE_TAKEN);
+
+        testUtils.verifyEventDetail(Event.ITEM_NOTE_TAKEN, "workItem", workItemHref,
+                "The workItem", "take note");
     }
 }
