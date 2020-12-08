@@ -182,34 +182,33 @@ public class PhaseService {
         List<Phase> allPhases = phase.getProject().getPhases();
 
         // Change plannedStartDate
-        if(PropertyChanged.isChange(previousVersion, phase, Phase.Fields.plannedStartDate)) {
+        PropertyChanged.of(previousVersion, phase, Phase.Fields.plannedStartDate).ifPresent(plannedStartDateChanged -> {
             if(phase.getSeq() != FIRST) {
                 // Change plannedStartDate will impact previous phase,
                 // this change will also update previous phase's plannedEndDate
                 Phase previousPhase = allPhases.get(phase.getSeq() - 1);
                 LocalDate previousPlannedStartDate = previousPhase.getPlannedStartDate();
                 Assert.isTrue(phase.getPlannedStartDate()
-                        .isAfter(previousPlannedStartDate.plusDays(1)), // after planned end day
+                                .isAfter(previousPlannedStartDate.plusDays(1)), // after planned end day
                         "The previous phase must have at least one day, the planned start date is too early");
 
                 previousPhase.setPlannedEndDate(phase.getPlannedStartDate().minusDays(1));
                 validateBeforeSave(previousPhase);
-                sendEvent(PHASE_START_CHANGED, previousPhase);
             }
 
             // Change planned start date also need update time frame of it's workItems
             Period offset = Period.between(previousVersion.getPlannedStartDate(), phase.getPlannedStartDate());
             moveWorkItemsInPhase(phase, offset);
-        }
+        });
 
         // Change planned end date will impact all phases after it.
-        if(PropertyChanged.isChange(previousVersion, phase, Phase.Fields.plannedEndDate)) {
+        PropertyChanged.of(previousVersion, phase, Phase.Fields.plannedEndDate).ifPresent(plannedEndDateChanged -> {
             if(phase.getSeq() < allPhases.size() - 1) {
                 Period offset = Period.between(previousVersion.getPlannedEndDate(), phase.getPlannedEndDate());
                 List<Phase> laterImpactedPhases = new LinkedList<>(allPhases.subList(phase.getSeq() + 1, allPhases.size()));
                 movePhases(offset, laterImpactedPhases);
             }
-        }
+        });
     }
 
     @HandleAfterSave
@@ -250,7 +249,7 @@ public class PhaseService {
             phase.move(offset);
             validateBeforeSave(phase);
             moveWorkItemsInPhase(phase, offset);
-            sendEvent(eventKey, phase, offset);
+            sendMoveEvent(eventKey, phase, offset);
         });
     }
 
@@ -345,11 +344,11 @@ public class PhaseService {
                 .source(phase);
 
         switch (key) {
-            case Event.PHASE_DELETED:
             case Event.PHASE_ADDED:
-            case Event.PHASE_CANCELED:
-            case Event.PHASE_DONE:
+            case Event.PHASE_DELETED:
             case Event.PHASE_STARTED:
+            case Event.PHASE_DONE:
+            case Event.PHASE_CANCELED:
             case Event.PHASE_NOTE_TAKEN:
                 builder.args(phase.getProject().getName(),
                         phase.getName());
@@ -357,32 +356,26 @@ public class PhaseService {
             case Event.PHASE_START_CHANGED:
                 builder.args(phase.getProject().getName(),
                         phase.getName(),
-                        phase.toString(),
-                        phase.getPlannedStartDate().toString());
-                break;
-            case Event.PHASE_PROPERTIES_CHANGED:
-                builder.args(phase.getProject().getName(), phase.getName(),
-                        propertiesChanged);
-                break;
-            case Event.ITEM_DONE:
-                builder.args(phase.getProject().getName(), phase.getName(),
-                    propertiesChanged.getPropertyChanged(Phase.Fields.plannedStartDate));
+                        propertiesChanged.getPropertyChanged(Phase.Fields.plannedStartDate));
                 break;
             case Event.PHASE_END_CHANGED:
                 builder.args(phase.getProject().getName(), phase.getName(),
                         propertiesChanged.getPropertyChanged(Phase.Fields.plannedEndDate));
                 break;
-
+            case Event.PHASE_PROPERTIES_CHANGED:
+                builder.args(phase.getProject().getName(), phase.getName(),
+                        propertiesChanged);
+                break;
             default:
                 throw new IllegalArgumentException("Unsupported event key:" + key);
         }
         eventService.emit(builder.build());
     }
 
-    private void sendEvent(String eventKey, Phase phase, Period offset) {
+    private void sendMoveEvent(String eventKey, Phase phase, Period offset) {
         eventService.emit(Event.builder()
                 .key(eventKey)
-                .source(phase.getId())
+                .source(phase)
                 .args(phase.getProject().getName(), phase.getName(), Math.abs(offset.getDays()))
                 .build());
     }
