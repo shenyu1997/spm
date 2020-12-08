@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.AllArgsConstructor;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.core.IsIterableContaining;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -274,8 +275,11 @@ public class TestUtils {
                 .getResponse()
                 .getContentAsString();
         String eventPath = "$._embedded.events[?(@.key=='" + eventKey + "')]";
-        List<String> links = JsonPath.read(body, eventPath + "._links." + sourceType + ".href");
-        assertThat(links, hasItems(sourceHref));
+
+        if(!StringUtils.isEmpty(sourceHref)) {
+            List<String> links = JsonPath.read(body, eventPath + "._links." + sourceType + ".href");
+            assertThat(links, hasItems(sourceHref));
+        }
 
         List<String> details = JsonPath.read(body, eventPath + ".detail");
         for(String segment: segments) {
