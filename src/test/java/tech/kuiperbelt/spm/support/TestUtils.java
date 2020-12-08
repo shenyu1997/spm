@@ -278,9 +278,16 @@ public class TestUtils {
         assertThat(links, hasItems(sourceHref));
 
         List<String> details = JsonPath.read(body, eventPath + ".detail");
-        assertThat(details.size(), equalTo(1));
         for(String segment: segments) {
-            assertTrue(details.get(0).contains(segment),"Should contain " + segment + ", whole detail is: " + details.get(0));
+            boolean found = false;
+            for(String detail: details) {
+                if(detail.contains(segment)) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found,
+                    "'" + segment + "' should be contain , whole detail is: " + String.join(" ", details));
         }
     }
 
