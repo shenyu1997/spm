@@ -339,11 +339,14 @@ class ProjectApiTests extends ApiTest {
 	@Test
 	public void testCancelEvent() throws Exception {
 		String projectHref = testUtils.createRandomProject();
+
+		testUtils.cleanAll("/events");
+
 		testUtils.cancel(projectHref);
-		testUtils.verifyEvents(4,
-				Event.PROJECT_CREATED,
-				Event.PROJECT_OWNER_CHANGED,
-				Event.PROJECT_MANAGER_CHANGED,
+		testUtils.verifyEvents(1,
 				Event.PROJECT_CANCELED);
+
+		testUtils.verifyEventDetail(Event.PROJECT_CANCELED, "project", null,
+				"The project", "is canceled");
 	}
 }
