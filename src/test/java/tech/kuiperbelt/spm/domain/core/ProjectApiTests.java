@@ -277,7 +277,7 @@ class ProjectApiTests extends ApiTest {
 		testUtils.verifyEvents(4, Event.PROJECT_STARTED);
 		testUtils.verifyEventDetail(Event.PROJECT_STARTED, "project", projectHref,
 				"The project",
-				"was started");
+				"is started");
 
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.name,RandomStringUtils.randomAlphanumeric(10)));
 		testUtils.verifyEvents(5, Event.PROJECT_PROPERTIES_CHANGED);
@@ -295,22 +295,44 @@ class ProjectApiTests extends ApiTest {
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.manager,RandomStringUtils.randomAlphanumeric(10)));
 		testUtils.verifyEvents(7, Event.PROJECT_MANAGER_CHANGED);
 
+		testUtils.verifyEventDetail(Event.PROJECT_MANAGER_CHANGED, "project", projectHref,
+				"project", "manager changed",
+				"the manager");
+
+		testUtils.cleanAll("/events");
 		String memberA = RandomStringUtils.randomAlphanumeric(10);
 		String memberB = RandomStringUtils.randomAlphanumeric(10);
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.members, Lists.newArrayList(memberA, memberB)));
-		testUtils.verifyEvents(8, Event.PROJECT_MEMBER_ADDED);
+		testUtils.verifyEvents(1, Event.PROJECT_MEMBER_ADDED);
 
+		testUtils.verifyEventDetail(Event.PROJECT_MEMBER_ADDED, "project", projectHref,
+				"join the project");
+
+		testUtils.cleanAll("/events");
 		String memberC = RandomStringUtils.randomAlphanumeric(10);
 		testUtils.patchUpdate(projectHref, Collections.singletonMap(Project.Fields.members, Lists.newArrayList(memberA, memberC)));
-		testUtils.verifyEvents(10,
+		testUtils.verifyEvents(2,
 				Event.PROJECT_MEMBER_ADDED,
 				Event.PROJECT_MEMBER_DELETED);
 
+		testUtils.verifyEventDetail(Event.PROJECT_MEMBER_ADDED, "project", projectHref,
+				"join the project");
+
+		testUtils.verifyEventDetail(Event.PROJECT_MEMBER_DELETED, "project", projectHref,
+				"leave from the project");
+
+		testUtils.cleanAll("/events");
 		testUtils.done(projectHref);
-		testUtils.verifyEvents(11, Event.PROJECT_DONE);
+		testUtils.verifyEvents(1, Event.PROJECT_DONE);
+
+		testUtils.verifyEventDetail(Event.PROJECT_DONE, "project", projectHref,
+				"The project", "is done");
 
 		testUtils.delete(projectHref);
-		testUtils.verifyEvents(12, Event.PROJECT_DELETED);
+		testUtils.verifyEvents(2, Event.PROJECT_DELETED);
+
+		testUtils.verifyEventDetail(Event.PROJECT_DELETED, "project", null,
+				"The project", "is deleted");
 	}
 
 	@Sql({"/cleanup.sql"})
