@@ -242,7 +242,7 @@ public class ProjectService {
     public void handleWorkItemMovedEvent(Event event) {
         userContextHolder.runAs(event.getUserContext(), () -> {
             @SuppressWarnings("unchecked")
-            PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[1]);
+            PropertyChanged propertyChanged = PropertyChanged.of((Map<Object, Object>)event.getArgs()[2]);
             // We only need check old phase's allItemsStop because new phase has already done
             propertyChanged.getOldValue().ifPresent(oldId ->
                     projectRepository.getOne(Long.valueOf((String)oldId)).checkAllDirItemsStop());

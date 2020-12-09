@@ -291,7 +291,7 @@ public class WorkItemService {
         });
 
         sentReadyEventIfWorkItemReady(workItem);
-        sendEvent(Event.ITEM_PHASE_CHANGED, workItem, propertyChanged.map(Phase.class, Phase::getName));
+        sendEvent(Event.ITEM_PHASE_CHANGED, workItem, propertyChanged);
     }
     private void moveProject(WorkItem workItem, PropertyChanged propertyChanged) {
         propertyChanged.getOldValue().ifPresent(oldValue ->
@@ -309,7 +309,7 @@ public class WorkItemService {
             }
         });
 
-        sendEvent(Event.ITEM_PROJECT_CHANGED, workItem, propertyChanged.map(Project.class, Project::getName));
+        sendEvent(Event.ITEM_PROJECT_CHANGED, workItem, propertyChanged);
     }
 
     private void sendEvent(String key, WorkItem workItem) {
@@ -358,10 +358,14 @@ public class WorkItemService {
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
                 break;
             case Event.ITEM_PHASE_CHANGED:
-                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
+                builder.args(workItem.getName(),
+                        propertiesChanged.getPropertyChanged(WorkItem.Fields.phase).map(Phase.class, Phase::getName),
+                        propertiesChanged.getPropertyChanged(WorkItem.Fields.phase).map(Phase.class, Phase::getId));
                 break;
             case Event.ITEM_PROJECT_CHANGED:
-                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.project));
+                builder.args(workItem.getName(),
+                        propertiesChanged.getPropertyChanged(WorkItem.Fields.project).map(Project.class, Project::getName),
+                        propertiesChanged.getPropertyChanged(WorkItem.Fields.project).map(Project.class, Project::getId));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported event key:" + key);
