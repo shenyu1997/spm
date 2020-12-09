@@ -230,8 +230,8 @@ public class WorkItemApiTests extends ApiTest {
         mockMvc.perform(get(workItemHref))
                 .andExpect(jsonPath("$.scope", equalTo(WorkItem.Scope.PERSON.name())));
 
+        // async verify, because project done will updated by async update
         super.yield();
-
         // Verify project's canBeDone, suppose to be true again, because not direct item in it again
         testUtils.verifyStatusWithActions(projectHref, RunningStatus.RUNNING,
                 ExecutableEntity.Action.done);
@@ -460,6 +460,15 @@ public class WorkItemApiTests extends ApiTest {
 
         mockMvc.perform(get(workItemBHref))
                 .andExpect(jsonPath("$.overflow", equalTo(true)));
+
+        // move item to phaseB again, verify canBeDone should be true again
+        patchedWorkItem = Collections.singletonMap("phase", phaseBHref);
+        testUtils.patchUpdate(workItemBHref, patchedWorkItem);
+
+        // async verify, because phaseAHref done will updated by async update
+        super.yield();
+        testUtils.verifyStatusWithActions(phaseAHref, RunningStatus.RUNNING,
+                ExecutableEntity.Action.done);
     }
 
     @Sql({"/cleanup.sql"})
