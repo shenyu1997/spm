@@ -377,7 +377,7 @@ public class WorkItemService {
         } else {
             builder.key(Event.ITEM_MOVED_RIGHT);
         }
-        eventService.emit(builder.args(workItem.getName(), offset.getDays()).build());
+        eventService.emit(builder.args(workItem.getName(), Math.abs(offset.getDays())).build());
     }
 
     public Note takeNote(long workItemId, Note note) {
