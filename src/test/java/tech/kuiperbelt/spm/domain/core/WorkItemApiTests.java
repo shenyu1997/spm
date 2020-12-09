@@ -553,30 +553,55 @@ public class WorkItemApiTests extends ApiTest {
                 Event.ITEM_OWNER_CHANGED,
                 Event.ITEM_ASSIGNEE_CHANGED,
                 Event.ITEM_READY_TRUE);
+
+        testUtils.verifyEventDetail(Event.ITEM_ADDED, "workItem", workItemHref,
+                "The workItem", "is added");
+
+        testUtils.verifyEventDetail(Event.ITEM_OWNER_CHANGED, "workItem", workItemHref,
+                "The workItem", "owner is changed");
+
+        testUtils.verifyEventDetail(Event.ITEM_ASSIGNEE_CHANGED, "workItem", workItemHref,
+                "The workItem", "assignee is changed");
+
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.owner,
                 RandomStringUtils.randomAlphanumeric(10)));
         testUtils.verifyEvents(1, Event.ITEM_OWNER_CHANGED);
+
+        testUtils.verifyEventDetail(Event.ITEM_OWNER_CHANGED, "workItem", workItemHref,
+                "The workItem", "owner is changed", "from");
 
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.assignee,
                 RandomStringUtils.randomAlphanumeric(10)));
         testUtils.verifyEvents(1, Event.ITEM_ASSIGNEE_CHANGED);
 
+        testUtils.verifyEventDetail(Event.ITEM_ASSIGNEE_CHANGED, "workItem", workItemHref,
+                "The workItem", "assignee is changed", "from");
+
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.name,
                 RandomStringUtils.randomAlphanumeric(10)));
         testUtils.verifyEvents(1, Event.ITEM_PROPERTIES_CHANGED);
+
+        testUtils.verifyEventDetail(Event.ITEM_PROPERTIES_CHANGED, "workItem", workItemHref,
+                "The workItem", "properties are changed", "from");
 
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.plannedStartDate,
                 LocalDate.now()));
         testUtils.verifyEvents(1, Event.ITEM_START_CHANGED);
 
+        testUtils.verifyEventDetail(Event.ITEM_START_CHANGED, "workItem", workItemHref,
+                "The workItem", "planned start date is changed");
+
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.deadLine,
                 LocalDate.now()));
         testUtils.verifyEvents(1, Event.ITEM_END_CHANGED);
+
+        testUtils.verifyEventDetail(Event.ITEM_END_CHANGED, "workItem", workItemHref,
+                "The workItem", "dead line is changed");
 
     }
 
