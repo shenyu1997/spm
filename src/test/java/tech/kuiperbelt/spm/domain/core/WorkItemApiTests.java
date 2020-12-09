@@ -614,19 +614,31 @@ public class WorkItemApiTests extends ApiTest {
         testUtils.start(workItemHref);
         testUtils.verifyEvents(1, Event.ITEM_STARTED);
 
+        testUtils.verifyEventDetail(Event.ITEM_STARTED, "workItem", workItemHref,
+                "The workItem", "is started");
+
         testUtils.cleanAll("/events");
         testUtils.done(workItemHref);
         testUtils.verifyEvents(1, Event.ITEM_DONE);
 
+        testUtils.verifyEventDetail(Event.ITEM_DONE, "workItem", workItemHref,
+                "The workItem", "is done");
+
         testUtils.cleanAll("/events");
         testUtils.delete(workItemHref);
         testUtils.verifyEvents(1, Event.ITEM_DELETED);
+
+        testUtils.verifyEventDetail(Event.ITEM_DELETED, "workItem", null,
+                "The workItem", "is delete");
 
         String workItemBHref = testUtils.createRandomWorkItem(null, null);
 
         testUtils.cleanAll("/events");
         testUtils.cancel(workItemBHref);
         testUtils.verifyEvents(1, Event.ITEM_CANCELED);
+
+        testUtils.verifyEventDetail(Event.ITEM_CANCELED, "workItem", workItemBHref,
+                "The workItem", "is canceled");
     }
 
     @Sql({"/cleanup.sql"})
@@ -639,9 +651,15 @@ public class WorkItemApiTests extends ApiTest {
         testUtils.patchUpdate(itemHref, Collections.singletonMap(WorkItem.Fields.project, projectHref));
         testUtils.verifyEvents(1, Event.ITEM_PROJECT_CHANGED);
 
+        testUtils.verifyEventDetail(Event.ITEM_PROJECT_CHANGED, "workItem", itemHref,
+                "The workItem", "project is changed");
+
         testUtils.cleanAll("/events");
         testUtils.delete(itemHref + "/project");
         testUtils.verifyEvents(1, Event.ITEM_PROJECT_CHANGED);
+
+        testUtils.verifyEventDetail(Event.ITEM_PROJECT_CHANGED, "workItem", itemHref,
+                "The workItem", "project is changed", "clear");
     }
 
     @Sql({"/cleanup.sql"})
