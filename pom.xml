@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>tech.kuiperbelt</groupId>
 	<artifactId>spm</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>spm</name>
-	<description>IDM</description>
+	<description>SPM</description>
 
 	<properties>
 		<java.version>8</java.version>
