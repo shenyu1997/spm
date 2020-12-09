@@ -563,6 +563,9 @@ public class WorkItemApiTests extends ApiTest {
         testUtils.verifyEventDetail(Event.ITEM_ASSIGNEE_CHANGED, "workItem", workItemHref,
                 "The workItem", "assignee is changed");
 
+        testUtils.verifyEventDetail(Event.ITEM_READY_TRUE, "workItem", workItemHref,
+                "The workItem", "is ready now");
+
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(workItemHref, Collections.singletonMap(WorkItem.Fields.owner,
                 RandomStringUtils.randomAlphanumeric(10)));
@@ -679,12 +682,19 @@ public class WorkItemApiTests extends ApiTest {
                 Event.ITEM_START_CHANGED,
                 Event.ITEM_END_CHANGED);
 
+
+        testUtils.verifyEventDetail(Event.ITEM_PHASE_CHANGED, "workItem", itemHref,
+                "The workItem", "phase is changed");
+
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(itemHref, Collections.singletonMap(WorkItem.Fields.phase, phaseBHref));
         testUtils.verifyEvents(3,
                 Event.ITEM_PHASE_CHANGED,
                 Event.ITEM_START_CHANGED,
                 Event.ITEM_END_CHANGED);
+
+        testUtils.verifyEventDetail(Event.ITEM_PHASE_CHANGED, "workItem", itemHref,
+                "The workItem", "phase is changed", "from", "to");
 
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate, current.plusDays(6)));
@@ -693,11 +703,17 @@ public class WorkItemApiTests extends ApiTest {
                 Event.PHASE_MOVED_LEFT,
                 Event.ITEM_MOVED_LEFT);
 
+        testUtils.verifyEventDetail(Event.ITEM_MOVED_LEFT, "workItem", itemHref,
+                "The workItem", "move up 4 days in advance");
+
         testUtils.cleanAll("/events");
         testUtils.patchUpdate(phaseAHref, Collections.singletonMap(Phase.Fields.plannedEndDate, current.plusDays(10)));
         testUtils.verifyEvents(3,
                 Event.PHASE_END_CHANGED,
                 Event.PHASE_MOVED_RIGHT,
                 Event.ITEM_MOVED_RIGHT);
+
+        testUtils.verifyEventDetail(Event.ITEM_MOVED_RIGHT, "workItem", itemHref,
+                "The workItem", "postponed by 4 days");
     }
 }
