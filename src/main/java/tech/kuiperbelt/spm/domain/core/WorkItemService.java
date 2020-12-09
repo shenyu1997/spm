@@ -79,12 +79,18 @@ public class WorkItemService {
         }
 
         if(!StringUtils.isEmpty(workItem.getOwner())) {
-            sendEvent(Event.ITEM_OWNER_CHANGED, workItem);
+            sendEvent(Event.ITEM_OWNER_CHANGED, workItem, PropertyChanged.builder()
+                    .property(WorkItem.Fields.owner)
+                    .newValue(workItem.getOwner())
+                    .build());
         }
 
         // send assignee event
         if(!StringUtils.isEmpty(workItem.getAssignee())) {
-            sendEvent(Event.ITEM_ASSIGNEE_CHANGED, workItem);
+            sendEvent(Event.ITEM_ASSIGNEE_CHANGED, workItem,PropertyChanged.builder()
+                    .property(WorkItem.Fields.assignee)
+                    .newValue(workItem.getAssignee())
+                    .build());
         }
 
         // send is ready event (assignee not empty)
@@ -321,12 +327,12 @@ public class WorkItemService {
 
         switch (key) {
             case Event.ITEM_ADDED:
-                builder.args(workItem.getName(),
-                        Optional.of(workItem).map(WorkItem::getPhase).map(Phase::getName).orElse(""),
-                        Optional.of(workItem).map(WorkItem::getProject).map(Project::getName).orElse(""));
-                break;
             case Event.PROJECT_ITEM_ADDED:
             case Event.PHASE_ITEM_ADDED:
+                builder.args(workItem.getName(),
+                        Optional.of(workItem).map(WorkItem::getProject).map(Project::getName).orElse(""),
+                        Optional.of(workItem).map(WorkItem::getPhase).map(Phase::getName).orElse(""));
+                break;
             case Event.ITEM_DELETED:
             case Event.ITEM_STARTED:
             case Event.ITEM_DONE:
@@ -337,12 +343,11 @@ public class WorkItemService {
                 builder.args(workItem.getName());
                 break;
             case Event.ITEM_OWNER_CHANGED:
-                builder.args(workItem.getName(), workItem.getOwner());
+                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.owner));
                 break;
             case Event.ITEM_ASSIGNEE_CHANGED:
-                builder.args(workItem.getName(), workItem.getAssignee());
+                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.assignee));
                 break;
-
             case Event.ITEM_PROPERTIES_CHANGED:
                 builder.args(workItem.getName(), propertiesChanged);
                 break;
@@ -353,10 +358,10 @@ public class WorkItemService {
                 builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.deadLine));
                 break;
             case Event.ITEM_PHASE_CHANGED:
-                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase));
+                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.phase).map(Phase.class, Phase::getName));
                 break;
             case Event.ITEM_PROJECT_CHANGED:
-                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.project));
+                builder.args(workItem.getName(), propertiesChanged.getPropertyChanged(WorkItem.Fields.project).map(Project.class, Project::getName));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported event key:" + key);
