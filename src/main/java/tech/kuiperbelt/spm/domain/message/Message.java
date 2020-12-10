@@ -1,5 +1,6 @@
 package tech.kuiperbelt.spm.domain.message;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import lombok.*;
@@ -19,6 +20,10 @@ import java.util.List;
 public class Message extends BaseEntity {
     private boolean isRead;
     private String receiver;
+
+    @JsonIgnore
+    private Long source;
+
     @ManyToMany
     private List<Event> events;
 }

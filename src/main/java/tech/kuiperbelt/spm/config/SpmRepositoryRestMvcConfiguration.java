@@ -17,6 +17,7 @@ import tech.kuiperbelt.spm.domain.core.event.EventController;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingService;
 import tech.kuiperbelt.spm.domain.core.support.WebTransactionInterceptor;
+import tech.kuiperbelt.spm.domain.message.MessageController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +75,11 @@ public class SpmRepositoryRestMvcConfiguration extends RepositoryRestMvcConfigur
     public EventController.EventRepresentationModelProcessor eventRepresentationModelProcessor(EventService eventService,
                                                                                                IdMappingService idMappingService) {
         return new EventController.EventRepresentationModelProcessor(eventService, idMappingService);
+    }
+
+    @Bean
+    public MessageController.MessageRepresentationModelProcessor messageRepresentationModelProcessor(IdMappingService idMappingService) {
+        return new MessageController.MessageRepresentationModelProcessor(idMappingService);
     }
 
 }

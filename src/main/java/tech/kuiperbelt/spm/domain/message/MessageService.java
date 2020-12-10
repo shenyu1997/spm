@@ -7,11 +7,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import tech.kuiperbelt.spm.domain.core.Phase;
+import tech.kuiperbelt.spm.domain.core.Project;
+import tech.kuiperbelt.spm.domain.core.WorkItem;
 import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingService;
-import tech.kuiperbelt.spm.domain.message.rule.ProjectEventReceiveRule;
+import tech.kuiperbelt.spm.domain.message.rule.MessageDispatchRule;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,40 +24,40 @@ import java.util.stream.Collectors;
 @Transactional
 public class MessageService {
 
-    private static List<ProjectEventReceiveRule> receiveRules = new ArrayList<>();
+    private static List<MessageDispatchRule> receiveRules = new ArrayList<>();
 
     static {
         // project.create/project.removed/project.canceled
-        receiveRules.add(ProjectEventReceiveRule.builder()
-                .key("event.project.*")
-                .participant(true)
+        receiveRules.add(MessageDispatchRule.builder()
+                .eventKey("event.project.*")
+                .isMilestone(true)
                 .build());
 
         // event.project.owner.changed
-        receiveRules.add(ProjectEventReceiveRule.builder()
-                .key("event.project.owner.changed")
-                .owner(true)
-                .manager(true)
+        receiveRules.add(MessageDispatchRule.builder()
+                .eventKey("event.project.owner.changed")
+                .isProjectOwner(true)
+                .isProjectManager(true)
                 .build());
 
         //event.project.manager.changed
-        receiveRules.add(ProjectEventReceiveRule.builder()
-                .key("event.project.manager.changed")
-                .owner(true)
-                .manager(true)
+        receiveRules.add(MessageDispatchRule.builder()
+                .eventKey("event.project.manager.changed")
+                .isProjectOwner(true)
+                .isProjectManager(true)
                 .build());
 
         // all new/removed member will receive notify
-        receiveRules.add(ProjectEventReceiveRule.builder()
-                .key("event.project.member.*")
-                .manager(true)
-                .args(2)
+        receiveRules.add(MessageDispatchRule.builder()
+                .eventKey("event.project.member.*")
+                .isProjectManager(true)
+                .eventArgs(2)
                 .build());
 
         // event.project.properties.*.change
-        receiveRules.add(ProjectEventReceiveRule.builder()
-                .key("event.project.properties.*.change")
-                .member(true)
+        receiveRules.add(MessageDispatchRule.builder()
+                .eventKey("event.project.properties.*.change")
+                .belongToProjectMember(true)
                 .build());
     }
 
@@ -78,7 +81,7 @@ public class MessageService {
         for(String upn: allCandidate) {
             List<Event> interestedEvents = new LinkedList<>();
             for(Event event : events) {
-                if(isNotTriggerMan(event, upn) && matchRule(event, upn)) {
+                if(matchRule(event, upn)) {
                     interestedEvents.add(event);
                 }
             }
@@ -89,12 +92,31 @@ public class MessageService {
     }
 
     private boolean matchRule(Event event, String upn) {
-        for(ProjectEventReceiveRule receiveRule: receiveRules) {
+        for(MessageDispatchRule receiveRule: receiveRules) {
             Optional<? extends BaseEntity> sourceEntityOptional = idMappingService.findEntity(event.getSource());
             if(!sourceEntityOptional.isPresent()) {
+                // return false in case no source entity, like internal event
                 return false;
             }
-            if(receiveRule.evaluate(event, upn, sourceEntityOptional.get())) {
+            WorkItem workItem = null;
+            Phase phase = null;
+            Project project;
+            BaseEntity sourceEntity = sourceEntityOptional.get();
+            if(sourceEntity instanceof Project) {
+                project = (Project) sourceEntity;
+            } else if(sourceEntity instanceof Phase) {
+                phase = (Phase) sourceEntity;
+                project = phase.getProject();
+            } else if(sourceEntity instanceof WorkItem) {
+                workItem = (WorkItem) sourceEntity;
+                phase = workItem.getPhase();
+                project = workItem.getProject();
+            } else {
+                // Don't evaluate other type of source entity so far,
+                // return false directly;
+                return false;
+            }
+            if(receiveRule.evaluate(event, upn, workItem, phase, project)) {
                 return true;
             }
         }
@@ -109,11 +131,15 @@ public class MessageService {
         if(log.isDebugEnabled()) {
             log.debug("Send message to {}, events {}", upn, interested);
         }
-        Message message = Message.builder()
-                .receiver(upn)
-                .events(interested)
-                .build();
-        messageRepository.save(message);
+        // Group by event source and combine to message
+        interested.stream()
+                .collect(Collectors.groupingBy(Event::getSource))
+                .forEach((source, events) ->
+                        messageRepository.save(Message.builder()
+                            .receiver(upn)
+                            .source(source)
+                            .events(events)
+                            .build()));
     }
 
     private List<String> getAllCandidate() {
