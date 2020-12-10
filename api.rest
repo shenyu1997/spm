@@ -56,7 +56,7 @@ Authorization: Basic {{currentUser}} {{password}}
 Content-Type: application/json
 
 {
-    "name": "Smart Project Management DEV",
+    "name": "Hot fix",
     "members":["huanhuan.dong","yongjian.sha"]
 }
 ###
