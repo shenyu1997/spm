@@ -1,12 +1,11 @@
 package tech.kuiperbelt.spm.domain.message;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
-import tech.kuiperbelt.spm.domain.core.event.Event;
 import lombok.*;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.util.List;
 
@@ -24,6 +23,7 @@ public class Message extends BaseEntity {
     @JsonIgnore
     private Long source;
 
-    @ManyToMany
-    private List<Event> events;
+    @JsonIgnore
+    @ElementCollection
+    private List<Long> events;
 }

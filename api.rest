@@ -352,11 +352,20 @@ Content-Type: application/json
 
 
 ####################################################################################
-## Others (TBD)
+## Events
 ####################################################################################
 
-### Get Event
-http://{{host}}:{{port}}/events
+### Get Events
+GET http://{{host}}:{{port}}/events
+Authorization: Basic {{currentUser}} {{password}}
+
+
+####################################################################################
+## Message
+####################################################################################
+
+### Get Messages
+GET http://{{host}}:{{port}}/messages
 Authorization: Basic {{currentUser}} {{password}}
 
 ### Get message 

@@ -138,20 +138,14 @@ public class MessageService {
                         messageRepository.save(Message.builder()
                             .receiver(upn)
                             .source(source)
-                            .events(events)
+                            .events(events.stream()
+                                    .map(Event::getId)
+                                    .collect(Collectors
+                                            .toList()))
                             .build()));
     }
 
     private List<String> getAllCandidate() {
         return Arrays.asList("yu.shen","huanhuan.dong","yongjian.sha");
-    }
-
-    public List<Event> findMessageEvents(Long id) {
-        return messageRepository.findById(id)
-                .map(Message::getEvents)
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(eventService::enhance)
-                .collect(Collectors.toList());
     }
 }
