@@ -7,12 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
+import tech.kuiperbelt.spm.domain.core.idmapping.FindByIds;
 
 import java.util.List;
 
 @Repository
 @RepositoryRestResource(path = WorkItemRepository.PATH_WORK_ITEMS)
-public interface WorkItemRepository extends JpaRepository<WorkItem, Long> {
+public interface WorkItemRepository extends JpaRepository<WorkItem, Long>, FindByIds<WorkItem, Long> {
     String PATH_WORK_ITEMS = "work-items";
 
     List<WorkItem> findByPhase(Phase phase);
@@ -23,5 +24,9 @@ public interface WorkItemRepository extends JpaRepository<WorkItem, Long> {
 
     @Query("from WorkItem w where w.owner=:me or w.assignee=:me")
     Page<WorkItem> findMyItems(@Param("me") String me, Pageable pageable);
+
+    @Override
+    @Query("from WorkItem wi where wi.id in (:ids)")
+    List<WorkItem> findByIds(@Param("ids") List<Long> ids);
 
 }
