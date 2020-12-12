@@ -37,7 +37,7 @@ class RuleTest {
                 .key("event.test.a.b.c")
                 .build();
 
-        assertTrue(!rule2.evaluate(event2, upn, null, null, null));
+        assertFalse(rule2.evaluate(event2, upn, null, null, null));
 
         //
         Rule rule3 = Rule.builder()
@@ -48,7 +48,7 @@ class RuleTest {
                 .key("event.c.a.b")
                 .build();
 
-        assertTrue(!rule3.evaluate(event3, upn, null, null, null));
+        assertFalse(rule3.evaluate(event3, upn, null, null, null));
 
         //
         Rule rule4 = Rule.builder()
@@ -70,7 +70,7 @@ class RuleTest {
                 .key("event.test.s.c")
                 .build();
 
-        assertTrue(!rule5.evaluate(event5, upn, null, null, null));
+        assertFalse(rule5.evaluate(event5, upn, null, null, null));
 
     }
 
@@ -89,7 +89,8 @@ class RuleTest {
         // triggerMan need match, suppose false
         Rule rule3 = Rule.builder().includeTriggerMan(true).build();
         Event event3 = Event.builder().triggeredMan(RandomStringUtils.randomAlphanumeric(10)).build();
-        assertTrue(!rule3.evaluate(event3, upn, null, null, null));
+        assertFalse(rule3.evaluate(event3, upn, null, null, null));
+
 
     }
 }
