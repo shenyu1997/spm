@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.domain.core.Phase;
+import tech.kuiperbelt.spm.domain.core.RunningStatus;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
 import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.event.Event;
@@ -34,6 +35,11 @@ public class Rule {
 
     private Boolean belongToProjectParticipant;
 
+    private RunningStatus projectStatus;
+
+    // ********* phase party ********* //
+    private RunningStatus phaseStatus;
+
     // ********* work item party ********* //
 
     private Boolean isWorkItemOwner;
@@ -42,6 +48,7 @@ public class Rule {
 
     private Boolean isMilestone;
 
+    private RunningStatus workItemStatus;
 
     public boolean evaluate(@NonNull Event event, @NonNull String upn, WorkItem workItem, Phase phase, Project project) {
 
@@ -73,6 +80,16 @@ public class Rule {
             if(check(belongToProjectParticipant, include(upn, project.getParticipants()))){
                 return false;
             }
+            if(check(projectStatus, project.getStatus())) {
+                return false;
+            }
+        }
+
+        // ********* phase party ********* //
+        if(phase != null) {
+            if(check(phaseStatus, phase.getStatus())) {
+                return false;
+            }
         }
 
         // ********* work item party ********* //
@@ -85,12 +102,16 @@ public class Rule {
                 return false;
             }
 
+            if(check(workItemStatus, workItem.getStatus())) {
+                return false;
+            }
+
             return !check(isMilestone, workItem.isMilestone());
         }
         return true;
     }
 
-    private boolean check(Boolean condition, boolean actualValue) {
+    private boolean check(Object condition, Object actualValue) {
         return condition != null && !Objects.equals(condition, actualValue);
     }
 
