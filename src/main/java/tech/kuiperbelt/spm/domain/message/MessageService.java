@@ -14,7 +14,8 @@ import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingService;
-import tech.kuiperbelt.spm.domain.message.rule.MessageDispatchRule;
+import tech.kuiperbelt.spm.domain.message.rule.Rule;
+import tech.kuiperbelt.spm.domain.message.rule.RuleProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,43 +25,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class MessageService {
 
-    private static List<MessageDispatchRule> receiveRules = new ArrayList<>();
-
-    static {
-        // project.create/project.removed/project.canceled
-        receiveRules.add(MessageDispatchRule.builder()
-                .eventKey("event.project.*")
-                .isMilestone(true)
-                .build());
-
-        // event.project.owner.changed
-        receiveRules.add(MessageDispatchRule.builder()
-                .eventKey("event.project.owner.changed")
-                .isProjectOwner(true)
-                .isProjectManager(true)
-                .build());
-
-        //event.project.manager.changed
-        receiveRules.add(MessageDispatchRule.builder()
-                .eventKey("event.project.manager.changed")
-                .isProjectOwner(true)
-                .isProjectManager(true)
-                .build());
-
-        // all new/removed member will receive notify
-        receiveRules.add(MessageDispatchRule.builder()
-                .eventKey("event.project.member.*")
-                .isProjectManager(true)
-                .eventArgs(2)
-                .build());
-
-        // event.project.properties.*.change
-        receiveRules.add(MessageDispatchRule.builder()
-                .eventKey("event.project.properties.*.change")
-                .belongToProjectMember(true)
-                .build());
-    }
-
     @Autowired
     private IdMappingService idMappingService;
 
@@ -69,6 +33,9 @@ public class MessageService {
 
     @Autowired
     private EventService eventService;
+
+    @Autowired
+    private RuleProvider ruleProvider;
 
 
     @Async
@@ -92,39 +59,35 @@ public class MessageService {
     }
 
     private boolean matchRule(Event event, String upn) {
-        for(MessageDispatchRule receiveRule: receiveRules) {
-            Optional<? extends BaseEntity> sourceEntityOptional = idMappingService.findEntity(event.getSource());
-            if(!sourceEntityOptional.isPresent()) {
-                // return false in case no source entity, like internal event
-                return false;
-            }
-            WorkItem workItem = null;
-            Phase phase = null;
-            Project project;
-            BaseEntity sourceEntity = sourceEntityOptional.get();
-            if(sourceEntity instanceof Project) {
-                project = (Project) sourceEntity;
-            } else if(sourceEntity instanceof Phase) {
-                phase = (Phase) sourceEntity;
-                project = phase.getProject();
-            } else if(sourceEntity instanceof WorkItem) {
-                workItem = (WorkItem) sourceEntity;
-                phase = workItem.getPhase();
-                project = workItem.getProject();
-            } else {
-                // Don't evaluate other type of source entity so far,
-                // return false directly;
-                return false;
-            }
+        Optional<? extends BaseEntity> sourceEntityOptional = idMappingService.findEntity(event.getSource());
+        if(!sourceEntityOptional.isPresent()) {
+            // return false in case no source entity, like internal event
+            return false;
+        }
+        WorkItem workItem = null;
+        Phase phase = null;
+        Project project;
+        BaseEntity sourceEntity = sourceEntityOptional.get();
+        if(sourceEntity instanceof Project) {
+            project = (Project) sourceEntity;
+        } else if(sourceEntity instanceof Phase) {
+            phase = (Phase) sourceEntity;
+            project = phase.getProject();
+        } else if(sourceEntity instanceof WorkItem) {
+            workItem = (WorkItem) sourceEntity;
+            phase = workItem.getPhase();
+            project = workItem.getProject();
+        } else {
+            // Don't evaluate other type of source entity so far,
+            // return false directly;
+            return false;
+        }
+        for(Rule receiveRule: ruleProvider.getAllRules()) {
             if(receiveRule.evaluate(event, upn, workItem, phase, project)) {
                 return true;
             }
         }
         return false;
-    }
-
-    private boolean isNotTriggerMan(Event event, String upn) {
-        return !Objects.equals(event.getTriggeredMan(), upn);
     }
 
     private void sendMessageTo(List<Event> interested, String upn) {

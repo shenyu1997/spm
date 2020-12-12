@@ -15,7 +15,7 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @Builder
-public class MessageDispatchRule {
+public class Rule {
     // ********* event party ********* //
 
     private boolean includeTriggerMan;
