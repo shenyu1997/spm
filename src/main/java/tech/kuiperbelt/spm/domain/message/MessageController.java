@@ -1,7 +1,6 @@
 package tech.kuiperbelt.spm.domain.message;
 
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
@@ -16,9 +15,6 @@ import javax.annotation.Nonnull;
 @RepositoryRestController
 @RequestMapping("/messages")
 public class MessageController extends SpmRepositoryControllerSupport {
-
-    @Autowired
-    private MessageService messageService;
 
     public static class MessageRepresentationModelProcessor implements RepresentationModelProcessor<EntityModel<Message>> {
 

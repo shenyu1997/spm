@@ -10,14 +10,16 @@ import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.domain.core.Phase;
 import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
-import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.core.event.Event;
-import tech.kuiperbelt.spm.domain.core.event.EventService;
 import tech.kuiperbelt.spm.domain.core.idmapping.IdMappingService;
+import tech.kuiperbelt.spm.domain.core.support.BaseEntity;
 import tech.kuiperbelt.spm.domain.message.rule.Rule;
 import tech.kuiperbelt.spm.domain.message.rule.RuleProvider;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,8 +33,6 @@ public class MessageService {
     @Autowired
     private MessageRepository messageRepository;
 
-    @Autowired
-    private EventService eventService;
 
     @Autowired
     private RuleProvider ruleProvider;
