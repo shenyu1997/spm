@@ -116,7 +116,9 @@ public class Rule {
     }
 
     private boolean matchArgs(Event event, String upn) {
-        Assert.isTrue(eventArgs < event.getArgs().length, "eventArgs must less then event arg length");
+        if(eventArgs >= event.getArgs().length) {
+            return false;
+        }
         Object arg = event.getArgs()[this.eventArgs];
         if(arg instanceof Collection<?>) {
             return ((Collection<?>) arg).contains(upn);
