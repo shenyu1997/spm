@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>tech.kuiperbelt</groupId>
 	<artifactId>spm</artifactId>
-	<version>0.0.5-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>spm</name>
 	<description>Smart Project Management</description>
 
