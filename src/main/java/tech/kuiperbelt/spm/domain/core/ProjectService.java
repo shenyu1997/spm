@@ -289,14 +289,14 @@ public class ProjectService {
         eventService.emit(builder.build());
     }
 
-    private void sendMemberAddEvent(Project project, String membersUpn, Set<String> currentMembers) {
-        if(currentMembers.isEmpty()) {
+    private void sendMemberAddEvent(Project project, String membersUpn, Set<String> addedMembers) {
+        if(addedMembers.isEmpty()) {
             return;
         }
         eventService.emit(Event.builder()
                 .key(PROJECT_MEMBER_ADDED)
                 .source(project.getId())
-                .args(membersUpn, project.getName(), currentMembers)
+                .args(membersUpn, project.getName(), addedMembers)
                 .build());
     }
 
