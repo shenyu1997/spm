@@ -71,6 +71,7 @@ public class Project extends ExecutableEntity implements AuditableEntity {
             result.addAll(getMembers());
         }
         result.add(getOwner());
+        result.add(getManager());
         return result;
     }
 
