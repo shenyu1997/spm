@@ -1,6 +1,7 @@
 package tech.kuiperbelt.spm.domain.message.rule;
 
 import com.google.common.collect.Sets;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -93,7 +94,7 @@ class RuleProviderTest {
 
         // owner change
         Event ownerChanged = Event.builder()
-                .key(Event.ITEM_OWNER_CHANGED)
+                .key(Event.PROJECT_OWNER_CHANGED)
                 .source(project)
                 .triggeredMan(pOwner)
                 .build();
@@ -409,6 +410,338 @@ class RuleProviderTest {
         assertTrue(match(phaseEndChanged, pMemberB, null, phase, project)); // true, because project is start
         assertFalse(match(phaseEndChanged, pOther, null, phase, project)); //false
 
+    }
+
+    @Test
+    public void normalPhaseWorkItem() {
+        String pOwner = RandomStringUtils.randomAlphanumeric(10);
+        String pManger = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberA = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberB = RandomStringUtils.randomAlphanumeric(10);
+        String pOther = RandomStringUtils.randomAlphanumeric(10);
+
+        Project project = new Project().toBuilder()
+                .owner(pOwner)
+                .manager(pManger)
+                .members(Lists.list(pMemberA, pMemberB))
+                .build();
+        project.initStatus();
+
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(5);
+        Phase phase = new Phase().toBuilder()
+                .project(project)
+                .plannedStartDate(end)
+                .build();
+        phase.initStatus();
+
+        WorkItem workItem = new WorkItem().toBuilder()
+                .phase(phase)
+                .scope(WorkItem.Scope.PHASE)
+                .owner(pManger)
+                .assignee(pMemberA)
+                .build();
+        workItem.initStatus();
+
+        Event phaseItemAdded = Event.builder()
+                .key(Event.PHASE_ITEM_ADDED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemAdded, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemAdded, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemAdded, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemAdded, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemAdded, pOther, workItem, phase, project)); //false
+
+        Event phaseItemDelete = Event.builder()
+                .key(Event.PHASE_ITEM_ADDED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemDelete, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemDelete, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemDelete, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemDelete, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemDelete, pOther, workItem, phase, project)); //false
+
+        Event phaseItemStart = Event.builder()
+                .key(Event.ITEM_STARTED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemStart, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemStart, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemStart, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemStart, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemStart, pOther, workItem, phase, project)); //false
+
+        Event phaseItemDone = Event.builder()
+                .key(Event.ITEM_DONE)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemDone, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemDone, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemDone, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemDone, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemDone, pOther, workItem, phase, project)); //false
+
+        Event phaseItemCancelled = Event.builder()
+                .key(Event.ITEM_CANCELED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemCancelled, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemCancelled, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemCancelled, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemCancelled, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemCancelled, pOther, workItem, phase, project)); //false
+
+        Event phaseItemMoveLeft = Event.builder()
+                .key(Event.ITEM_MOVED_LEFT)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemMoveLeft, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemMoveLeft, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemMoveLeft, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemMoveLeft, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemMoveLeft, pOther, workItem, phase, project)); //false
+
+        Event phaseItemMoveRight = Event.builder()
+                .key(Event.ITEM_MOVED_RIGHT)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemMoveRight, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemMoveRight, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemMoveRight, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemMoveRight, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemMoveRight, pOther, workItem, phase, project)); //false
+
+        Event phaseItemStartChanged = Event.builder()
+                .key(Event.ITEM_START_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemStartChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemStartChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemStartChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemStartChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemStartChanged, pOther, workItem, phase, project)); //false
+
+
+        Event phaseItemEndChanged = Event.builder()
+                .key(Event.ITEM_END_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemEndChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemEndChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemEndChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemEndChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemEndChanged, pOther, workItem, phase, project)); //false
+
+        Event phaseItemPhaseChanged = Event.builder()
+                .key(Event.ITEM_PHASE_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemPhaseChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemPhaseChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemPhaseChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemPhaseChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemPhaseChanged, pOther, workItem, phase, project)); //false
+
+        Event phaseItemProjectChanged = Event.builder()
+                .key(Event.ITEM_PROJECT_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertFalse(match(phaseItemProjectChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemProjectChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemProjectChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemProjectChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemProjectChanged, pOther, workItem, phase, project)); //false
+    }
+
+    @Test
+    public void mileStonePhaseWorkItemInStartedProject() {
+        String pOwner = RandomStringUtils.randomAlphanumeric(10);
+        String pManger = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberA = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberB = RandomStringUtils.randomAlphanumeric(10);
+        String pOther = RandomStringUtils.randomAlphanumeric(10);
+
+        Project project = new Project().toBuilder()
+                .owner(pOwner)
+                .manager(pManger)
+                .members(Lists.list(pMemberA, pMemberB))
+                .build();
+        project.initStatus();
+        project.start();
+
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(5);
+        Phase phase = new Phase().toBuilder()
+                .project(project)
+                .plannedStartDate(end)
+                .build();
+        phase.initStatus();
+
+        WorkItem workItem = new WorkItem().toBuilder()
+                .phase(phase)
+                .scope(WorkItem.Scope.PHASE)
+                .owner(pManger)
+                .assignee(pMemberA)
+                .milestone(true)
+                .build();
+        workItem.initStatus();
+
+        Event phaseItemAdded = Event.builder()
+                .key(Event.PHASE_ITEM_ADDED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemAdded, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemAdded, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemAdded, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemAdded, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemAdded, pOther, workItem, phase, project)); //false
+
+        Event phaseItemDelete = Event.builder()
+                .key(Event.PHASE_ITEM_ADDED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemDelete, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemDelete, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemDelete, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemDelete, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemDelete, pOther, workItem, phase, project)); //false
+
+        Event phaseItemStart = Event.builder()
+                .key(Event.ITEM_STARTED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemStart, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemStart, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemStart, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemStart, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemStart, pOther, workItem, phase, project)); //false
+
+        Event phaseItemDone = Event.builder()
+                .key(Event.ITEM_DONE)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemDone, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemDone, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemDone, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemDone, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemDone, pOther, workItem, phase, project)); //false
+
+        Event phaseItemCancelled = Event.builder()
+                .key(Event.ITEM_CANCELED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemCancelled, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemCancelled, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemCancelled, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemCancelled, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemCancelled, pOther, workItem, phase, project)); //false
+
+        Event phaseItemMoveLeft = Event.builder()
+                .key(Event.ITEM_MOVED_LEFT)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemMoveLeft, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemMoveLeft, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemMoveLeft, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemMoveLeft, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemMoveLeft, pOther, workItem, phase, project)); //false
+
+        Event phaseItemMoveRight = Event.builder()
+                .key(Event.ITEM_MOVED_RIGHT)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemMoveRight, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemMoveRight, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemMoveRight, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemMoveRight, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemMoveRight, pOther, workItem, phase, project)); //false
+
+        Event phaseItemStartChanged = Event.builder()
+                .key(Event.ITEM_START_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemStartChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemStartChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemStartChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemStartChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemStartChanged, pOther, workItem, phase, project)); //false
+
+
+        Event phaseItemEndChanged = Event.builder()
+                .key(Event.ITEM_END_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemEndChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemEndChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemEndChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemEndChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemEndChanged, pOther, workItem, phase, project)); //false
+
+        Event phaseItemPhaseChanged = Event.builder()
+                .key(Event.ITEM_PHASE_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemPhaseChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemPhaseChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemPhaseChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemPhaseChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemPhaseChanged, pOther, workItem, phase, project)); //false
+
+        Event phaseItemProjectChanged = Event.builder()
+                .key(Event.ITEM_PROJECT_CHANGED)
+                .source(workItem)
+                .triggeredMan(pManger)
+                .build();
+
+        assertTrue(match(phaseItemProjectChanged, pOwner, workItem, phase, project));   // false,
+        assertFalse(match(phaseItemProjectChanged, pManger, workItem, phase, project));  // false, pManager is trigger man
+        assertTrue(match(phaseItemProjectChanged, pMemberA, workItem, phase, project));  // true,  because is assignee
+        assertFalse(match(phaseItemProjectChanged, pMemberB, workItem, phase, project)); // false
+        assertFalse(match(phaseItemProjectChanged, pOther, workItem, phase, project)); //false
     }
 
     public boolean match(Event event, String upn, WorkItem workItem, Phase phase, Project project) {

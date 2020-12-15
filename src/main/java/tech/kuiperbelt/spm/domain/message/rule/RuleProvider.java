@@ -19,7 +19,7 @@ public class RuleProvider {
                 .build());
 
         rules.add(Rule.builder()
-                .eventKey(Event.ITEM_OWNER_CHANGED)
+                .eventKey(Event.PROJECT_OWNER_CHANGED)
                 .belongToProjectParticipant(true)
                 .build());
 
@@ -55,16 +55,86 @@ public class RuleProvider {
                 .build());
 
         rules.add(Rule.builder()
+                .eventKey("event.phase.[^item].*")
+                .projectStatus(RunningStatus.RUNNING)
+                .belongToProjectParticipant(true)
+                .build());
+
+
+        rules.add(Rule.builder()
                 .eventKey("event.phase.*")
                 .projectStatus(RunningStatus.RUNNING)
                 .belongToProjectParticipant(true)
                 .build());
 
+
+        // Normal workItem rules
         rules.add(Rule.builder()
-                .eventKey("event.phase.*.*")
-                .projectStatus(RunningStatus.RUNNING)
-                .belongToProjectParticipant(true)
+                .eventKey("event.phase.item.*")
+                .isWorkItemOwner(true)
                 .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.phase.item.*")
+                .isWorkItemAssignee(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.phase.item.*")
+                .isProjectManager(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*")
+                .isProjectManager(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*")
+                .isWorkItemAssignee(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*")
+                .isWorkItemOwner(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*.*")
+                .isProjectManager(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*.*")
+                .isWorkItemAssignee(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*.*")
+                .isWorkItemOwner(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.phase.item.*")
+                .isMilestone(true)
+                .projectStatus(RunningStatus.RUNNING)
+                .isProjectOwner(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*")
+                .isMilestone(true)
+                .projectStatus(RunningStatus.RUNNING)
+                .isProjectOwner(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.item.*.*")
+                .isMilestone(true)
+                .projectStatus(RunningStatus.RUNNING)
+                .isProjectOwner(true)
+                .build());
+
 
     }
 
