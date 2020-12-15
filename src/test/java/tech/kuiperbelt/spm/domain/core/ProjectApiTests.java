@@ -343,6 +343,7 @@ class ProjectApiTests extends ApiTest {
 		testUtils.cleanAll("/events");
 
 		testUtils.cancel(projectHref);
+		yield();
 		testUtils.verifyEvents(1,
 				Event.PROJECT_CANCELED);
 

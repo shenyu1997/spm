@@ -624,6 +624,7 @@ public class WorkItemApiTests extends ApiTest {
 
         testUtils.cleanAll("/events");
         testUtils.start(workItemHref);
+        super.yield();
         testUtils.verifyEvents(1, Event.ITEM_STARTED);
 
         testUtils.verifyEventDetail(Event.ITEM_STARTED, "workItem", workItemHref,
