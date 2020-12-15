@@ -28,6 +28,9 @@ public class Event extends BaseEntity {
 
     public static final String PROJECT_CREATED = "event.project.created";
     public static final String PROJECT_DELETED = "event.project.deleted";
+    public static final String PROJECT_STARTED = "event.project.started";
+    public static final String PROJECT_DONE = "event.project.done";
+    public static final String PROJECT_CANCELED = "event.project.canceled";
 
     public static final String PROJECT_OWNER_CHANGED = "event.project.owner.changed";
     public static final String PROJECT_MANAGER_CHANGED = "event.project.manager.changed";
@@ -35,9 +38,7 @@ public class Event extends BaseEntity {
     public static final String PROJECT_MEMBER_DELETED = "event.project.member.deleted";
     public static final String PROJECT_PROPERTIES_CHANGED = "event.project.properties.changed";
 
-    public static final String PROJECT_STARTED = "event.project.started";
-    public static final String PROJECT_DONE = "event.project.done";
-    public static final String PROJECT_CANCELED = "event.project.canceled";
+
 
     /**
      * Phase
