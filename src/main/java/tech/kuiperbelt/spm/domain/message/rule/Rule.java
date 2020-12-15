@@ -135,6 +135,7 @@ public class Rule {
      */
     private boolean matchKey(Event event, String expect) {
         String actual = event.getKey();
+        Assert.hasText(actual, "Event.key can not be empty");
         String[] actualParts = actual.split("\\.");
         String[] expectParts = expect.split("\\.");
         if(actualParts.length != expectParts.length) {

@@ -45,6 +45,9 @@ public class Event extends BaseEntity {
      */
     public static final String PHASE_ADDED = "event.phase.added";
     public static final String PHASE_DELETED = "event.phase.deleted";
+    public static final String PHASE_STARTED = "event.phase.started";
+    public static final String PHASE_DONE = "event.phase.done";
+    public static final String PHASE_CANCELED = "event.phase.canceled";
 
     public static final String PHASE_PROPERTIES_CHANGED = "event.phase.properties.changed";
     public static final String PHASE_MOVED_LEFT = "event.phase.moved.left";
@@ -52,9 +55,7 @@ public class Event extends BaseEntity {
     public static final String PHASE_START_CHANGED = "event.phase.start.changed";
     public static final String PHASE_END_CHANGED = "event.phase.end.changed";
 
-    public static final String PHASE_STARTED = "event.phase.started";
-    public static final String PHASE_DONE = "event.phase.done";
-    public static final String PHASE_CANCELED = "event.phase.canceled";
+
 
     /**
      * WorkItem

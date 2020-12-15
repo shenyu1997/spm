@@ -1,6 +1,7 @@
 package tech.kuiperbelt.spm.domain.message.rule;
 
 import org.springframework.stereotype.Service;
+import tech.kuiperbelt.spm.domain.core.RunningStatus;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 
 import java.util.LinkedList;
@@ -43,7 +44,27 @@ public class RuleProvider {
                 .build());
 
         // Phase related rule
+        rules.add(Rule.builder()
+                .eventKey("event.phase.*")
+                .isProjectManager(true)
+                .build());
 
+        rules.add(Rule.builder()
+                .eventKey("event.phase.*.*")
+                .isProjectManager(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.phase.*")
+                .projectStatus(RunningStatus.RUNNING)
+                .belongToProjectParticipant(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.phase.*.*")
+                .projectStatus(RunningStatus.RUNNING)
+                .belongToProjectParticipant(true)
+                .build());
 
     }
 

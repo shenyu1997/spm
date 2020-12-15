@@ -9,6 +9,8 @@ import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,7 +32,7 @@ class RuleProviderTest {
 
         // project create
         Event createEvent = Event.builder()
-                .key(Event.PROJECT_CREATED)
+                .key(Event.PROJECT_ADDED)
                 .source(project)
                 .build();
 
@@ -162,6 +164,251 @@ class RuleProviderTest {
         assertTrue(match(propertiesChange, pMemberA, null, null, project));
         assertTrue(match(propertiesChange, pMemberB, null, null, project));
         assertFalse(match(propertiesChange, RandomStringUtils.randomAlphanumeric(10), null, null, project));
+    }
+
+    @Test
+    public void testPhaseEventBeforeProjectStart() {
+        String pOwner = RandomStringUtils.randomAlphanumeric(10);
+        String pManger = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberA = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberB = RandomStringUtils.randomAlphanumeric(10);
+        String pOther = RandomStringUtils.randomAlphanumeric(10);
+
+        Project project = new Project().toBuilder()
+                .owner(pOwner)
+                .manager(pManger)
+                .members(Lists.list(pMemberA, pMemberB))
+                .build();
+        project.initStatus();
+
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(5);
+        Phase phase = new Phase().toBuilder()
+                .project(project)
+                .plannedStartDate(end)
+                .build();
+        phase.initStatus();
+
+        Event phaseAdded = Event.builder()
+                .key(Event.PHASE_ADDED)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseAdded, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phaseAdded, pManger, null, phase, project)); //true, pManager is trigger man
+        assertFalse(match(phaseAdded, pMemberA, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseAdded, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseAdded, pOther, null, phase, project));
+
+        Event phaseAdded2 = Event.builder()
+                .key(Event.PHASE_ADDED)
+                .triggeredMan(pMemberA)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseAdded2, pOwner, null, phase, project));   // false, because project not start
+        assertTrue(match(phaseAdded2, pManger, null, phase, project)); //true, pManager need aware phase added
+        assertFalse(match(phaseAdded2, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phaseAdded2, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseAdded2, pOther, null, phase, project));
+
+        Event phaseDeleted = Event.builder()
+                .key(Event.PHASE_DELETED)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseDeleted, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phaseDeleted, pManger, null, phase, project)); // false, pManager need aware phase added
+        assertFalse(match(phaseDeleted, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phaseDeleted, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseDeleted, pOther, null, phase, project)); //false
+
+        Event phasePropertiesChanged = Event.builder()
+                .key(Event.PHASE_PROPERTIES_CHANGED)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phasePropertiesChanged, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phasePropertiesChanged, pManger, null, phase, project)); // false, pManager need aware phase added
+        assertFalse(match(phasePropertiesChanged, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phasePropertiesChanged, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phasePropertiesChanged, pOther, null, phase, project)); //false
+
+
+        Event phaseMoveLeft = Event.builder()
+                .key(Event.PHASE_MOVED_LEFT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseMoveLeft, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phaseMoveLeft, pManger, null, phase, project)); // false, pManager need aware phase added
+        assertFalse(match(phaseMoveLeft, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phaseMoveLeft, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseMoveLeft, pOther, null, phase, project)); //false
+
+        Event phaseMoveRight = Event.builder()
+                .key(Event.PHASE_MOVED_RIGHT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseMoveRight, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phaseMoveRight, pManger, null, phase, project)); // false, pManager need aware phase added
+        assertFalse(match(phaseMoveRight, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phaseMoveRight, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseMoveRight, pOther, null, phase, project)); //false
+
+        Event phaseStartChanged = Event.builder()
+                .key(Event.PHASE_MOVED_RIGHT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseStartChanged, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phaseStartChanged, pManger, null, phase, project)); // false, pManager need aware phase added
+        assertFalse(match(phaseStartChanged, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phaseStartChanged, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseStartChanged, pOther, null, phase, project)); //false
+
+        Event phaseEndChanged = Event.builder()
+                .key(Event.PHASE_MOVED_RIGHT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertFalse(match(phaseEndChanged, pOwner, null, phase, project));   // false, because project not start
+        assertFalse(match(phaseEndChanged, pManger, null, phase, project)); // false, pManager need aware phase added
+        assertFalse(match(phaseEndChanged, pMemberA, null, phase, project)); //false, pMemberA is trigger man
+        assertFalse(match(phaseEndChanged, pMemberB, null, phase, project)); //false, because project not start
+        assertFalse(match(phaseEndChanged, pOther, null, phase, project)); //false
+
+    }
+
+    @Test
+    public void testPhaseEventAfterProjectStart() {
+        String pOwner = RandomStringUtils.randomAlphanumeric(10);
+        String pManger = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberA = RandomStringUtils.randomAlphanumeric(10);
+        String pMemberB = RandomStringUtils.randomAlphanumeric(10);
+        String pOther = RandomStringUtils.randomAlphanumeric(10);
+
+        Project project = new Project().toBuilder()
+                .owner(pOwner)
+                .manager(pManger)
+                .members(Lists.list(pMemberA, pMemberB))
+                .build();
+        project.initStatus();
+        project.start();
+
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(5);
+        Phase phase = new Phase().toBuilder()
+                .project(project)
+                .plannedStartDate(end)
+                .build();
+        phase.initStatus();
+
+        Event phaseAdded = Event.builder()
+                .key(Event.PHASE_ADDED)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseAdded, pOwner, null, phase, project));   // true, because project is started
+        assertFalse(match(phaseAdded, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phaseAdded, pMemberA, null, phase, project)); // true, because project is started
+        assertTrue(match(phaseAdded, pMemberB, null, phase, project)); // true, because project is started
+        assertFalse(match(phaseAdded, pOther, null, phase, project));
+
+        Event phaseAdded2 = Event.builder()
+                .key(Event.PHASE_ADDED)
+                .triggeredMan(pMemberA)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseAdded2, pOwner, null, phase, project));    // true, because project is started
+        assertTrue(match(phaseAdded2, pManger, null, phase, project));  // false, pManager is trigger man
+        assertFalse(match(phaseAdded2, pMemberA, null, phase, project));  // true, because project is started
+        assertTrue(match(phaseAdded2, pMemberB, null, phase, project));  // true, because project is started
+        assertFalse(match(phaseAdded2, pOther, null, phase, project));
+
+        Event phaseDeleted = Event.builder()
+                .key(Event.PHASE_DELETED)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseDeleted, pOwner, null, phase, project));   // true, because project not start
+        assertFalse(match(phaseDeleted, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phaseDeleted, pMemberA, null, phase, project)); // true,  because project is start
+        assertTrue(match(phaseDeleted, pMemberB, null, phase, project)); // true, because project is start
+        assertFalse(match(phaseDeleted, pOther, null, phase, project)); //false
+
+        Event phasePropertiesChanged = Event.builder()
+                .key(Event.PHASE_PROPERTIES_CHANGED)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phasePropertiesChanged, pOwner, null, phase, project));   // true, because project not start
+        assertFalse(match(phasePropertiesChanged, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phasePropertiesChanged, pMemberA, null, phase, project)); // true,  because project is start
+        assertTrue(match(phasePropertiesChanged, pMemberB, null, phase, project)); // true, because project is start
+        assertFalse(match(phasePropertiesChanged, pOther, null, phase, project)); //false
+
+
+        Event phaseMoveLeft = Event.builder()
+                .key(Event.PHASE_MOVED_LEFT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseMoveLeft, pOwner, null, phase, project));   // true, because project not start
+        assertFalse(match(phaseMoveLeft, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phaseMoveLeft, pMemberA, null, phase, project)); // true,  because project is start
+        assertTrue(match(phaseMoveLeft, pMemberB, null, phase, project)); // true, because project is start
+        assertFalse(match(phaseMoveLeft, pOther, null, phase, project)); //false
+
+        Event phaseMoveRight = Event.builder()
+                .key(Event.PHASE_MOVED_RIGHT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseMoveRight, pOwner, null, phase, project));   // true, because project not start
+        assertFalse(match(phaseMoveRight, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phaseMoveRight, pMemberA, null, phase, project)); // true,  because project is start
+        assertTrue(match(phaseMoveRight, pMemberB, null, phase, project)); // true, because project is start
+        assertFalse(match(phaseMoveRight, pOther, null, phase, project)); //false
+
+        Event phaseStartChanged = Event.builder()
+                .key(Event.PHASE_MOVED_RIGHT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseStartChanged, pOwner, null, phase, project));   // true, because project not start
+        assertFalse(match(phaseStartChanged, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phaseStartChanged, pMemberA, null, phase, project)); // true,  because project is start
+        assertTrue(match(phaseStartChanged, pMemberB, null, phase, project)); // true, because project is start
+        assertFalse(match(phaseStartChanged, pOther, null, phase, project)); //false
+
+        Event phaseEndChanged = Event.builder()
+                .key(Event.PHASE_MOVED_RIGHT)
+                .triggeredMan(pManger)
+                .source(phase)
+                .build();
+
+        assertTrue(match(phaseEndChanged, pOwner, null, phase, project));   // true, because project not start
+        assertFalse(match(phaseEndChanged, pManger, null, phase, project)); // false, pManager is trigger man
+        assertTrue(match(phaseEndChanged, pMemberA, null, phase, project)); // true,  because project is start
+        assertTrue(match(phaseEndChanged, pMemberB, null, phase, project)); // true, because project is start
+        assertFalse(match(phaseEndChanged, pOther, null, phase, project)); //false
+
     }
 
     public boolean match(Event event, String upn, WorkItem workItem, Phase phase, Project project) {
