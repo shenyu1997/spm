@@ -1,6 +1,7 @@
 package tech.kuiperbelt.spm.domain.message.rule;
 
 import org.springframework.stereotype.Service;
+import tech.kuiperbelt.spm.domain.core.event.Event;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,38 +11,40 @@ public class RuleProvider {
     private static List<Rule> rules = new LinkedList<>();
 
     static {
-        // project.create/project.removed/project.canceled
+        // Project related rule
         rules.add(Rule.builder()
                 .eventKey("event.project.*")
-                .isMilestone(true)
+                .belongToProjectParticipant(true)
                 .build());
 
-        // event.project.owner.changed
         rules.add(Rule.builder()
-                .eventKey("event.project.owner.changed")
-                .isProjectOwner(true)
-                .isProjectManager(true)
+                .eventKey(Event.ITEM_OWNER_CHANGED)
+                .belongToProjectParticipant(true)
                 .build());
 
-        //event.project.manager.changed
         rules.add(Rule.builder()
-                .eventKey("event.project.manager.changed")
-                .isProjectOwner(true)
-                .isProjectManager(true)
+                .eventKey(Event.PROJECT_MANAGER_CHANGED)
+                .belongToProjectParticipant(true)
                 .build());
 
-        // all new/removed member will receive notify
         rules.add(Rule.builder()
                 .eventKey("event.project.member.*")
                 .isProjectManager(true)
+                .build());
+
+        rules.add(Rule.builder()
+                .eventKey("event.project.member.*")
                 .eventArgs(2)
                 .build());
 
-        // event.project.properties.*.change
         rules.add(Rule.builder()
-                .eventKey("event.project.properties.*.change")
-                .belongToProjectMember(true)
+                .eventKey(Event.PROJECT_PROPERTIES_CHANGED)
+                .belongToProjectParticipant(true)
                 .build());
+
+        // Phase related rule
+
+
     }
 
     public List<Rule> getAllRules() {
