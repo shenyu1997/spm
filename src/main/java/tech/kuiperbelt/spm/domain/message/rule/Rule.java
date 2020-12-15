@@ -6,13 +6,15 @@ import lombok.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import tech.kuiperbelt.spm.domain.core.Phase;
+import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.RunningStatus;
 import tech.kuiperbelt.spm.domain.core.WorkItem;
-import tech.kuiperbelt.spm.domain.core.Project;
 import tech.kuiperbelt.spm.domain.core.event.Event;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @AllArgsConstructor
 @Builder
@@ -49,6 +51,9 @@ public class Rule {
     private Boolean isMilestone;
 
     private RunningStatus workItemStatus;
+
+    public static final Pattern EXCLUDE_PATTERN = Pattern.compile("\\[\\^([\\w,]+)]");
+    public static final Pattern INCLUDE_PATTERN = Pattern.compile("\\[([\\w,]+)]");
 
     public boolean evaluate(@NonNull Event event, @NonNull String upn, WorkItem workItem, Phase phase, Project project) {
 
@@ -142,12 +147,45 @@ public class Rule {
             return false;
         }
         for(int i=0; i<expectParts.length; i++) {
-            if(!("*".equals(expectParts[i]) || Objects.equals(actualParts[i], expectParts[i]))) {
-                return false;
+            // * match
+            if("*".equals(expectParts[i])) {
+                continue;
             }
+
+            // include match
+            Matcher includeMatcher = INCLUDE_PATTERN.matcher(expectParts[i]);
+            if(includeMatcher.find()) {
+                String includeContent = includeMatcher.group(1);
+                boolean includeMatch = false;
+                for(String includeStr: includeContent.split(",")) {
+                    if(Objects.equals(includeStr, actualParts[i])) {
+                        includeMatch = true;
+                        break;
+                    }
+                }
+                return includeMatch;
+            }
+
+            // exclude match
+            Matcher excludeMatcher = EXCLUDE_PATTERN.matcher(expectParts[i]);
+            if(excludeMatcher.find()) {
+                String excludeContent = excludeMatcher.group(1);
+                for(String excludeStr: excludeContent.split(",")) {
+                    if(Objects.equals(excludeStr, actualParts[i])) {
+                        return false;
+                    }
+                }
+                continue;
+            }
+            // equal match
+            if(Objects.equals(actualParts[i], expectParts[i])) {
+                continue;
+            }
+            return false;
         }
         return true;
     }
+
 
     private boolean include(String upn, Collection<String> testCollection) {
         return !CollectionUtils.isEmpty(testCollection) && testCollection.contains(upn);

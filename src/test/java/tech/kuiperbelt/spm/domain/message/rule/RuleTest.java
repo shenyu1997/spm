@@ -79,6 +79,47 @@ class RuleTest {
 
         assertFalse(rule5.evaluate(event5, upn, null, null, null));
 
+        // exclude
+        Rule rule6 = Rule.builder()
+                .eventKey("event.test.[^a,x].c")
+                .build();
+
+        Event event6A = Event.builder()
+                .key("event.test.s.c")
+                .build();
+
+        Event event6B = Event.builder()
+                .key("event.test.a.c")
+                .build();
+
+        Event event6C = Event.builder()
+                .key("event.test.x.c")
+                .build();
+
+        assertTrue(rule6.evaluate(event6A, upn, null, null, null));
+        assertFalse(rule6.evaluate(event6B, upn, null, null, null));
+        assertFalse(rule6.evaluate(event6C, upn, null, null, null));
+
+        // exclude
+        Rule rule7 = Rule.builder()
+                .eventKey("event.test.[a,x].c")
+                .build();
+
+        Event event7A = Event.builder()
+                .key("event.test.s.c")
+                .build();
+
+        Event event7B = Event.builder()
+                .key("event.test.a.c")
+                .build();
+
+        Event event7C = Event.builder()
+                .key("event.test.x.c")
+                .build();
+
+        assertFalse(rule7.evaluate(event7A, upn, null, null, null));
+        assertTrue(rule7.evaluate(event7B, upn, null, null, null));
+        assertTrue(rule7.evaluate(event7C, upn, null, null, null));
     }
 
     @Test
