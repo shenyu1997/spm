@@ -26,7 +26,7 @@ public class Event extends BaseEntity {
      * Project
      */
 
-    public static final String PROJECT_CREATED = "event.project.created";
+    public static final String PROJECT_ADDED = "event.project.added";
     public static final String PROJECT_DELETED = "event.project.deleted";
     public static final String PROJECT_STARTED = "event.project.started";
     public static final String PROJECT_DONE = "event.project.done";

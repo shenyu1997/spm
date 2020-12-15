@@ -77,7 +77,7 @@ public class ProjectService {
 
     @HandleAfterCreate
     public void postHandleProjectCreate(Project project) {
-        sendEvent(PROJECT_CREATED, project);
+        sendEvent(PROJECT_ADDED, project);
 
         if(!StringUtils.isEmpty(project.getOwner())) {
             sendEvent(PROJECT_OWNER_CHANGED, project, PropertyChanged.builder()
@@ -263,7 +263,7 @@ public class ProjectService {
                 .source(project);
 
         switch (key) {
-            case Event.PROJECT_CREATED:
+            case Event.PROJECT_ADDED:
             case Event.PROJECT_DELETED:
             case Event.PROJECT_CANCELED:
             case Event.PROJECT_STARTED:

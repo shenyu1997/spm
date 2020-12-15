@@ -269,7 +269,7 @@ class ProjectApiTests extends ApiTest {
 		String projectHref = testUtils.createRandomProject();
 
 		testUtils.verifyEvents(3,
-				Event.PROJECT_CREATED,
+				Event.PROJECT_ADDED,
 				Event.PROJECT_OWNER_CHANGED,
 				Event.PROJECT_MANAGER_CHANGED);
 

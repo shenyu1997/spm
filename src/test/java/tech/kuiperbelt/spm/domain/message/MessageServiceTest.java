@@ -34,7 +34,7 @@ class MessageServiceTest {
 
         Event event1 = Event.builder()
                 .correlationId(correlationId)
-                .key(Event.PROJECT_CREATED)
+                .key(Event.PROJECT_ADDED)
                 .source(project)
                 .build();
         event1.setId(RandomUtils.nextLong(0,1000));
