@@ -43,8 +43,8 @@ public class MessageService {
     @Async
     @EventListener
     public void bulkProcessEvent(Event.EventQueue events) {
-        if(log.isDebugEnabled()) {
-            log.debug("MessageService.bulkProcessEvent: {}", events);
+        if(log.isTraceEnabled()) {
+            log.trace("MessageService.bulkProcessEvent: {}", events);
         }
         List<String> allCandidate = getAllCandidate();
         for(String upn: allCandidate) {
